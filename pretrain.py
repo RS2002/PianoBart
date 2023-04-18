@@ -122,7 +122,7 @@ class Pretrainer:
             total_loss_all = [x * y for x, y in zip(losses, n_tok)]
             total_loss = sum(total_loss_all) / sum(n_tok)  # weighted
 
-            # udpate only in train
+            # update only in train
             if train:
                 self.model.zero_grad()
                 total_loss.backward()
@@ -140,6 +140,39 @@ class Pretrainer:
 
         return round(total_losses / len(training_data), 3), [round(x.item() / len(training_data), 3) for x in total_acc]
 
-    def gen_mask(self,input_ids):
+    def gen_mask(self, input_ids: torch.Tensor):
         #TODO
+        
+        # for now, n is only used to represent to delete or masked
+        # if n == -1, delete
+        # else masked
+        # TODO
+        # more detailed mask, like mask 1/8, 1/4, 1/2, 1/1 (1/n)
+        def TokenDeletion(input_ids: torch.Tensor, mask_percent, replacement: np.array, n = -1):
+            def deleteOctuple(input_ids: torch.Tensor, mask_percent, replacement: torch.Tensor):
+                l = input_ids.shape[0]
+                maskpos = [1 if i < l * mask_percent else 0 for i in range(l)]
+                random.shuffle(maskpos)
+                maskpos = torch.tensor(np.array(maskpos))
+                masked = copy.deepcopy(input_ids)
+                masked[maskpos == 1] = torch.from_numpy(replacement)
+                return masked, maskpos
+            if n == -1:
+                return deleteOctuple(input_ids, mask_percent, replacement)
+            else:
+                # OCTUPLE
+                # (Bar, Pos, Program, Pitch, Duration, Velocity, TimeSignature, Tempo)
+                masked = copy.deepcopy(input_ids).numpy()
+                barMax = masked[-1][0]
+                maskBarPos = [1 if i < barMax * mask_percent else 0 for i in range(barMax)]
+                random.shuffle(maskBarPos)
+                maskBarPos = np.array(maskBarPos)
+                for i in range(len(masked)):
+                    if maskBarPos[masked[i][0]] == 1:
+                        masked[i][n] = replacement
+                return torch.from_numpy(masked), torch.from_numpy(maskBarPos)
+
+        # 可以这样来使用 mask 的函数
+        # return TokenDeletion(input_ids, self.mask_percent, torch.tensor(self.pianobart.bar_pad_word))
+
         pass
