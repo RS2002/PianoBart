@@ -3,7 +3,8 @@ import numpy as np
 import random
 import torch
 import torch.nn as nn
-from transformers import BartModel
+from transformers import BartModel,BartConfig
+import pickle
 
 class Embeddings(nn.Module):
     def __init__(self, n_token, d_model):
@@ -23,9 +24,9 @@ class PianoBart(nn.Module):
         self.hidden_size = bartConfig.d_model # Dimensionality of the layers and the pooler layer
         self.bartConfig = bartConfig
 
-        # token types: 0 Measure（第几个Bar（小节））, 1 Pos（Bar中的位置）, 2 Program（乐器）, 3 Pitch（音高）, 4 Duration（持续时间）, 5 Velocity（力度）, 6 TimeSig（拍号）, 7 Tempo（速度）
+        # token types: 0 Measure（第几个Bar（小节））, 1 Position（Bar中的位置）, 2 Program（乐器）, 3 Pitch（音高）, 4 Duration（持续时间）, 5 Velocity（力度）, 6 TimeSig（拍号）, 7 Tempo（速度）
         self.n_tokens = []  # 每个属性的种类数
-        self.classes = ['Bar', 'Pos', 'Program', 'Pitch', 'Duration', 'Velocity', 'TimeSig', 'Tempo']
+        self.classes = ['Bar', 'Position', 'Instrument', 'Pitch', 'Duration', 'Velocity', 'TimeSig', 'Tempo']
         for key in self.classes:
             self.n_tokens.append(len(e2w[key]))
         self.emb_sizes = [256] * 8
@@ -64,7 +65,7 @@ class PianoBart(nn.Module):
         emb_linear_decoder = self.decoder_linear(decoder_embs)
         # feed to bart
         y = self.bart(inputs_embeds=emb_linear_encoder, decoder_inputs_embeds=emb_linear_decoder, attention_mask=encoder_attention_mask, decoder_attention_mask=decoder_attention_mask, output_hidden_states=output_hidden_states) #attention_mask用于屏蔽<PAD> (PAD作用是在结尾补齐长度)
-        # y = y.last_hidden_state         # (batch_size, seq_len, 768)
+        # y = y.last_hidden_state         # (batch_size, seq_len, 1536)
         return y
 
     def get_rand_tok(self):
@@ -72,3 +73,21 @@ class PianoBart(nn.Module):
         for i in range(8):
             rand[i]=random.choice(range(self.n_tokens[i]))
         return np.array(rand)
+
+#test
+if __name__=='__main__':
+    config=BartConfig(max_position_embeddings=32, d_model=48)
+    with open('./Data/Octuple.pkl', 'rb') as f:
+        e2w, w2e = pickle.load(f)
+    piano_bart=PianoBart(config,e2w,w2e)
+    #print(piano_bart)
+    input_ids_encoder = torch.randint(1, 10, (2, 32, 8))
+    input_ids_decoder = torch.randint(1, 10, (2, 32, 8))
+    encoder_attention_mask = torch.zeros((2, 32))
+    decoder_attention_mask = torch.zeros((2, 32))
+    for j in range(2):
+        encoder_attention_mask[j, 31] += 1
+        decoder_attention_mask[j, 31] += 1
+        decoder_attention_mask[j, 30] += 1
+    output=piano_bart(input_ids_encoder,input_ids_decoder,encoder_attention_mask,decoder_attention_mask)
+    print(output.last_hidden_state.size())
