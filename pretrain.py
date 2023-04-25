@@ -171,7 +171,28 @@ class Pretrainer:
                     if maskBarPos[masked[i][0]] == 1:
                         masked[i][n] = replacement
                 return torch.from_numpy(masked), torch.from_numpy(maskBarPos)
-
+        def TokenInfilling(input_ids: torch.Tensor, mask_percent, lamda=3):
+            l = input_ids.shape[0]
+            masked = torch.tensor([])
+            masked_tensor=torch.from_numpy(self.pianobart.mask_word_np)#masked的token
+            maskpos = [0 for i in range(l)]
+            i=0
+            while(i<l):
+                ran=random.random()
+                if ran<mask_percent/max(1,lamda):  #控制期望掩蔽的数量是在mask_percent
+                    p=np.random.poisson(lamda)  #泊松采样
+                    if(p==0):#如果长度为1，则插入一个长度为1的mask
+                        masked = torch.cat((masked, input_ids[i:i+1]), dim=0)
+                        masked = torch.cat((masked, masked_tensor.unsqueeze(0)), dim=0)
+                        i+=1
+                    else:  #否则，跳过p个octuple，只插入一个长度为1的mask
+                        masked = torch.cat((masked, masked_tensor.unsqueeze(0)), dim=0)
+                        maskpos[i:i + p] = [1 for i in range(i, i + p)]
+                        i+=p
+                else:
+                    masked = torch.cat((masked, input_ids[i:i + 1]), dim=0)
+                    i+=1
+            return masked,maskpos
         # 可以这样来使用 mask 的函数
         # return TokenDeletion(input_ids, self.mask_percent, torch.tensor(self.pianobart.bar_pad_word))
 
