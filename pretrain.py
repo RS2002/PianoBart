@@ -10,6 +10,8 @@ import shutil
 import copy
 from PianoBart import PianoBart
 from model import PianoBartLM
+from transformers import BartConfig
+import pickle
 
 class Pretrainer:
     def __init__(self, pianobart: PianoBart, train_dataloader, valid_dataloader,
@@ -151,28 +153,57 @@ class Pretrainer:
         def TokenDeletion(input_ids: torch.Tensor, mask_percent, replacement: np.array, n = -1):
             def deleteOctuple(input_ids: torch.Tensor, mask_percent, replacement: torch.Tensor):
                 l = input_ids.shape[0]
-                maskpos = [1 if i < l * mask_percent else 0 for i in range(l)]
+                length = int(l * mask_percent)
+                maskpos = [1 if i < length else 0 for i in range(l)]
                 random.shuffle(maskpos)
-                maskpos = torch.tensor(np.array(maskpos))
-                masked = copy.deepcopy(input_ids)
-                masked[maskpos == 1] = torch.from_numpy(replacement)
-                return masked, maskpos
+                maskpos = np.array(maskpos)
+                masked = copy.deepcopy(input_ids).numpy()
+                count = 0
+                for i in range(len(maskpos)):
+                    if maskpos[i] == 1:
+                        masked = np.delete(masked, i - count, axis=0)
+                        count += 1
+                for i in range(length):
+                    masked = np.append(masked, replacement.reshape(1, 8), axis=0)
+                return torch.from_numpy(masked), torch.from_numpy(maskpos)
             if n == -1:
                 return deleteOctuple(input_ids, mask_percent, replacement)
             else:
+                # TODO
+                # TEST CASE REQUIRED
                 # OCTUPLE
                 # (Bar, Pos, Program, Pitch, Duration, Velocity, TimeSignature, Tempo)
                 masked = copy.deepcopy(input_ids).numpy()
-                barMax = masked[-1][0]
-                maskBarPos = [1 if i < barMax * mask_percent else 0 for i in range(barMax)]
+                barMax = masked[-1,0]
+                print(barMax)
+                length = int(barMax * mask_percent)
+                maskBarPos = [1 if i < length else 0 for i in range(barMax)]
                 random.shuffle(maskBarPos)
                 maskBarPos = np.array(maskBarPos)
+                count = 0
                 for i in range(len(masked)):
-                    if maskBarPos[masked[i][0]] == 1:
-                        masked[i][n] = replacement
+                    if maskBarPos[masked[i,0]] == 1:
+                        masked = np.delete(masked, i - count, axis = 0)
+                        count += 1
+                for i in range(length):
+                    masked = np.append(masked, replacement.reshape(1, 8), axis = 0)
                 return torch.from_numpy(masked), torch.from_numpy(maskBarPos)
 
         # 可以这样来使用 mask 的函数
-        # return TokenDeletion(input_ids, self.mask_percent, torch.tensor(self.pianobart.bar_pad_word))
+        return TokenDeletion(input_ids, self.mask_percent, self.pianobart.pad_word_np)
 
         pass
+
+if __name__ == '__main__':
+    with open('./Data/Octuple.pkl', 'rb') as f:
+        e2w, w2e = pickle.load(f)
+    pianobart = PianoBart(bartConfig=BartConfig(max_position_embeddings=32, d_model=48), e2w=e2w, w2e=w2e)
+    
+    p = Pretrainer(pianobart, None, None, 0.01, None, 1024, 0.5, True, None)
+    input_ids = list()
+    for i in range(10):
+        tmp = [j for j in range(8 * i, 8 * (i + 1))]
+        input_ids.append(tmp)
+    input_ids = torch.tensor(input_ids)
+    print(input_ids)
+    print(p.gen_mask(input_ids))
