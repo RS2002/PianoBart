@@ -34,6 +34,7 @@ class Pretrainer:
         self.max_seq_len = max_seq_len
         self.mask_percent = mask_percent
         self.Lseq = [i for i in range(self.max_seq_len)]
+        self.Lseq_element = [i for i in range(self.max_seq_len*8)]
         self.loss_func = nn.CrossEntropyLoss(reduction='none')
 
     def train(self):
@@ -78,13 +79,15 @@ class Pretrainer:
             ori_seq_batch = ori_seq_batch.to(self.device)  # (batch, seq_len, 8)
             input_ids_encoder = copy.deepcopy(ori_seq_batch)
             input_ids_decoder = torch.zeros_like(input_ids_encoder)
-            loss_mask = torch.zeros(batch, max_seq_len)
+            loss_mask = torch.zeros(batch, max_seq_len,8)
             for b in range(batch):
                 shifted_input_ids = input_ids_encoder[b].new_zeros(input_ids_encoder[b].shape)
                 shifted_input_ids[:, 1:] = input_ids_encoder[b][:, :-1].clone()
                 shifted_input_ids[:, 0] = torch.tensor(self.pianobart.sos_word_np)
                 input_ids_decoder[b]=shifted_input_ids
                 input_mask, mask_pos=self.gen_mask(input_ids_encoder[b])
+                if mask_pos.size()[-1] != 8:
+                    mask_pos = np.repeat(mask_pos[:, np.newaxis], 8, axis=1)
                 input_ids_encoder[b]=input_mask
                 loss_mask[b]=mask_pos
 
@@ -106,8 +109,8 @@ class Pretrainer:
             # accuracy 只考虑mask部分输出的准确率
             all_acc = []
             for i in range(8):
-                acc = torch.sum((ori_seq_batch[:, :, i] == outputs[:, :, i]).float() * loss_mask)
-                acc /= torch.sum(loss_mask)
+                acc = torch.sum((ori_seq_batch[:, :, i] == outputs[:, :, i]).float() * loss_mask[:,:,i])
+                acc /= torch.sum(loss_mask[:,:,i])
                 all_acc.append(acc)
             total_acc = [sum(x) for x in zip(total_acc, all_acc)]
 
@@ -120,7 +123,7 @@ class Pretrainer:
             losses, n_tok = [], []
             for i, etype in enumerate(self.pianobart.e2w):
                 n_tok.append(len(self.pianobart.e2w[etype]))
-                losses.append(self.compute_loss(y[i], ori_seq_batch[..., i], loss_mask))
+                losses.append(self.compute_loss(y[i], ori_seq_batch[..., i], loss_mask[:,:,i]))
             total_loss_all = [x * y for x, y in zip(losses, n_tok)]
             total_loss = sum(total_loss_all) / sum(n_tok)  # weighted
 
@@ -142,9 +145,7 @@ class Pretrainer:
 
         return round(total_losses / len(training_data), 3), [round(x.item() / len(training_data), 3) for x in total_acc]
 
-    def gen_mask(self, input_ids: torch.Tensor):
-        #TODO
-        
+    def gen_mask(self, input_ids: torch.Tensor,choice=None):
         # for now, n is only used to represent to delete or masked
         # if n == -1, delete
         # else masked
@@ -189,21 +190,172 @@ class Pretrainer:
                     masked = np.append(masked, replacement.reshape(1, 8), axis = 0)
                 return torch.from_numpy(masked), torch.from_numpy(maskBarPos)
 
-        # 可以这样来使用 mask 的函数
-        return TokenDeletion(input_ids, self.mask_percent, self.pianobart.pad_word_np)
+        # for now, n is only used to represent to Octuple-level mask or Bar-level mask
+        # if n == 0, Octuple-level mask
+        # else Bar-level mask
+        # if element_level=True, element-level mask
+        # else Octuple-level mask
+        # TODO
+        # more detailed mask, like mask 1/8, 1/4, 1/2, 1/1 (1/n) bar
+        def TokenMask(input_ids: torch.Tensor, mask_percent,n=-1,element_level=False):
+            def generate_mask(sz, prob):
+                mask_n = np.random.rand(sz)
+                mask_s = np.zeros(sz, dtype=np.int8)
+                mask_s += mask_n < prob * 0.1  # 3 -> random
+                mask_s += mask_n < prob * 0.1 # 2 -> original
+                mask_s += mask_n < prob * 1.00  # 1 -> [mask]
+                return mask_s
+            if n==0:
+                if not element_level:
+                    loss_mask = torch.zeros(self.max_seq_len)
+                    mask_ind = random.sample(self.Lseq, round(self.max_seq_len * mask_percent))
+                    mask80 = random.sample(mask_ind, round(len(mask_ind) * 0.8))
+                    left = list(set(mask_ind) - set(mask80))
+                    rand10 = random.sample(left, round(len(mask_ind) * 0.1))
+                    cur10 = list(set(left) - set(rand10))
+                    input_ids_mask = copy.deepcopy(input_ids)
+                    for i in mask80:
+                        mask_word = torch.tensor(self.pianobart.mask_word_np).to(self.device)
+                        input_ids_mask[i] = mask_word
+                        loss_mask[i] = 1
+                    for i in rand10:
+                        rand_word = torch.tensor(self.pianobart.get_rand_tok()).to(self.device)
+                        input_ids_mask[i] = rand_word
+                        loss_mask[i] = 1
+                    for i in cur10:
+                        loss_mask[i] = 1
+                    return input_ids_mask, loss_mask
+                else:
+                    loss_mask = torch.zeros(self.max_seq_len*8)
+                    mask_ind = random.sample(self.Lseq_element, round(self.max_seq_len * mask_percent*8))
+                    mask80 = random.sample(mask_ind, round(len(mask_ind) * 0.8))
+                    left = list(set(mask_ind) - set(mask80))
+                    rand10 = random.sample(left, round(len(mask_ind) * 0.1))
+                    cur10 = list(set(left) - set(rand10))
+                    input_ids_mask = copy.deepcopy(input_ids)
+                    input_ids_mask = input_ids_mask.view(-1)
+                    for i in mask80:
+                        mask_word = torch.tensor(self.pianobart.mask_word_np).to(self.device)
+                        input_ids_mask[i] = mask_word[i % 8]
+                        loss_mask[i] = 1
+                    for i in rand10:
+                        rand_word = torch.tensor(self.pianobart.get_rand_tok()).to(self.device)
+                        input_ids_mask[i] = rand_word[i % 8]
+                        loss_mask[i] = 1
+                    for i in cur10:
+                        loss_mask[i] = 1
+                    input_ids_mask=input_ids_mask.view(-1,8)
+                    loss_mask=loss_mask.view(-1,8)
+                    return input_ids_mask, loss_mask
+            else:
+                if n!=1:
+                    #TODO
+                    pass
+                else:
+                    max_bars=self.pianobart.n_tokens[0]
+                    max_instruments=self.pianobart.n_tokens[2]
+                    input_ids_mask = copy.deepcopy(input_ids)
+                    if element_level:
+                        loss_mask = np.zeros(self.max_seq_len * 8)
+                        input_ids_mask = input_ids_mask.view(-1)
+                        loss_mask[8: -8] = generate_mask((max_bars * max_instruments) * 8, mask_percent).reshape(-1, 8)[((input_ids_mask[8: -8: 8]) * max_instruments) + (input_ids_mask[8 + 2: -8 + 2: 8])].flatten()
+                        loss_mask = torch.tensor(loss_mask)
+                        mask80 = torch.where(loss_mask == 1)[0]
+                        rand10 = torch.where(loss_mask == 3)[0]
+                        cur10 = torch.where(loss_mask == 2)[0]
+                        for i in mask80:
+                            mask_word = torch.tensor(self.pianobart.mask_word_np).to(self.device)
+                            input_ids_mask[i] = mask_word[i % 8]
+                            loss_mask[i] = 1
+                        for i in rand10:
+                            rand_word = torch.tensor(self.pianobart.get_rand_tok()).to(self.device)
+                            input_ids_mask[i] = rand_word[i % 8]
+                            loss_mask[i] = 1
+                        for i in cur10:
+                            loss_mask[i] = 1
+                        input_ids_mask = input_ids_mask.view(-1, 8)
+                        loss_mask = loss_mask.view(-1, 8)
+                        return input_ids_mask, loss_mask
+                    else:
+                        loss_mask = np.zeros(self.max_seq_len)
+                        loss_mask[1: -1] = generate_mask(max_bars, mask_percent)[input_ids_mask[1: -1: 1,0]]
+                        loss_mask = torch.tensor(loss_mask)
+                        mask80 = torch.where(loss_mask == 1)[0]
+                        rand10 = torch.where(loss_mask == 3)[0]
+                        cur10 = torch.where(loss_mask == 2)[0]
+                        for i in mask80:
+                            mask_word = torch.tensor(self.pianobart.mask_word_np).to(self.device)
+                            input_ids_mask[i] = mask_word
+                            loss_mask[i] = 1
+                        for i in rand10:
+                            rand_word = torch.tensor(self.pianobart.get_rand_tok()).to(self.device)
+                            input_ids_mask[i] = rand_word
+                            loss_mask[i] = 1
+                        for i in cur10:
+                            loss_mask[i] = 1
+                        return input_ids_mask, loss_mask
 
-        pass
+        # TODO(choice 3~5)
+        if choice is None:
+            choice=random.randint(1,5)
+        if choice==1:
+            return TokenDeletion(input_ids, self.mask_percent, self.pianobart.pad_word_np)
+        elif choice==2:
+            n = random.randint(0,1)
+            element_level = (random.randint(0,1)==0)
+            return TokenMask(input_ids, self.mask_percent,n,element_level)
+        elif choice==3:
+            pass
+        elif choice==4:
+            pass
+        elif choice==5:
+            pass
 
+
+#test
 if __name__ == '__main__':
     with open('./Data/Octuple.pkl', 'rb') as f:
         e2w, w2e = pickle.load(f)
-    pianobart = PianoBart(bartConfig=BartConfig(max_position_embeddings=32, d_model=48), e2w=e2w, w2e=w2e)
-    
-    p = Pretrainer(pianobart, None, None, 0.01, None, 1024, 0.5, True, None)
-    input_ids = list()
-    for i in range(10):
-        tmp = [j for j in range(8 * i, 8 * (i + 1))]
-        input_ids.append(tmp)
-    input_ids = torch.tensor(input_ids)
-    print(input_ids)
-    print(p.gen_mask(input_ids))
+    pianobart = PianoBart(bartConfig=BartConfig(max_position_embeddings=10, d_model=16), e2w=e2w, w2e=w2e)
+    p = Pretrainer(pianobart, None, None, 0.01, None, 10, 0.5, True, None)
+    print("MASK",pianobart.mask_word_np)
+
+    test_TokenDeletion=False
+    # test for TokenDeletion
+    if test_TokenDeletion:
+        input_ids = list()
+        for i in range(10):
+            tmp = [j for j in range(8 * i, 8 * (i + 1))]
+            input_ids.append(tmp)
+        input_ids = torch.tensor(input_ids)
+        print("input\n", input_ids)
+        print("\ntest for TokenDeletion")
+        input_mask, mask_pos=p.gen_mask(input_ids,1)
+        print(input_mask)
+        print(mask_pos)
+        if mask_pos.size()[-1] != 8:
+            mask_pos = np.repeat(mask_pos[:, np.newaxis], 8, axis=1)
+            print(mask_pos)
+
+    test_TokenMask = False
+    if test_TokenMask:
+        input_ids = list()
+        for i in range(10):
+            tmp = [j for j in range(8 * i, 8 * (i + 1))]
+            if i<5:
+                tmp[0]=0
+                tmp[2]=0
+            else:
+                tmp[0]=100
+                tmp[2]=100
+            input_ids.append(tmp)
+        input_ids = torch.tensor(input_ids)
+        print("input\n", input_ids)
+        # test for TokenMask
+        print("\ntest for TokenMask")
+        input_mask, mask_pos = p.gen_mask(input_ids, 2)
+        print(input_mask)
+        print(mask_pos)
+        if mask_pos.size()[-1] != 8:
+            mask_pos = np.repeat(mask_pos[:, np.newaxis], 8, axis=1)
+            print(mask_pos)

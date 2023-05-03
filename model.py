@@ -6,6 +6,39 @@ import torch.nn as nn
 from transformers import BartModel,BartConfig
 from PianoBart import PianoBart
 import pickle
+from torch.utils.data import Dataset
+
+
+class MidiDataset(Dataset):
+    """
+    Expected data shape: (data_num, data_len)
+    """
+
+    def __init__(self, X):
+        self.data = X
+
+    def __len__(self):
+        return (len(self.data))
+
+    def __getitem__(self, index):
+        return torch.tensor(self.data[index])
+
+
+class FinetuneDataset(Dataset):
+    """
+    Expected data shape: (data_num, data_len)
+    """
+
+    def __init__(self, X, y):
+        self.data = X
+        self.label = y
+
+    def __len__(self):
+        return (len(self.data))
+
+    def __getitem__(self, index):
+        return torch.tensor(self.data[index]), torch.tensor(self.label[index])
+
 
 class PianoBartLM(nn.Module):
     def __init__(self, pianobart: PianoBart):
