@@ -176,7 +176,6 @@ class Pretrainer:
                 # (Bar, Pos, Program, Pitch, Duration, Velocity, TimeSignature, Tempo)
                 masked = copy.deepcopy(input_ids).numpy()
                 barMax = masked[-1,0]
-                print(barMax)
                 length = int(barMax * mask_percent)
                 maskBarPos = [1 if i < length else 0 for i in range(barMax)]
                 random.shuffle(maskBarPos)
@@ -295,7 +294,36 @@ class Pretrainer:
                             loss_mask[i] = 1
                         return input_ids_mask, loss_mask
 
-        # TODO(choice 3~5)
+        def SentencePermutation(input_ids: torch.Tensor):
+            masked = copy.deepcopy(input_ids).numpy()
+            l = masked.shape[0]
+            # maskedPos = [1 if i < l * mask_percent else 0 for i in range(l)]
+            # length = int(l * mask_percent)
+            maskedPos = [0 for i in range(l)]
+            barMax = masked[-1, 0]
+            sentences = dict()
+            sentence = list()
+            nonmasked = list()
+            for i in masked:
+                bar = i[0]
+                if bar not in sentences:
+                    sentences[bar] = list()
+                sentences[bar].append(i)
+                sentence.append(bar)
+                nonmasked.append(bar)
+            sentence = list(set(sentence))
+            random.shuffle(sentence)
+            masked = list()
+            for i in sentence:
+                masked += sentences[i]
+            for i in range(len(nonmasked)):
+                if nonmasked[i] != masked[i][0]:
+                    maskedPos[i] = 1
+            masked = torch.from_numpy(np.array(masked))
+            maskedPos = torch.from_numpy(np.array(maskedPos))
+            return masked, maskedPos
+        
+        # TODO(choice 4, 5)
         if choice is None:
             choice=random.randint(1,5)
         if choice==1:
@@ -305,7 +333,7 @@ class Pretrainer:
             element_level = (random.randint(0,1)==0)
             return TokenMask(input_ids, self.mask_percent,n,element_level)
         elif choice==3:
-            pass
+            return SentencePermutation(input_ids)
         elif choice==4:
             pass
         elif choice==5:
@@ -320,7 +348,7 @@ if __name__ == '__main__':
     p = Pretrainer(pianobart, None, None, 0.01, None, 10, 0.5, True, None)
     print("MASK",pianobart.mask_word_np)
 
-    test_TokenDeletion=False
+    test_TokenDeletion = False
     # test for TokenDeletion
     if test_TokenDeletion:
         input_ids = list()
@@ -354,6 +382,31 @@ if __name__ == '__main__':
         # test for TokenMask
         print("\ntest for TokenMask")
         input_mask, mask_pos = p.gen_mask(input_ids, 2)
+        print(input_mask)
+        print(mask_pos)
+        if mask_pos.size()[-1] != 8:
+            mask_pos = np.repeat(mask_pos[:, np.newaxis], 8, axis=1)
+            print(mask_pos)
+
+
+    test_SentencePermutation = True
+    if test_SentencePermutation:
+        input_ids = list()
+        for i in range(12):
+            tmp = [j for j in range(8 * i, 8 * (i + 1))]
+            if i < 5:
+                # tmp[0]=i//4
+                tmp[2]=0
+            else:
+                # tmp[0]=100
+                tmp[2]=100
+            tmp[0]=i//4
+            input_ids.append(tmp)
+        input_ids = torch.tensor(input_ids)
+        print("input\n", input_ids)
+        # test for SentencePermutation
+        print("\ntest for SentencePermutation")
+        input_mask, mask_pos = p.gen_mask(input_ids, 3)
         print(input_mask)
         print(mask_pos)
         if mask_pos.size()[-1] != 8:
