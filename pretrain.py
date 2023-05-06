@@ -418,7 +418,8 @@ if __name__ == '__main__':
         print("input\n", input_ids)
         print("\ntest for SentencePermutation")
         input_mask, mask_pos = p.gen_mask(input_ids, 3)
+        print(input_mask)
+        print(mask_pos)
         if mask_pos.size()[-1] != 8:
             mask_pos = np.repeat(mask_pos[:, np.newaxis], 8, axis=1)
-            print(input_mask)
             print(mask_pos)
