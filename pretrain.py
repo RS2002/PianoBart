@@ -320,16 +320,16 @@ class Pretrainer:
                     sentences[bar] = list()
                 sentences[bar].append(i)
                 sentence.append(bar)
-                nonmasked.append(bar)
+                nonmasked.append(i)
             sentence = list(set(sentence))
             random.shuffle(sentence)
             masked = list()
             for i in sentence:
                 masked += sentences[i]
-            print(nonmasked)
-            print(masked)
+            '''print(nonmasked)
+            print(masked)'''
             for i in range(len(nonmasked)):
-                if nonmasked[i] != masked[i][0]:
+                if (nonmasked[i] != masked[i]).any():
                     maskedPos[i] = 1
             masked = torch.from_numpy(np.array(masked))
             maskedPos = torch.from_numpy(np.array(maskedPos))
@@ -420,4 +420,5 @@ if __name__ == '__main__':
         input_mask, mask_pos = p.gen_mask(input_ids, 3)
         if mask_pos.size()[-1] != 8:
             mask_pos = np.repeat(mask_pos[:, np.newaxis], 8, axis=1)
+            print(input_mask)
             print(mask_pos)
