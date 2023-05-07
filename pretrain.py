@@ -334,6 +334,46 @@ class Pretrainer:
             masked = torch.from_numpy(np.array(masked))
             maskedPos = torch.from_numpy(np.array(maskedPos))
             return masked, maskedPos
+        def TokenInfilling(input_ids: torch.Tensor, mask_percent, lamda=3):
+            l = input_ids.shape[0]
+            masked = torch.tensor([])
+            masked_tensor=torch.from_numpy(self.pianobart.mask_word_np)#masked的token
+            pad_tensor=torch.from_numpy(self.pianobart.pad_word_np)
+            maskpos = [0 for j in range(l)]
+            while(True):
+                masked = torch.tensor([])
+                maskpos = [0 for j in range(l)]
+                i=0
+                while(i<l):
+                    ran=random.random()
+                    if ran<mask_percent/max(1,lamda):  #控制期望掩蔽的数量是在mask_percent
+                        p=np.random.poisson(lamda)  #泊松采样
+                        #print("p: {}".format(p))
+                        if(p==0):#如果长度为1，则插入一个长度为1的mask
+                            masked = torch.cat((masked, input_ids[i:i+1]), dim=0)
+                            masked = torch.cat((masked, masked_tensor.unsqueeze(0)), dim=0)
+                            i+=1
+                        else:  #否则，跳过p个octuple，只插入一个长度为1的mask
+                            masked = torch.cat((masked, masked_tensor.unsqueeze(0)), dim=0)
+                            maskpos[i:min(i+p,l)] = [1 for j in range(i, min(i+p,l))]
+                            i+=p
+                    else:
+                        masked = torch.cat((masked, input_ids[i:i + 1]), dim=0)
+                        i+=1
+                if(masked.size()[0]<=input_ids.size()[0]):
+                    for j in range(input_ids.size()[0]-masked.size()[0]):
+                        masked = torch.cat((masked, pad_tensor.unsqueeze(0)), dim=0)
+                    break
+            # print(masked.size())
+            maskpos = torch.from_numpy(np.array(maskpos))
+            return masked,maskpos
+        def DocumentRotation(input_ids: torch.Tensor):
+            l = input_ids.shape[0]
+            ran=random.randint(0,l-1)
+            masked = torch.cat((input_ids[ran:], input_ids[0:ran]), dim=0)
+            maskpos = [0 for j in range(l)]  #只是打乱顺序，token均得到保留
+            maskpos = torch.from_numpy(np.array(maskpos))
+            return masked, maskpos
 
         # TODO(choice 4, 5)
         if choice is None:
@@ -347,9 +387,9 @@ class Pretrainer:
         elif choice == 3:
             return SentencePermutation(input_ids)
         elif choice == 4:
-            pass
+            return TokenInfilling(input_ids, self.mask_percent)
         elif choice == 5:
-            pass
+            return DocumentRotation(input_ids)
 
 
 # test
@@ -418,6 +458,37 @@ if __name__ == '__main__':
         print("input\n", input_ids)
         print("\ntest for SentencePermutation")
         input_mask, mask_pos = p.gen_mask(input_ids, 3)
+        print(input_mask)
+        print(mask_pos)
+        if mask_pos.size()[-1] != 8:
+            mask_pos = np.repeat(mask_pos[:, np.newaxis], 8, axis=1)
+            print(mask_pos)
+    test_TokenInfilling = True
+    if test_TokenInfilling:
+        input_ids = list()
+        for i in range(10):
+            tmp = [j for j in range(8 * i, 8 * (i + 1))]
+            input_ids.append(tmp)
+        input_ids = torch.tensor(input_ids)
+        print("input\n", input_ids)
+        print("\ntest for TokenInfilling")
+        input_mask, mask_pos = p.gen_mask(input_ids, 4)
+        print(input_mask)
+        print(mask_pos)
+        if mask_pos.size()[-1] != 8:
+            mask_pos = np.repeat(mask_pos[:, np.newaxis], 8, axis=1)
+            print(mask_pos)
+
+    test_DocumentRotation = True
+    if test_DocumentRotation:
+        input_ids = list()
+        for i in range(10):
+            tmp = [j for j in range(8 * i, 8 * (i + 1))]
+            input_ids.append(tmp)
+        input_ids = torch.tensor(input_ids)
+        print("input\n", input_ids)
+        print("\ntest for DocumentRotation")
+        input_mask, mask_pos = p.gen_mask(input_ids, 5)
         print(input_mask)
         print(mask_pos)
         if mask_pos.size()[-1] != 8:
