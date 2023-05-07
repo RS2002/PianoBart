@@ -334,6 +334,7 @@ class Pretrainer:
             masked = torch.from_numpy(np.array(masked))
             maskedPos = torch.from_numpy(np.array(maskedPos))
             return masked, maskedPos
+
         def TokenInfilling(input_ids: torch.Tensor, mask_percent, lamda=3):
             l = input_ids.shape[0]
             masked = torch.tensor([])
@@ -367,15 +368,18 @@ class Pretrainer:
             # print(masked.size())
             maskpos = torch.from_numpy(np.array(maskpos))
             return masked,maskpos
+
         def DocumentRotation(input_ids: torch.Tensor):
             l = input_ids.shape[0]
             ran=random.randint(0,l-1)
             masked = torch.cat((input_ids[ran:], input_ids[0:ran]), dim=0)
-            maskpos = [0 for j in range(l)]  #只是打乱顺序，token均得到保留
+            if ran!=0:
+                maskpos = [1 for j in range(l)]
+            else:
+                maskpos = [0 for j in range(l)]
             maskpos = torch.from_numpy(np.array(maskpos))
             return masked, maskpos
 
-        # TODO(choice 4, 5)
         if choice is None:
             choice = random.randint(1, 5)
         if choice == 1:
@@ -463,6 +467,8 @@ if __name__ == '__main__':
         if mask_pos.size()[-1] != 8:
             mask_pos = np.repeat(mask_pos[:, np.newaxis], 8, axis=1)
             print(mask_pos)
+
+    # test for SentencePermutation
     test_TokenInfilling = True
     if test_TokenInfilling:
         input_ids = list()
@@ -479,7 +485,8 @@ if __name__ == '__main__':
             mask_pos = np.repeat(mask_pos[:, np.newaxis], 8, axis=1)
             print(mask_pos)
 
-    test_DocumentRotation = True
+    # test for DocumentRotation
+    test_DocumentRotation = False
     if test_DocumentRotation:
         input_ids = list()
         for i in range(10):
