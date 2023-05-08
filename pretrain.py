@@ -341,7 +341,7 @@ class Pretrainer:
             masked_tensor=torch.from_numpy(self.pianobart.mask_word_np)#masked的token
             pad_tensor=torch.from_numpy(self.pianobart.pad_word_np)
             maskpos = [0 for j in range(l)]
-            while(True):
+            for k in range(10): #防止死循环
                 masked = torch.tensor([])
                 maskpos = [0 for j in range(l)]
                 i=0
@@ -365,9 +365,13 @@ class Pretrainer:
                     for j in range(input_ids.size()[0]-masked.size()[0]):
                         masked = torch.cat((masked, pad_tensor.unsqueeze(0)), dim=0)
                     break
+            if masked.size()[0]>input_ids.size()[0]:
+                maskpos = [0 for j in range(l)]
+                masked = copy.deepcopy(input_ids)
             # print(masked.size())
             maskpos = torch.from_numpy(np.array(maskpos))
             return masked,maskpos
+        
 
         def DocumentRotation(input_ids: torch.Tensor):
             l = input_ids.shape[0]
@@ -469,7 +473,7 @@ if __name__ == '__main__':
             print(mask_pos)
 
     # test for SentencePermutation
-    test_TokenInfilling = True
+    test_TokenInfilling = False
     if test_TokenInfilling:
         input_ids = list()
         for i in range(10):
