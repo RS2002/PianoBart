@@ -166,10 +166,10 @@ class Pretrainer:
                     if maskpos[i] == 1:
                         masked = np.delete(masked, i - count, axis=0)
                         count += 1
-                pos=np.where(maskpos==1)[0]
-                if len(pos)>0:
-                    pos=pos[0]
-                    maskpos[pos:]=1
+                pos = np.where(maskpos == 1)[0]
+                if len(pos) > 0:
+                    pos = pos[0]
+                    maskpos[pos:] = 1
                 for i in range(length):
                     masked = np.append(masked, replacement.reshape(1, 8), axis=0)
                 return torch.from_numpy(masked), torch.from_numpy(maskpos)
@@ -267,7 +267,7 @@ class Pretrainer:
                         input_ids_mask = input_ids_mask.view(-1)
                         loss_mask[8: -8] = generate_mask((max_bars * max_instruments) * 8, mask_percent).reshape(-1, 8)[
                             ((input_ids_mask[8: -8: 8]) * max_instruments) + (
-                            input_ids_mask[8 + 2: -8 + 2: 8])].flatten()
+                                input_ids_mask[8 + 2: -8 + 2: 8])].flatten()
                         loss_mask = torch.tensor(loss_mask)
                         mask80 = torch.where(loss_mask == 1)[0]
                         rand10 = torch.where(loss_mask == 3)[0]
@@ -364,7 +364,7 @@ class Pretrainer:
                         for j in range(input_ids.size()[0] - masked.size()[0]):
                             masked = torch.cat((masked, pad_tensor.unsqueeze(0)), dim=0)
                         break
-                    assert k<9,"length of masked input_ids meets error in 10 rounds, please check TokenInfilling"
+                    assert k < 9, "length of masked input_ids meets error in 10 rounds, please check TokenInfilling"
 
                 # print(masked.size())
                 for i in range(len(input_ids)):
@@ -416,8 +416,8 @@ class Pretrainer:
 
                         else:
                             i += 1
-                    print("op_pos:{}".format(op_pos))
-                    print("0: keep origin  1: add mask behind 2: delete  3: mask (line : 420)")
+                    '''print("op_pos:{}".format(op_pos))
+                    print("0: keep origin  1: add mask behind 2: delete  3: mask (line : 420)")'''
                     i = 0
                     while (i < l):
                         if (op_pos[i] == 0):
@@ -440,13 +440,12 @@ class Pretrainer:
                         maskpos[i] = 1
                 maskpos = torch.from_numpy(np.array(maskpos))
                 return masked, maskpos
-        
 
         def DocumentRotation(input_ids: torch.Tensor):
             l = input_ids.shape[0]
-            ran=random.randint(0,l-1)
+            ran = random.randint(0, l - 1)
             masked = torch.cat((input_ids[ran:], input_ids[0:ran]), dim=0)
-            if ran!=0:
+            if ran != 0:
                 maskpos = [1 for j in range(l)]
             else:
                 maskpos = [0 for j in range(l)]
@@ -464,7 +463,8 @@ class Pretrainer:
         elif choice == 3:
             return SentencePermutation(input_ids)
         elif choice == 4:
-            return TokenInfilling(input_ids, self.mask_percent,n=1)
+            n = random.randint(0, 1)
+            return TokenInfilling(input_ids, self.mask_percent, n=n)
         elif choice == 5:
             return DocumentRotation(input_ids)
 
@@ -542,7 +542,7 @@ if __name__ == '__main__':
             print(mask_pos)
 
     # test for SentencePermutation
-    test_TokenInfilling = True
+    test_TokenInfilling = False
     if test_TokenInfilling:
         input_ids = list()
         for i in range(8):
