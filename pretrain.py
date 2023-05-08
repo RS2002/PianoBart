@@ -335,42 +335,111 @@ class Pretrainer:
             maskedPos = torch.from_numpy(np.array(maskedPos))
             return masked, maskedPos
 
-        def TokenInfilling(input_ids: torch.Tensor, mask_percent, lamda=3):
-            l = input_ids.shape[0]
-            masked = torch.tensor([])
-            masked_tensor=torch.from_numpy(self.pianobart.mask_word_np)#masked的token
-            pad_tensor=torch.from_numpy(self.pianobart.pad_word_np)
-            maskpos = [0 for j in range(l)]
-            for k in range(10): #防止死循环
+        def TokenInfilling(input_ids: torch.Tensor, mask_percent, n=0, lamda=3):
+            masked_tensor = torch.from_numpy(self.pianobart.mask_word_np)  # masked的token
+            pad_tensor = torch.from_numpy(self.pianobart.pad_word_np)
+            if n == 0:  # Octuple-level
+                l = input_ids.shape[0]
                 masked = torch.tensor([])
                 maskpos = [0 for j in range(l)]
-                i=0
-                while(i<l):
-                    ran=random.random()
-                    if ran<mask_percent/max(1,lamda):  #控制期望掩蔽的数量是在mask_percent
-                        p=np.random.poisson(lamda)  #泊松采样
-                        #print("p: {}".format(p))
-                        if(p==0):#如果长度为1，则插入一个长度为1的mask
-                            masked = torch.cat((masked, input_ids[i:i+1]), dim=0)
-                            masked = torch.cat((masked, masked_tensor.unsqueeze(0)), dim=0)
-                            i+=1
-                        else:  #否则，跳过p个octuple，只插入一个长度为1的mask
-                            masked = torch.cat((masked, masked_tensor.unsqueeze(0)), dim=0)
-                            maskpos[i:min(i+p,l)] = [1 for j in range(i, min(i+p,l))]
-                            i+=p
-                    else:
-                        masked = torch.cat((masked, input_ids[i:i + 1]), dim=0)
-                        i+=1
-                if(masked.size()[0]<=input_ids.size()[0]):
-                    for j in range(input_ids.size()[0]-masked.size()[0]):
-                        masked = torch.cat((masked, pad_tensor.unsqueeze(0)), dim=0)
-                    break
-            if masked.size()[0]>input_ids.size()[0]:
-                maskpos = [0 for j in range(l)]
+                for k in range(10):
+                    masked = torch.tensor([])
+                    maskpos = [0 for j in range(l)]
+                    i = 0
+                    while (i < l):
+                        ran = random.random()
+                        if ran < mask_percent / max(1, lamda):  # 控制期望掩蔽的数量是在mask_percent
+                            p = np.random.poisson(lamda)  # 泊松采样
+                            if (p == 0):  # 如果长度为1，则插入一个长度为1的mask
+                                masked = torch.cat((masked, input_ids[i:i + 1]), dim=0)
+                                masked = torch.cat((masked, masked_tensor.unsqueeze(0)), dim=0)
+                                i += 1
+                            else:  # 否则，跳过p个octuple，只插入一个长度为1的mask
+                                masked = torch.cat((masked, masked_tensor.unsqueeze(0)), dim=0)
+                                i += p
+                        else:
+                            masked = torch.cat((masked, input_ids[i:i + 1]), dim=0)
+                            i += 1
+                    if (masked.size()[0] <= input_ids.size()[0]):
+                        for j in range(input_ids.size()[0] - masked.size()[0]):
+                            masked = torch.cat((masked, pad_tensor.unsqueeze(0)), dim=0)
+                        break
+                    assert k<9,"length of masked input_ids meets error in 10 rounds, please check TokenInfilling"
+
+                # print(masked.size())
+                for i in range(len(input_ids)):
+                    if (input_ids[i] != masked[i]).any():
+                        maskpos[i] = 1
+                maskpos = torch.from_numpy(np.array(maskpos))
+                return masked, maskpos
+            else:  # Bar-level
+                max_bars = self.pianobart.n_tokens[0]
+                l = input_ids.shape[0]
                 masked = copy.deepcopy(input_ids)
-            # print(masked.size())
-            maskpos = torch.from_numpy(np.array(maskpos))
-            return masked,maskpos
+                maskpos = [0 for j in range(l)]
+                num_mask = round(l * mask_percent)  # 应该mask的octuple数量
+                cnt_bar = np.zeros(max_bars)  # 记录每个bar对应的octuple数量以控制mask数量
+                bar_octuples = [[] for i in range(max_bars)]
+                for i in range(l):
+                    cnt_bar[input_ids[i][0]] += 1
+                    bar_octuples[input_ids[i][0]].append(i)
+                maskpos = torch.tensor(maskpos)
+                for k in range(10):  # 确保mask后的input_ids长度没有增加,否则重新执行(概率很小)
+                    masked = torch.tensor([])
+                    op_pos = [0 for i in range(l)]  # 记录octuple该位置后是0:保留，1:后面填充mask,2:被删除,3:自身变成mask
+                    # poisson_bar=[-1 for i in range(max_bars)]  #记录bar上的泊松采样值
+                    i = 0
+                    num_masked = 0
+                    while (i < max_bars):
+                        ran = random.random()
+                        if ran < (mask_percent / max(1, lamda)):
+                            p = np.random.poisson(lamda)  # 泊松采样
+                            # print("i:{}  p:{}".format(i,p))
+                            if (p == 0):
+                                if (cnt_bar[i] != 0):
+                                    op_pos[bar_octuples[i][-1]] = 1  # 该bar最后一个octuple后填充mask
+                                i += 1
+                            else:
+                                cur_num_mask = sum(cnt_bar[i:min(i + p, max_bars)])  # 当前牵涉到的mask的octuple数量
+                                if ((num_masked + cur_num_mask) <= num_mask):  # 控制mask的octuple数量
+                                    num_masked += cur_num_mask
+                                    first_bar = True
+                                    for j in range(i, min(i + p, max_bars)):
+                                        for k in bar_octuples[j]:
+                                            op_pos[k] = 2
+                                        if ((cnt_bar[j] != 0) & first_bar):
+                                            first_bar = False
+                                            op_pos[bar_octuples[j][0]] = 3  # 首个非空bar的第1个octuple进行掩码
+                                    i += p
+                                else:
+                                    i += 1
+
+                        else:
+                            i += 1
+                    print("op_pos:{}".format(op_pos))
+                    print("0: keep origin  1: add mask behind 2: delete  3: mask (line : 420)")
+                    i = 0
+                    while (i < l):
+                        if (op_pos[i] == 0):
+                            masked = torch.cat((masked, input_ids[i:i + 1]), dim=0)
+                        elif op_pos[i] == 1:  # 后面增加一个mask
+                            masked = torch.cat((masked, input_ids[i:i + 1]), dim=0)
+                            masked = torch.cat((masked, masked_tensor.unsqueeze(0)), dim=0)
+                        elif op_pos[i] == 2:  # 删除
+                            pass
+                        else:  # 自身mask
+                            masked = torch.cat((masked, masked_tensor.unsqueeze(0)), dim=0)
+                        i += 1
+                    if (masked.size()[0] <= input_ids.size()[0]):  # 填充pad
+                        for j in range(input_ids.size()[0] - masked.size()[0]):
+                            masked = torch.cat((masked, pad_tensor.unsqueeze(0)), dim=0)
+                        break
+                    assert k < 9, "length of masked input_ids meets error in 10 rounds, please check TokenInfilling"
+                for i in range(len(input_ids)):  # 求maskpos
+                    if (input_ids[i] != masked[i]).any():
+                        maskpos[i] = 1
+                maskpos = torch.from_numpy(np.array(maskpos))
+                return masked, maskpos
         
 
         def DocumentRotation(input_ids: torch.Tensor):
@@ -395,7 +464,7 @@ class Pretrainer:
         elif choice == 3:
             return SentencePermutation(input_ids)
         elif choice == 4:
-            return TokenInfilling(input_ids, self.mask_percent)
+            return TokenInfilling(input_ids, self.mask_percent,n=1)
         elif choice == 5:
             return DocumentRotation(input_ids)
 
@@ -473,12 +542,15 @@ if __name__ == '__main__':
             print(mask_pos)
 
     # test for SentencePermutation
-    test_TokenInfilling = False
+    test_TokenInfilling = True
     if test_TokenInfilling:
         input_ids = list()
-        for i in range(10):
-            tmp = [j for j in range(8 * i, 8 * (i + 1))]
+        for i in range(8):
+            tmp = [j for j in range(8 * i, 8 * (i + 1))]  # 增加一些相邻的bar
+            tmp2 = [j for j in range(8 * i + 1, 8 * (i + 1) + 1)]
             input_ids.append(tmp)
+            input_ids.append(tmp)
+            input_ids.append(tmp2)
         input_ids = torch.tensor(input_ids)
         print("input\n", input_ids)
         print("\ntest for TokenInfilling")
