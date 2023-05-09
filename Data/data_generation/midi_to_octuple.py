@@ -15,7 +15,7 @@ midi_dict = dict()
 
 
 pos_resolution = 16  # per beat (quarter note)
-bar_max = 256
+bar_max = 255
 velocity_quant = 4
 tempo_quant = 12  # 2 ** (1 / 12)
 min_tempo = 16
@@ -28,15 +28,20 @@ deduplicate = True
 filter_symbolic = False
 filter_symbolic_ppl = 16
 trunc_pos = 2 ** 16  # approx 30 minutes (1024 measures)
-# sample_len_max = 1000  # window length max
-# sample_overlap_rate = 4
+sample_len_max = 1000  # window length max
+sample_overlap_rate = 4
 max_window = 1024
 ts_filter = False
-pool_num = 24
 max_inst = 127
 max_pitch = 127
 max_velocity = 127
+max_pos = 127
+max_dura = 127
+max_ts = 253
+max_tp = 48
 tokens_per_note = 8
+token_boundary = (bar_max, max_pos, max_inst, max_pitch, 
+                    max_dura, max_velocity, max_ts, max_tp)
 
 
 
@@ -295,16 +300,37 @@ def F(file_name):
                 print('ERROR(DUPLICATED): ' + midi_hash + ' ' +
                         file_name + ' == ' + dup_file_name + '\n', end='')
                 return None
-        # not empty
-        if not len(e):
+            
+        output_str_list = []
+        sample_step = max(round(sample_len_max / sample_overlap_rate), 1)
+        for p in range(0 - random.randint(0, sample_len_max - 1), len(e), sample_step):
+            L = max(p, 0)
+            R = min(p + sample_len_max, len(e)) - 1
+            bar_index_list = [e[i][0]
+                            for i in range(L, R + 1) if e[i][0] is not None]
+            bar_index_min = 0
+            bar_index_max = 0
+            if len(bar_index_list) > 0:
+                bar_index_min = min(bar_index_list)
+                bar_index_max = max(bar_index_list)
+            offset_lower_bound = -bar_index_min
+            offset_upper_bound = bar_max - 1 - bar_index_max
+            # to make bar index distribute in [0, bar_max)
+            bar_index_offset = random.randint(
+                offset_lower_bound, offset_upper_bound) if offset_lower_bound <= offset_upper_bound else offset_lower_bound
+            e_segment = []
+            for i in e[L: R + 1]:
+                if i[0] is None or i[0] + bar_index_offset < bar_max:
+                    e_segment.append(i)
+                else:
+                    break
+        # no empty
+        if not all(len(i.split()) > tokens_per_note * 2 - 1 for i in output_str_list):
             print('ERROR(ENCODE): ' + file_name + ' ' + str(e) + '\n', end='')
             return False
         print('SUCCESS: ' + file_name + '\n', end='')
-        # e.append(tuple(['EOS'] * tokens_per_note))
-        # e.insert(0, tuple(['SOS'] * tokens_per_note))
-        e.append((259,131,132,259,131,35,257,52))
-        # e.insert(0, (258,130,131,258,130,34,256,51))
-        return e
+        e_segment.append(tuple([i + 4 for i in token_boundary]))
+        return e_segment
         return True
     except BaseException as ex:
         print('ERROR(PROCESS): ' + file_name + ' ' + str(ex) + '\n', end='')
@@ -327,20 +353,12 @@ def data_split(data: np.array):
     m = data.shape[0] // max_window + 1
     pad_num = m * max_window - data.shape[0]
     # padding
-    padded = np.append(data, [[256,128,129,256,128,32,254,49]]*pad_num,axis=0)
+    padded = np.append(data, [[i + 1 for i in token_boundary]]*pad_num,axis=0)
     return padded.reshape(m, max_window, tokens_per_note)
 
-# def test():
-#     file_name = r'Data\test\001.mid'
-#     midi_obj = miditoolkit.midi.parser.MidiFile(file_name)
-#     e = MIDI_to_encoding(midi_obj)
-#     with open('Data/test/001.txt','w') as f:
-#         f.write(str(e))
-#     o = encoding_to_MIDI(e)
-#     o.dump('Data/test/001_test.mid') # save as midi file
+
     
 if __name__ == '__main__':
-    # test()
     if not os.path.exists(out_path):
         os.mkdir(out_path)
     file_list = [n for n in data_zip.namelist() if n[-4:].lower()
