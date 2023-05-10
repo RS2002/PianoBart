@@ -321,7 +321,9 @@ def F(file_name):
             e_segment = []
             for i in e[L: R + 1]:
                 if i[0] is None or i[0] + bar_index_offset < bar_max:
-                    e_segment.append(i)
+                    t = list(i)
+                    t[0] += bar_index_offset
+                    e_segment.append(tuple(t))
                 else:
                     break
         # no empty
