@@ -83,10 +83,15 @@ class Pretrainer:
             loss_mask = torch.zeros(batch, max_seq_len, 8)
             for b in range(batch):
                 shifted_input_ids = input_ids_encoder[b].new_zeros(input_ids_encoder[b].shape)
-                shifted_input_ids[:, 1:] = input_ids_encoder[b][:, :-1].clone()
-                shifted_input_ids[:, 0] = torch.tensor(self.pianobart.sos_word_np)
+                # print(input_ids_encoder.shape)
+                # print(shifted_input_ids.shape)
+                # print(self.pianobart.sos_word_np.shape)
+                # print(input_ids_encoder[b][:, :-1].shape)
+                shifted_input_ids[1:] = input_ids_encoder[b][:-1, :].clone()
+                shifted_input_ids[0] = torch.tensor(self.pianobart.sos_word_np)
                 input_ids_decoder[b] = shifted_input_ids
-                input_mask, mask_pos = self.gen_mask(input_ids_encoder[b])
+                input_mask, mask_pos = self.gen_mask(input_ids_encoder[b].cpu())
+                input_ids_encoder[b].to(self.device)
                 if mask_pos.size()[-1] != 8:
                     mask_pos = np.repeat(mask_pos[:, np.newaxis], 8, axis=1)
                 input_ids_encoder[b] = input_mask

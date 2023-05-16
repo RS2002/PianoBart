@@ -19,7 +19,7 @@ def get_args():
     parser.add_argument('--name', type=str, default='PianoBart')
 
     ### pre-train dataset ###
-    parser.add_argument("--datasets", type=str, nargs='+', default=[]) #TODO
+    parser.add_argument("--datasets", type=str, nargs='+', default=['asap', 'EMOPIA', 'Pianist8', 'POP1K7', 'POP909']) #TODO
 
     ### parameter setting ###
     parser.add_argument('--num_workers', type=int, default=5)
@@ -43,11 +43,17 @@ def get_args():
 def load_data(datasets,mode):
     if mode=="pretrain":
         to_concat = []
-        root = 'Data/CP_data'
+        root = 'Data/output'
 
+        # for dataset in datasets:
+        #     data = np.load(os.path.join(root, f'{dataset}.npy'), allow_pickle=True)
+        #     print(f'   {dataset}: {data.shape}')
+        #     to_concat.append(data)
         for dataset in datasets:
-            data = np.load(os.path.join(root, f'{dataset}.npy'), allow_pickle=True)
-            print(f'   {dataset}: {data.shape}')
+            data_train = np.load(os.path.join(root, dataset, 'midi_train_split.npy'), allow_pickle = True)
+            data_test = np.load(os.path.join(root, dataset, 'midi_test_split.npy'), allow_pickle = True)
+            data_valid = np.load(os.path.join(root, dataset, 'midi_valid_split.npy'), allow_pickle = True)
+            data = np.concatenate((data_train, data_test, data_valid), axis = 0)
             to_concat.append(data)
 
         training_data = np.vstack(to_concat)
