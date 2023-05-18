@@ -47,6 +47,10 @@ class PianoBartLM(nn.Module):
         self.mask_lm = MLM(self.pianobart.e2w, self.pianobart.n_tokens, self.pianobart.hidden_size)
 
     def forward(self,input_ids_encoder, input_ids_decoder, encoder_attention_mask=None, decoder_attention_mask=None):
+        print(input_ids_encoder.shape)
+        print(input_ids_decoder.shape)
+        print(encoder_attention_mask.shape)
+        print(decoder_attention_mask.shape)
         x = self.pianobart(input_ids_encoder, input_ids_decoder, encoder_attention_mask, decoder_attention_mask)
         return self.mask_lm(x)
 
@@ -72,16 +76,17 @@ class MLM(nn.Module):
 
 #test
 if __name__=='__main__':
+    device = torch.device("cuda")
     config=BartConfig(max_position_embeddings=32, d_model=48)
     with open('./Data/Octuple.pkl', 'rb') as f:
         e2w, w2e = pickle.load(f)
-    piano_bart=PianoBart(config,e2w,w2e)
-    piano_bart_lm=PianoBartLM(piano_bart)
+    piano_bart=PianoBart(config,e2w,w2e).to(device)
+    piano_bart_lm=PianoBartLM(piano_bart).to(device)
     #print(piano_bart_lm)
-    input_ids_encoder = torch.randint(1, 10, (2, 32, 8))
-    input_ids_decoder = torch.randint(1, 10, (2, 32, 8))
-    encoder_attention_mask = torch.zeros((2, 32))
-    decoder_attention_mask = torch.zeros((2, 32))
+    input_ids_encoder = torch.randint(1, 10, (2, 32, 8)).to(device)
+    input_ids_decoder = torch.randint(1, 10, (2, 32, 8)).to(device)
+    encoder_attention_mask = torch.zeros((2, 32)).to(device)
+    decoder_attention_mask = torch.zeros((2, 32)).to(device)
     for j in range(2):
         encoder_attention_mask[j, 31] += 1
         decoder_attention_mask[j, 31] += 1

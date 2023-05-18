@@ -19,7 +19,7 @@ def get_args():
     parser.add_argument('--name', type=str, default='PianoBart')
 
     ### pre-train dataset ###
-    parser.add_argument("--datasets", type=str, nargs='+', default=[]) #TODO
+    parser.add_argument("--datasets", type=str, nargs='+', default=['asap', 'EMOPIA', 'Pianist8', 'POP1K7', 'POP909']) #TODO
 
     ### parameter setting ###
     parser.add_argument('--num_workers', type=int, default=5)
@@ -33,7 +33,7 @@ def get_args():
 
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default: False
-    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[0, 1, 2, 3, 4, 5, 6, 7], help="CUDA device ids")
+    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[0,1], help="CUDA device ids")
 
     args = parser.parse_args()
 
@@ -43,10 +43,17 @@ def get_args():
 def load_data(datasets,mode):
     if mode=="pretrain":
         to_concat = []
-        root = 'Data/CP_data'
+        root = 'Data/output'
 
+        # for dataset in datasets:
+        #     data = np.load(os.path.join(root, f'{dataset}.npy'), allow_pickle=True)
+        #     print(f'   {dataset}: {data.shape}')
+        #     to_concat.append(data)
         for dataset in datasets:
-            data = np.load(os.path.join(root, f'{dataset}.npy'), allow_pickle=True)
+            data_train = np.load(os.path.join(root, dataset, 'midi_train_split.npy'), allow_pickle = True)
+            data_test = np.load(os.path.join(root, dataset, 'midi_test_split.npy'), allow_pickle = True)
+            data_valid = np.load(os.path.join(root, dataset, 'midi_valid_split.npy'), allow_pickle = True)
+            data = np.concatenate((data_train, data_test, data_valid), axis = 0)
             print(f'   {dataset}: {data.shape}')
             to_concat.append(data)
 

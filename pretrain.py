@@ -17,15 +17,24 @@ import pickle
 class Pretrainer:
     def __init__(self, pianobart: PianoBart, train_dataloader, valid_dataloader,
                  lr, batch, max_seq_len, mask_percent, cpu, cuda_devices=None):
-        self.device = torch.device("cuda" if torch.cuda.is_available() and not cpu else 'cpu')
-        self.pianobart = pianobart  # save this for ckpt
+        device_name="cuda"
+        if cuda_devices is not None and len(cuda_devices)>=1:
+            device_name+=":"+str(cuda_devices[0])
+        self.device = torch.device(device_name if torch.cuda.is_available() and not cpu else 'cpu')
+        self.pianobart = pianobart.to(self.device)  # save this for ckpt
         self.model = PianoBartLM(pianobart).to(self.device)
         self.total_params = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
         print('# total parameters:', self.total_params)
 
-        if torch.cuda.device_count() > 1 and not cpu:
-            print("Use %d GPUS" % torch.cuda.device_count())
+        if len(cuda_devices) > 1 and not cpu:
+            print("Use %d GPUS" % len(cuda_devices) )
             self.model = nn.DataParallel(self.model, device_ids=cuda_devices)
+        elif (len(cuda_devices)  == 1 or torch.cuda.is_available()) and not cpu:
+            print("Use GPU" , end=" ")
+            print(self.device)
+        else:
+            print("Use CPU")
+
 
         self.train_data = train_dataloader
         self.valid_data = valid_dataloader
@@ -65,7 +74,9 @@ class Pretrainer:
             shutil.copyfile(filename, best_mdl)
 
     def compute_loss(self, predict, target, loss_mask):
-        loss = self.loss_func(predict, target)
+        print(predict.type)
+        print(target.type)
+        loss = self.loss_func(predict, target.type(torch.LongTensor))
         loss = loss * loss_mask
         loss = torch.sum(loss) / torch.sum(loss_mask)
         return loss
@@ -83,22 +94,51 @@ class Pretrainer:
             loss_mask = torch.zeros(batch, max_seq_len, 8)
             for b in range(batch):
                 shifted_input_ids = input_ids_encoder[b].new_zeros(input_ids_encoder[b].shape)
-                shifted_input_ids[:, 1:] = input_ids_encoder[b][:, :-1].clone()
-                shifted_input_ids[:, 0] = torch.tensor(self.pianobart.sos_word_np)
+                # print(input_ids_encoder.shape)
+                # print(shifted_input_ids.shape)
+                # print(self.pianobart.sos_word_np.shape)
+                # print(input_ids_encoder[b][:, :-1].shape)
+                shifted_input_ids[1:] = input_ids_encoder[b][:-1, :].clone()
+                shifted_input_ids[0] = torch.tensor(self.pianobart.sos_word_np)
                 input_ids_decoder[b] = shifted_input_ids
-                input_mask, mask_pos = self.gen_mask(input_ids_encoder[b])
+                input_mask, mask_pos = self.gen_mask(input_ids_encoder[b].cpu())
                 if mask_pos.size()[-1] != 8:
                     mask_pos = np.repeat(mask_pos[:, np.newaxis], 8, axis=1)
                 input_ids_encoder[b] = input_mask
                 loss_mask[b] = mask_pos
 
+            input_ids_encoder = input_ids_encoder.to(self.device)
+            input_ids_decoder = input_ids_decoder.to(self.device)
             loss_mask = loss_mask.to(self.device)
             # avoid attend to pad word
+            print(input_ids_encoder.shape)
             encoder_attention_mask = (input_ids_encoder[:, :, 0] != self.pianobart.bar_pad_word).float().to(
                 self.device)  # (batch, seq_len)
             decoder_attention_mask = (input_ids_decoder[:, :, 0] != self.pianobart.bar_pad_word).float().to(self.device)
 
+            print(input_ids_encoder.shape)
+            print(input_ids_decoder.shape)
+            print(encoder_attention_mask.shape)
+            print(decoder_attention_mask.shape)
+
+            print(input_ids_encoder.device)
+            print(input_ids_decoder.device)
+            print(encoder_attention_mask.device)
+            print(encoder_attention_mask.device)
+
+            # tmp_tensor = torch.zeros_like(input_ids_encoder.shape).to(self.device)
+            # tmp_tensor1 = torch.zeros_like(input_ids_decoder.shape).to(self.device)
+            # tmp_tensor2 = torch.zeros_like(encoder_attention_mask.shape).to(self.device)
+            # tmp_tensor3 = torch.zeros_like(encoder_attention_mask.shape).to(self.device)
+
+
+
+            # y = []
+            # for ids in range(input_ids_encoder.shape[0]):
+            #     y_t = self.model.forward(input_ids_encoder[ids], input_ids_decoder[ids], encoder_attention_mask, decoder_attention_mask)
+            #     y.append(y_t)
             y = self.model.forward(input_ids_encoder, input_ids_decoder, encoder_attention_mask, decoder_attention_mask)
+            # y = torch.Tensor(y).to(self.device)
 
             # get the most likely choice with max
             outputs = []
@@ -154,7 +194,7 @@ class Pretrainer:
         # TODO
         # more detailed mask, like mask 1/8, 1/4, 1/2, 1/1 (1/n)
         def TokenDeletion(input_ids: torch.Tensor, mask_percent, replacement: np.array, n=-1):
-            def deleteOctuple(input_ids: torch.Tensor, mask_percent, replacement: torch.Tensor):
+            def deleteOctuple(input_ids: torch.Tensor, mask_percent, replacement: np.array):
                 l = input_ids.shape[0]
                 length = int(l * mask_percent)
                 maskpos = [1 if i < length else 0 for i in range(l)]
@@ -454,6 +494,8 @@ class Pretrainer:
 
         if choice is None:
             choice = random.randint(1, 5)
+            # choice = 1
+        print(f'choice = {choice}')
         if choice == 1:
             return TokenDeletion(input_ids, self.mask_percent, self.pianobart.pad_word_np)
         elif choice == 2:
@@ -461,6 +503,8 @@ class Pretrainer:
             element_level = (random.randint(0, 1) == 0)
             return TokenMask(input_ids, self.mask_percent, n, element_level)
         elif choice == 3:
+            # ASSERTED TRIGGER
+            # IndexError: too many indices for tensor of dimension 2
             return SentencePermutation(input_ids)
         elif choice == 4:
             n = random.randint(0, 1)
