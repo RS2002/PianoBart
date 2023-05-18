@@ -33,7 +33,7 @@ def get_args():
 
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default: False
-    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[0, 1, 2, 3, 4, 5, 6, 7], help="CUDA device ids")
+    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[0,1], help="CUDA device ids")
 
     args = parser.parse_args()
 
@@ -54,6 +54,7 @@ def load_data(datasets,mode):
             data_test = np.load(os.path.join(root, dataset, 'midi_test_split.npy'), allow_pickle = True)
             data_valid = np.load(os.path.join(root, dataset, 'midi_valid_split.npy'), allow_pickle = True)
             data = np.concatenate((data_train, data_test, data_valid), axis = 0)
+            print(f'   {dataset}: {data.shape}')
             to_concat.append(data)
 
         training_data = np.vstack(to_concat)
