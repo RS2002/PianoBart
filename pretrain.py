@@ -74,8 +74,8 @@ class Pretrainer:
             shutil.copyfile(filename, best_mdl)
 
     def compute_loss(self, predict, target, loss_mask):
-        print(predict.type)
-        print(target.type)
+        '''print(predict.type)
+        print(target.type)'''
         loss = self.loss_func(predict, target.type(torch.LongTensor))
         loss = loss * loss_mask
         loss = torch.sum(loss) / torch.sum(loss_mask)
@@ -111,27 +111,24 @@ class Pretrainer:
             input_ids_decoder = input_ids_decoder.to(self.device)
             loss_mask = loss_mask.to(self.device)
             # avoid attend to pad word
-            print(input_ids_encoder.shape)
+            #print(input_ids_encoder.shape)
             encoder_attention_mask = (input_ids_encoder[:, :, 0] != self.pianobart.bar_pad_word).float().to(
                 self.device)  # (batch, seq_len)
             decoder_attention_mask = (input_ids_decoder[:, :, 0] != self.pianobart.bar_pad_word).float().to(self.device)
 
-            print(input_ids_encoder.shape)
+            '''print(input_ids_encoder.shape)
             print(input_ids_decoder.shape)
             print(encoder_attention_mask.shape)
             print(decoder_attention_mask.shape)
-
             print(input_ids_encoder.device)
             print(input_ids_decoder.device)
             print(encoder_attention_mask.device)
-            print(encoder_attention_mask.device)
+            print(encoder_attention_mask.device)'''
 
             # tmp_tensor = torch.zeros_like(input_ids_encoder.shape).to(self.device)
             # tmp_tensor1 = torch.zeros_like(input_ids_decoder.shape).to(self.device)
             # tmp_tensor2 = torch.zeros_like(encoder_attention_mask.shape).to(self.device)
             # tmp_tensor3 = torch.zeros_like(encoder_attention_mask.shape).to(self.device)
-
-
 
             # y = []
             # for ids in range(input_ids_encoder.shape[0]):
@@ -179,8 +176,10 @@ class Pretrainer:
             # acc
             accs = list(map(float, all_acc))
             sys.stdout.write(
-                'Loss: {:06f} | loss: {:03f}, {:03f}, {:03f}, {:03f} | acc: {:03f}, {:03f}, {:03f}, {:03f} \r'.format(
-                    total_loss, *losses, *accs))
+                'Loss: {:06f} | loss: {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f} | '.format(
+                    total_loss, *losses))
+            sys.stdout.write(
+                'acc: {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f} \r'.format(*accs))
 
             losses = list(map(float, losses))
             total_losses += total_loss.item()
