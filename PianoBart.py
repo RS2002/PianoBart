@@ -44,7 +44,7 @@ class PianoBart(nn.Module):
         # word_emb: embeddings to change token ids into embeddings
         self.word_emb = []
         for i, key in enumerate(self.classes):  # 将每个特征都Embedding到256维，Embedding参数是可学习的
-            self.word_emb.append(Embeddings(512, self.emb_sizes[i]))
+            self.word_emb.append(Embeddings(self.n_tokens[i], self.emb_sizes[i]))
         self.word_emb = nn.ModuleList(self.word_emb)
 
         # linear layer to merge embeddings from different token types
