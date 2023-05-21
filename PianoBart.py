@@ -57,15 +57,15 @@ class PianoBart(nn.Module):
         encoder_embs = []
         decoder_embs = []
         for i, key in enumerate(self.classes):
-            print(self.word_emb[i])
+            #print(self.word_emb[i])
             encoder_embs.append(self.word_emb[i](input_ids_encoder[..., i]))
             decoder_embs.append(self.word_emb[i](input_ids_decoder[..., i]))
         encoder_embs = torch.cat([*encoder_embs], dim=-1)
         emb_linear_encoder = self.encoder_linear(encoder_embs)
         decoder_embs = torch.cat([*decoder_embs], dim=-1)
         emb_linear_decoder = self.decoder_linear(decoder_embs)
-        print('emb_lin', emb_linear_encoder.shape)
-        print('emb_lin_dec', emb_linear_decoder.shape)
+        '''print('emb_lin', emb_linear_encoder.shape)
+        print('emb_lin_dec', emb_linear_decoder.shape)'''
         # feed to bart
         y = self.bart(inputs_embeds=emb_linear_encoder, decoder_inputs_embeds=emb_linear_decoder, attention_mask=encoder_attention_mask, decoder_attention_mask=decoder_attention_mask, output_hidden_states=output_hidden_states) #attention_mask用于屏蔽<PAD> (PAD作用是在结尾补齐长度)
         # y = y.last_hidden_state         # (batch_size, seq_len, 1536)
