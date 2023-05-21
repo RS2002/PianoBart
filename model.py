@@ -47,10 +47,10 @@ class PianoBartLM(nn.Module):
         self.mask_lm = MLM(self.pianobart.e2w, self.pianobart.n_tokens, self.pianobart.hidden_size)
 
     def forward(self,input_ids_encoder, input_ids_decoder, encoder_attention_mask=None, decoder_attention_mask=None):
-        print(input_ids_encoder.shape)
+        '''print(input_ids_encoder.shape)
         print(input_ids_decoder.shape)
         print(encoder_attention_mask.shape)
-        print(decoder_attention_mask.shape)
+        print(decoder_attention_mask.shape)'''
         x = self.pianobart(input_ids_encoder, input_ids_decoder, encoder_attention_mask, decoder_attention_mask)
         return self.mask_lm(x)
 
