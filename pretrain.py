@@ -494,7 +494,7 @@ class Pretrainer:
         if choice is None:
             choice = random.randint(1, 5)
             # choice = 1
-        print(f'choice = {choice}')
+        # print(f'choice = {choice}')
         if choice == 1:
             return TokenDeletion(input_ids, self.mask_percent, self.pianobart.pad_word_np)
         elif choice == 2:
