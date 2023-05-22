@@ -124,7 +124,6 @@ class Pretrainer:
             print(input_ids_decoder.device)
             print(encoder_attention_mask.device)
             print(encoder_attention_mask.device)'''
-
             # tmp_tensor = torch.zeros_like(input_ids_encoder.shape).to(self.device)
             # tmp_tensor1 = torch.zeros_like(input_ids_decoder.shape).to(self.device)
             # tmp_tensor2 = torch.zeros_like(encoder_attention_mask.shape).to(self.device)

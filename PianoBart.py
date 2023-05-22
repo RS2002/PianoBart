@@ -50,24 +50,32 @@ class PianoBart(nn.Module):
         # linear layer to merge embeddings from different token types
         self.encoder_linear = nn.Linear(np.sum(self.emb_sizes), bartConfig.d_model)
         self.decoder_linear = self.encoder_linear
+        self.decoder_emb=None
         #self.decoder_linear= nn.Linear(np.sum(self.emb_sizes), bartConfig.d_model)
 
-    def forward(self, input_ids_encoder, input_ids_decoder, encoder_attention_mask=None, decoder_attention_mask=None, output_hidden_states=True):
+    def forward(self, input_ids_encoder, input_ids_decoder=None, encoder_attention_mask=None, decoder_attention_mask=None, output_hidden_states=True):
         # convert input_ids into embeddings and merge them through linear layer
         encoder_embs = []
         decoder_embs = []
         for i, key in enumerate(self.classes):
             #print(self.word_emb[i])
             encoder_embs.append(self.word_emb[i](input_ids_encoder[..., i]))
-            decoder_embs.append(self.word_emb[i](input_ids_decoder[..., i]))
+            if self.decoder_emb is None and input_ids_decoder is not None:
+                decoder_embs.append(self.word_emb[i](input_ids_decoder[..., i]))
+        if self.decoder_emb is not None and input_ids_decoder is not None:
+            decoder_embs.append(self.decoder_emb(input_ids_decoder))
         encoder_embs = torch.cat([*encoder_embs], dim=-1)
         emb_linear_encoder = self.encoder_linear(encoder_embs)
-        decoder_embs = torch.cat([*decoder_embs], dim=-1)
-        emb_linear_decoder = self.decoder_linear(decoder_embs)
+        if input_ids_decoder is not None:
+            decoder_embs = torch.cat([*decoder_embs], dim=-1)
+            emb_linear_decoder = self.decoder_linear(decoder_embs)
         '''print('emb_lin', emb_linear_encoder.shape)
         print('emb_lin_dec', emb_linear_decoder.shape)'''
         # feed to bart
-        y = self.bart(inputs_embeds=emb_linear_encoder, decoder_inputs_embeds=emb_linear_decoder, attention_mask=encoder_attention_mask, decoder_attention_mask=decoder_attention_mask, output_hidden_states=output_hidden_states) #attention_mask用于屏蔽<PAD> (PAD作用是在结尾补齐长度)
+        if input_ids_decoder is not None:
+            y = self.bart(inputs_embeds=emb_linear_encoder, decoder_inputs_embeds=emb_linear_decoder, attention_mask=encoder_attention_mask, decoder_attention_mask=decoder_attention_mask, output_hidden_states=output_hidden_states) #attention_mask用于屏蔽<PAD> (PAD作用是在结尾补齐长度)
+        else:
+            y=self.bart.encoder(inputs_embeds=emb_linear_encoder,attention_mask=encoder_attention_mask)
         # y = y.last_hidden_state         # (batch_size, seq_len, 1536)
         return y
 
@@ -77,14 +85,21 @@ class PianoBart(nn.Module):
             rand[i]=random.choice(range(self.n_tokens[i]))
         return np.array(rand)
 
+    def change_decoder_embedding(self,new_embedding):
+        self.decoder_emb=new_embedding
+
+
 #test
 if __name__=='__main__':
-    device = torch.device("cuda")
+    device = torch.device("cuda" if torch.cuda.is_available() else 'cpu')
     config=BartConfig(max_position_embeddings=32, d_model=48)
     with open('./Data/Octuple.pkl', 'rb') as f:
         e2w, w2e = pickle.load(f)
     piano_bart=PianoBart(config,e2w,w2e).to(device)
     #print(piano_bart)
+
+    '''state=torch.load("./test/parameters_origion")
+    piano_bart.load_state_dict(state["state_dict"])'''
     input_ids_encoder = torch.randint(1, 10, (2, 32, 8)).to(device)
     input_ids_decoder = torch.randint(1, 10, (2, 32, 8)).to(device)
     encoder_attention_mask = torch.zeros((2, 32)).to(device)
@@ -95,3 +110,19 @@ if __name__=='__main__':
         decoder_attention_mask[j, 30] += 1
     output=piano_bart(input_ids_encoder,input_ids_decoder,encoder_attention_mask,decoder_attention_mask)
     print(output.last_hidden_state.size())
+    output=piano_bart(input_ids_encoder=input_ids_encoder, input_ids_decoder=None, encoder_attention_mask=encoder_attention_mask, decoder_attention_mask=None)
+    print(output.last_hidden_state.size())
+    '''state={'state_dict': piano_bart.state_dict()}
+    torch.save(state, "./test/parameters_origion")'''
+
+
+    input_ids_decoder = torch.randint(1, 10, (2, 32)).to(device)
+    new_embedding=Embeddings(n_token=10,d_model=np.sum(piano_bart.emb_sizes)).to(device)
+    piano_bart.change_decoder_embedding(new_embedding)
+    '''state = torch.load("./test/parameters_change")
+    piano_bart.load_state_dict(state["state_dict"])'''
+    output = piano_bart(input_ids_encoder, input_ids_decoder, encoder_attention_mask, decoder_attention_mask)
+    print(output.last_hidden_state.size())
+    '''state={'state_dict': piano_bart.state_dict()}
+    torch.save(state, "./test/parameters_change")'''
+
