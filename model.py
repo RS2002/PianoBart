@@ -6,39 +6,7 @@ import torch.nn as nn
 from transformers import BartModel,BartConfig
 from PianoBart import PianoBart,Embeddings
 import pickle
-from torch.utils.data import Dataset
 import torch.nn.functional as F
-
-
-class MidiDataset(Dataset):
-    """
-    Expected data shape: (data_num, data_len)
-    """
-
-    def __init__(self, X):
-        self.data = X
-
-    def __len__(self):
-        return (len(self.data))
-
-    def __getitem__(self, index):
-        return torch.tensor(self.data[index])
-
-
-class FinetuneDataset(Dataset):
-    """
-    Expected data shape: (data_num, data_len)
-    """
-
-    def __init__(self, X, y):
-        self.data = X
-        self.label = y
-
-    def __len__(self):
-        return (len(self.data))
-
-    def __getitem__(self, index):
-        return torch.tensor(self.data[index]), torch.tensor(self.label[index])
 
 
 class PianoBartLM(nn.Module):
@@ -141,6 +109,7 @@ if __name__=='__main__':
         e2w, w2e = pickle.load(f)
     piano_bart=PianoBart(config,e2w,w2e).to(device)
     input_ids_encoder = torch.randint(1, 10, (2, 32, 8)).to(device)
+    print("输入维度:",input_ids_encoder.size())
     input_ids_decoder = torch.randint(1, 10, (2, 32, 8)).to(device)
     label = torch.randint(1, 10, (2, 32)).to(device)
     encoder_attention_mask = torch.zeros((2, 32)).to(device)
@@ -156,6 +125,7 @@ if __name__=='__main__':
         piano_bart_lm=PianoBartLM(piano_bart).to(device)
         #print(piano_bart_lm)
         output=piano_bart_lm(input_ids_encoder,input_ids_decoder,encoder_attention_mask,decoder_attention_mask)
+        print("输出维度:")
         for temp in output:
             print(temp.size())
 
@@ -164,11 +134,11 @@ if __name__=='__main__':
         print("test Token Classifier")
         piano_bart_token_classifier=TokenClassification(pianobart=piano_bart, class_num=10, hs=48)
         output=piano_bart_token_classifier(input_ids_encoder,label,encoder_attention_mask,decoder_attention_mask)
-        print(output.size())
+        print("输出维度:",output.size())
 
     test_SequenceClassifier=False
     if test_SequenceClassifier:
         print("test Sequence Classifier")
         piano_bart_sequence_classifier=SequenceClassification(pianobart=piano_bart, class_num=10, hs=48)
         output=piano_bart_sequence_classifier(input_ids_encoder,encoder_attention_mask)
-        print(output.size())
+        print("输出维度:",output.size())

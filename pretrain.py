@@ -12,7 +12,8 @@ from PianoBart import PianoBart
 from model import PianoBartLM
 from transformers import BartConfig
 import pickle
-
+import argparse
+import os
 
 class Pretrainer:
     def __init__(self, pianobart: PianoBart, train_dataloader, valid_dataloader,
@@ -78,6 +79,7 @@ class Pretrainer:
         print(target.type)'''
         loss = self.loss_func(predict, target.type(torch.LongTensor))
         loss = loss * loss_mask
+        #TODO: add weights for different attributes
         loss = torch.sum(loss) / torch.sum(loss_mask)
         return loss
 
@@ -510,6 +512,65 @@ class Pretrainer:
         elif choice == 5:
             return DocumentRotation(input_ids)
 
+
+def get_args_pretrain():
+    parser = argparse.ArgumentParser(description='')
+
+    ### path setup ###
+    parser.add_argument('--dict_file', type=str, default='./Data/Octuple.pkl')
+    parser.add_argument('--name', type=str, default='PianoBart')
+
+    ### pre-train dataset ###
+    parser.add_argument("--datasets", type=str, nargs='+', default=['asap', 'EMOPIA', 'Pianist8', 'POP1K7', 'POP909']) #TODO
+
+    ### parameter setting ###
+    parser.add_argument('--num_workers', type=int, default=5)
+    parser.add_argument('--batch_size', type=int, default=12)
+    parser.add_argument('--mask_percent', type=float, default=0.15,
+                        help="Up to `valid_seq_len * target_max_percent` tokens will be masked out for prediction")
+    parser.add_argument('--max_seq_len', type=int, default=1024, help='all sequences are padded to `max_seq_len`')
+    parser.add_argument('--hs', type=int, default=1536)  # hidden state
+    parser.add_argument('--epochs', type=int, default=500, help='number of training epochs')
+    parser.add_argument('--lr', type=float, default=2e-5, help='initial learning rate')
+
+    ### cuda ###
+    parser.add_argument("--cpu", action="store_true")  # default: False
+    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[0,1], help="CUDA device ids")
+
+    args = parser.parse_args()
+
+    return args
+
+
+def load_data_pretrain(datasets,mode):
+    if mode=="pretrain":
+        to_concat = []
+        root = 'Data/output'
+
+        # for dataset in datasets:
+        #     data = np.load(os.path.join(root, f'{dataset}.npy'), allow_pickle=True)
+        #     print(f'   {dataset}: {data.shape}')
+        #     to_concat.append(data)
+        for dataset in datasets:
+            data_train = np.load(os.path.join(root, dataset, 'midi_train_split.npy'), allow_pickle = True)
+            data_test = np.load(os.path.join(root, dataset, 'midi_test_split.npy'), allow_pickle = True)
+            data_valid = np.load(os.path.join(root, dataset, 'midi_valid_split.npy'), allow_pickle = True)
+            data = np.concatenate((data_train, data_test, data_valid), axis = 0)
+            print(f'   {dataset}: {data.shape}')
+            to_concat.append(data)
+
+        training_data = np.vstack(to_concat)
+        print('   > all training data:', training_data.shape)
+        # shuffle during training phase
+        index = np.arange(len(training_data))
+        np.random.shuffle(index)
+        training_data = training_data[index]
+        split = int(len(training_data) * 0.85)
+        X_train, X_val = training_data[:split], training_data[split:]
+        return X_train, X_val
+
+    else:
+        return None
 
 # test
 if __name__ == '__main__':
