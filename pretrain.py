@@ -15,6 +15,39 @@ import pickle
 import argparse
 import os
 
+def get_args_pretrain():
+    parser = argparse.ArgumentParser(description='')
+
+    ### path setup ###
+    parser.add_argument('--dict_file', type=str, default='./Data/Octuple.pkl')
+    parser.add_argument('--name', type=str, default='PianoBart')
+
+    ### pre-train dataset ###
+    parser.add_argument("--datasets", type=str, nargs='+', default=['asap', 'EMOPIA', 'Pianist8', 'POP1K7', 'POP909']) #TODO
+
+    ### parameter setting ###
+    parser.add_argument('--num_workers', type=int, default=5)
+    parser.add_argument('--batch_size', type=int, default=2)
+    parser.add_argument('--mask_percent', type=float, default=0.15,
+                        help="Up to `valid_seq_len * target_max_percent` tokens will be masked out for prediction")
+    parser.add_argument('--max_seq_len', type=int, default=1024, help='all sequences are padded to `max_seq_len`')
+    parser.add_argument('--hs', type=int, default=1024)  # hidden state
+    parser.add_argument('--layers', type=int, default=8)  # layer nums of encoder & decoder
+    parser.add_argument('--ffn_dims', type=int, default=2048)  # FFN dims
+    parser.add_argument('--heads', type=int, default=8)  # attention heads
+
+    parser.add_argument('--epochs', type=int, default=500, help='number of training epochs')
+    parser.add_argument('--lr', type=float, default=2e-5, help='initial learning rate')
+
+    ### cuda ###
+    parser.add_argument("--cpu", action="store_true")  # default: False
+    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[0,1], help="CUDA device ids")
+
+    args = parser.parse_args()
+
+    return args
+
+
 class Pretrainer:
     def __init__(self, pianobart: PianoBart, train_dataloader, valid_dataloader,
                  lr, batch, max_seq_len, mask_percent, cpu, cuda_devices=None):
@@ -177,10 +210,10 @@ class Pretrainer:
             # acc
             accs = list(map(float, all_acc))
             sys.stdout.write(
-                'Loss: {:06f} | loss: {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f} | '.format(
+                'Loss: {:06f} | loss: {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}\n'.format(
                     total_loss, *losses))
             sys.stdout.write(
-                'acc: {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f} \r'.format(*accs))
+                'Acc: {:06f} | acc: {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}\n'.format(np.average(accs),*accs))
 
             losses = list(map(float, losses))
             total_losses += total_loss.item()
@@ -511,36 +544,6 @@ class Pretrainer:
             return TokenInfilling(input_ids, self.mask_percent, n=n)
         elif choice == 5:
             return DocumentRotation(input_ids)
-
-
-def get_args_pretrain():
-    parser = argparse.ArgumentParser(description='')
-
-    ### path setup ###
-    parser.add_argument('--dict_file', type=str, default='./Data/Octuple.pkl')
-    parser.add_argument('--name', type=str, default='PianoBart')
-
-    ### pre-train dataset ###
-    parser.add_argument("--datasets", type=str, nargs='+', default=['asap', 'EMOPIA', 'Pianist8', 'POP1K7', 'POP909']) #TODO
-
-    ### parameter setting ###
-    parser.add_argument('--num_workers', type=int, default=5)
-    parser.add_argument('--batch_size', type=int, default=12)
-    parser.add_argument('--mask_percent', type=float, default=0.15,
-                        help="Up to `valid_seq_len * target_max_percent` tokens will be masked out for prediction")
-    parser.add_argument('--max_seq_len', type=int, default=1024, help='all sequences are padded to `max_seq_len`')
-    parser.add_argument('--hs', type=int, default=1536)  # hidden state
-    parser.add_argument('--epochs', type=int, default=500, help='number of training epochs')
-    parser.add_argument('--lr', type=float, default=2e-5, help='initial learning rate')
-
-    ### cuda ###
-    parser.add_argument("--cpu", action="store_true")  # default: False
-    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[0,1], help="CUDA device ids")
-
-    args = parser.parse_args()
-
-    return args
-
 
 def load_data_pretrain(datasets,mode):
     if mode=="pretrain":

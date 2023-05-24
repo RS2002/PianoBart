@@ -39,8 +39,11 @@ def get_args_eval():
     parser.add_argument('--num_workers', type=int, default=5)
     parser.add_argument('--class_num', type=int)
     parser.add_argument('--batch_size', type=int, default=12)
-    parser.add_argument('--max_seq_len', type=int, default=512, help='all sequences are padded to `max_seq_len`')
-    parser.add_argument('--hs', type=int, default=768)
+    parser.add_argument('--max_seq_len', type=int, default=1024, help='all sequences are padded to `max_seq_len`')
+    parser.add_argument('--hs', type=int, default=1024)
+    parser.add_argument('--layers', type=int, default=8)  # layer nums of encoder & decoder
+    parser.add_argument('--ffn_dims', type=int, default=2048)  # FFN dims
+    parser.add_argument('--heads', type=int, default=8)  # attention heads
     parser.add_argument("--index_layer", type=int, default=12, help="number of layers")
     parser.add_argument('--lr', type=float, default=2e-5, help='initial learning rate')
 

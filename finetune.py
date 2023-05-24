@@ -9,6 +9,48 @@ import os
 import argparse
 from model import TokenClassification, SequenceClassification
 
+def get_args_finetune():
+    parser = argparse.ArgumentParser(description='')
+
+    ### mode ###
+    parser.add_argument('--task', choices=['melody', 'velocity', 'composer', 'emotion'], required=True)
+    ### path setup ###
+    parser.add_argument('--dict_file', type=str, default='data_creation/prepare_data/dict/CP.pkl')
+    parser.add_argument('--name', type=str, default='')
+    parser.add_argument('--ckpt', default='result/pretrain/default/model_best.ckpt')
+
+    ### parameter setting ###
+    parser.add_argument('--num_workers', type=int, default=5)
+    parser.add_argument('--class_num', type=int)
+    parser.add_argument('--batch_size', type=int, default=2)
+    parser.add_argument('--max_seq_len', type=int, default=1024, help='all sequences are padded to `max_seq_len`')
+    parser.add_argument('--hs', type=int, default=1024)
+    parser.add_argument('--layers', type=int, default=8)  # layer nums of encoder & decoder
+    parser.add_argument('--ffn_dims', type=int, default=2048)  # FFN dims
+    parser.add_argument('--heads', type=int, default=8)  # attention heads
+    parser.add_argument("--index_layer", type=int, default=12, help="number of layers")
+    parser.add_argument('--epochs', type=int, default=10, help='number of training epochs')
+    parser.add_argument('--lr', type=float, default=2e-5, help='initial learning rate')
+    parser.add_argument('--nopretrain', action="store_true")  # default: false
+
+    ### cuda ###
+    parser.add_argument("--cpu", action="store_true")  # default=False
+    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[0, 1, 2, 3], help="CUDA device ids")
+
+    args = parser.parse_args()
+
+    if args.task == 'melody':
+        args.class_num = 4
+    elif args.task == 'velocity':
+        args.class_num = 7
+    elif args.task == 'composer':
+        args.class_num = 8
+    elif args.task == 'emotion':
+        args.class_num = 4
+
+    return args
+
+
 
 class FinetuneTrainer:
     def __init__(self, pianobart, train_dataloader, valid_dataloader, test_dataloader, layer,
@@ -157,45 +199,6 @@ class FinetuneTrainer:
 
         if is_best:
             shutil.copyfile(filename, best_mdl)
-
-
-def get_args_finetune():
-    parser = argparse.ArgumentParser(description='')
-
-    ### mode ###
-    parser.add_argument('--task', choices=['melody', 'velocity', 'composer', 'emotion'], required=True)
-    ### path setup ###
-    parser.add_argument('--dict_file', type=str, default='data_creation/prepare_data/dict/CP.pkl')
-    parser.add_argument('--name', type=str, default='')
-    parser.add_argument('--ckpt', default='result/pretrain/default/model_best.ckpt')
-
-    ### parameter setting ###
-    parser.add_argument('--num_workers', type=int, default=5)
-    parser.add_argument('--class_num', type=int)
-    parser.add_argument('--batch_size', type=int, default=12)
-    parser.add_argument('--max_seq_len', type=int, default=512, help='all sequences are padded to `max_seq_len`')
-    parser.add_argument('--hs', type=int, default=768)
-    parser.add_argument("--index_layer", type=int, default=12, help="number of layers")
-    parser.add_argument('--epochs', type=int, default=10, help='number of training epochs')
-    parser.add_argument('--lr', type=float, default=2e-5, help='initial learning rate')
-    parser.add_argument('--nopretrain', action="store_true")  # default: false
-
-    ### cuda ###
-    parser.add_argument("--cpu", action="store_true")  # default=False
-    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[0, 1, 2, 3], help="CUDA device ids")
-
-    args = parser.parse_args()
-
-    if args.task == 'melody':
-        args.class_num = 4
-    elif args.task == 'velocity':
-        args.class_num = 7
-    elif args.task == 'composer':
-        args.class_num = 8
-    elif args.task == 'emotion':
-        args.class_num = 4
-
-    return args
 
 
 def load_data_finetune(dataset, task):

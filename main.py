@@ -33,7 +33,14 @@ def pretrain():
 
     print("\nBuilding BART model")
     configuration = BartConfig(max_position_embeddings=args.max_seq_len,
-                               d_model=args.hs)
+                               d_model=args.hs,
+                               encoder_layers=args.layers,
+                               encoder_ffn_dim=args.ffn_dims,
+                               encoder_attention_heads=args.heads,
+                               decoder_layers=args.layers,
+                               decoder_ffn_dim=args.ffn_dims,
+                               decoder_attention_heads=args.heads
+                               )
 
     pianobart = PianoBart(bartConfig=configuration, e2w=e2w, w2e=w2e)
     print("\nCreating BART Trainer")
@@ -118,7 +125,14 @@ def finetune():
 
     print("\nBuilding BART model")
     configuration = BartConfig(max_position_embeddings=args.max_seq_len,
-                               d_model=args.hs)
+                               d_model=args.hs,
+                               encoder_layers=args.layers,
+                               encoder_ffn_dim=args.ffn_dims,
+                               encoder_attention_heads=args.heads,
+                               decoder_layers=args.layers,
+                               decoder_ffn_dim=args.ffn_dims,
+                               decoder_attention_heads=args.heads
+                               )
 
     pianobart = PianoBart(bartConfig=configuration, e2w=e2w, w2e=w2e)
 
@@ -196,7 +210,14 @@ def eval():
 
     print("\nBuilding BART model")
     configuration = BartConfig(max_position_embeddings=args.max_seq_len,
-                               d_model=args.hs)
+                               d_model=args.hs,
+                               encoder_layers=args.layers,
+                               encoder_ffn_dim=args.ffn_dims,
+                               encoder_attention_heads=args.heads,
+                               decoder_layers=args.layers,
+                               decoder_ffn_dim=args.ffn_dims,
+                               decoder_attention_heads=args.heads
+                               )
 
     pianobart = PianoBart(bartConfig=configuration, e2w=e2w, w2e=w2e)
 
