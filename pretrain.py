@@ -110,7 +110,7 @@ class Pretrainer:
     def compute_loss(self, predict, target, loss_mask):
         '''print(predict.type)
         print(target.type)'''
-        loss = self.loss_func(predict, target.type(torch.LongTensor))
+        loss = self.loss_func(predict, target)
         loss = loss * loss_mask
         #TODO: add weights for different attributes
         loss = torch.sum(loss) / torch.sum(loss_mask)
@@ -123,7 +123,7 @@ class Pretrainer:
 
         for ori_seq_batch in pbar:
             batch = ori_seq_batch.shape[0]
-            ori_seq_batch = ori_seq_batch.to(self.device)  # (batch, seq_len, 8)
+            ori_seq_batch = ori_seq_batch.type(torch.LongTensor).to(self.device)  # (batch, seq_len, 8)
             input_ids_encoder = copy.deepcopy(ori_seq_batch)
             input_ids_decoder = torch.zeros_like(input_ids_encoder)
             loss_mask = torch.zeros(batch, max_seq_len, 8)
