@@ -10,7 +10,7 @@ Some parts of our code borrows from [muzic/musicbert at main · microsoft/muzic 
 
 ## 1. Dataset
 
-###1.1 Pretrain
+### 1.1 Pretrain
 
 Our pretraining dataset includes POP1K7, ASAP, POP909, Pianist8, and EMOPIA.
 
