@@ -4,10 +4,10 @@ import tqdm
 import torch
 import torch.nn as nn
 from transformers import AdamW
-from torch.nn.utils import clip_grad_norm_
 import os
 import argparse
 from model import TokenClassification, SequenceClassification
+# from torch.nn.utils import clip_grad_norm_
 
 def get_args_finetune():
     parser = argparse.ArgumentParser(description='')
@@ -15,7 +15,7 @@ def get_args_finetune():
     ### mode ###
     parser.add_argument('--task', choices=['melody', 'velocity', 'composer', 'emotion'], required=True)
     ### path setup ###
-    parser.add_argument('--dict_file', type=str, default='data_creation/prepare_data/dict/CP.pkl')
+    parser.add_argument('--dict_file', type=str, default='./Data/Octuple.pkl')
     parser.add_argument('--name', type=str, default='')
     parser.add_argument('--ckpt', default='result/pretrain/default/model_best.ckpt')
 
@@ -28,7 +28,7 @@ def get_args_finetune():
     parser.add_argument('--layers', type=int, default=8)  # layer nums of encoder & decoder
     parser.add_argument('--ffn_dims', type=int, default=2048)  # FFN dims
     parser.add_argument('--heads', type=int, default=8)  # attention heads
-    parser.add_argument("--index_layer", type=int, default=12, help="number of layers")
+
     parser.add_argument('--epochs', type=int, default=10, help='number of training epochs')
     parser.add_argument('--lr', type=float, default=2e-5, help='initial learning rate')
     parser.add_argument('--nopretrain', action="store_true")  # default: false
@@ -53,7 +53,7 @@ def get_args_finetune():
 
 
 class FinetuneTrainer:
-    def __init__(self, pianobart, train_dataloader, valid_dataloader, test_dataloader, layer,
+    def __init__(self, pianobart, train_dataloader, valid_dataloader, test_dataloader,
                  lr, class_num, hs, testset_shape, cpu, cuda_devices=None, model=None, SeqClass=False):
 
         device_name = "cuda"
@@ -63,7 +63,6 @@ class FinetuneTrainer:
         print('   device:', self.device)
         self.pianobart = pianobart
         self.SeqClass = SeqClass
-        self.layer = layer
 
         if model != None:  # load model
             print('load a fine-tuned model')
@@ -144,9 +143,9 @@ class FinetuneTrainer:
                 # TODO:shift y/attn (0表示pad？)
                 y_shift = torch.zeros_like(y)
                 attn_shift = torch.zeros_like(attn)
-                y_shift[:,:,1:] = y[:,:,:-1]
-                attn_shift[:, :, 1:] = attn[:, :, :-1]
-                attn_shift[:,:,0]=attn[:,:,0]
+                y_shift[:,1:] = y[:,:-1]
+                attn_shift[:, 1:] = attn[:, :-1]
+                attn_shift[:,0]=attn[:,0]
                 y_hat = self.model.forward(input_ids_encoder=x, input_ids_decoder=y_shift, encoder_attention_mask=attn, decoder_attention_mask=attn_shift)
 
             # get the most likely choice with max
@@ -202,7 +201,7 @@ class FinetuneTrainer:
 
 
 def load_data_finetune(dataset, task):
-    data_root = 'Data/CP_data'
+    data_root = 'Data/finetune/others'
 
     if dataset == 'emotion':
         dataset = 'emopia'

@@ -4,25 +4,12 @@ Return loss, accuracy, confusion matrix.
 """
 import argparse
 import numpy as np
-import random
-import pickle
 import os
-import copy
-import shutil
-import json
 from sklearn.metrics import confusion_matrix
 import matplotlib.pyplot as plt
 import itertools
 
 
-from torch.utils.data import DataLoader
-import torch
-import torch.nn as nn
-from transformers import BartConfig
-
-from finetune import FinetuneTrainer
-from dataset import FinetuneDataset
-from model import PianoBart,TokenClassification, SequenceClassification
 
 
 def get_args_eval():
@@ -32,7 +19,7 @@ def get_args_eval():
     parser.add_argument('--task', choices=['melody', 'velocity', 'composer', 'emotion'], required=True)
 
     ### path setup ###
-    parser.add_argument('--dict_file', type=str, default='data_creation/prepare_data/dict/CP.pkl')
+    parser.add_argument('--dict_file', type=str, default='./Data/Octuple.pkl')
     parser.add_argument('--ckpt', type=str, default='')
 
     ### parameter setting ###
@@ -44,7 +31,6 @@ def get_args_eval():
     parser.add_argument('--layers', type=int, default=8)  # layer nums of encoder & decoder
     parser.add_argument('--ffn_dims', type=int, default=2048)  # FFN dims
     parser.add_argument('--heads', type=int, default=8)  # attention heads
-    parser.add_argument("--index_layer", type=int, default=12, help="number of layers")
     parser.add_argument('--lr', type=float, default=2e-5, help='initial learning rate')
 
     ### cuda ###
@@ -72,7 +58,7 @@ def get_args_eval():
 
 
 def load_data_eval(dataset, task):
-    data_root = 'Data/CP_data'
+    data_root = 'Data/finetune/others'
 
     if dataset == 'emotion':
         dataset = 'emopia'
@@ -121,7 +107,7 @@ def conf_mat(_y, output, task, outdir):
 
     cm = confusion_matrix(_y, output)
 
-    _title = 'BERT (CP): ' + task + ' task'
+    _title = 'BART (OCTUPLE): ' + task + ' task'
 
     save_cm_fig(cm, classes=target_names, normalize=False,
                 title=_title, outdir=outdir, seq=seq)
