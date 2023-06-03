@@ -75,7 +75,8 @@ class GenerationTrainer:
 
 
         self.optim = AdamW(self.model.parameters(), lr=lr, weight_decay=0.01)
-        self.loss_func = nn.CrossEntropyLoss(reduction='none')
+        self.loss_func = nn.NLLLoss()
+        # self.loss_func = nn.CrossEntropyLoss(reduction='none')
 
 
 
