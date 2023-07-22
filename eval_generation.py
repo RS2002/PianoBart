@@ -27,5 +27,8 @@ def get_args_eval_generation():
 
     args = parser.parse_args()
 
+    root = 'result/finetune/'
+    args.ckpt = root + 'generation_pianobart/model_best.ckpt' if args.ckpt == '' else args.ckpt
+
 
     return args

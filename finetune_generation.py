@@ -18,8 +18,8 @@ def get_args_generation():
 
     ### path setup ###
     parser.add_argument('--dict_file', type=str, default='./Data/Octuple.pkl')
-    parser.add_argument('--name', type=str, default='')
-    parser.add_argument('--ckpt', default='result/pretrain/default/model_best.ckpt')
+    parser.add_argument('--name', type=str, default='pianobart')
+    parser.add_argument('--ckpt', default='result/pretrain/pianobart/model_best.ckpt')
 
     ### parameter setting ###
     parser.add_argument('--num_workers', type=int, default=5)
@@ -76,7 +76,7 @@ class GenerationTrainer:
 
         self.optim = AdamW(self.model.parameters(), lr=lr, weight_decay=0.01)
         self.loss_func = nn.NLLLoss()
-        # self.loss_func = nn.CrossEntropyLoss(reduction='none')
+        #self.loss_func = nn.CrossEntropyLoss(reduction='none')
 
 
 

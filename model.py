@@ -119,7 +119,7 @@ if __name__=='__main__':
         decoder_attention_mask[j, 31] += 1
         decoder_attention_mask[j, 30] += 1
 
-    test_PianoBart=False
+    test_PianoBart=True
     if test_PianoBart:
         print("test PianoBart")
         piano_bart_lm=PianoBartLM(piano_bart).to(device)

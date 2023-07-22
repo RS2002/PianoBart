@@ -16,8 +16,8 @@ def get_args_finetune():
     parser.add_argument('--task', choices=['melody', 'velocity', 'composer', 'emotion'], required=True)
     ### path setup ###
     parser.add_argument('--dict_file', type=str, default='./Data/Octuple.pkl')
-    parser.add_argument('--name', type=str, default='')
-    parser.add_argument('--ckpt', default='result/pretrain/default/model_best.ckpt')
+    parser.add_argument('--name', type=str, default='pianobart')
+    parser.add_argument('--ckpt', default='result/pretrain/pianobart/model_best.ckpt')
 
     ### parameter setting ###
     parser.add_argument('--num_workers', type=int, default=5)

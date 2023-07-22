@@ -51,7 +51,7 @@ def pretrain():
                           args.mask_percent, args.cpu, args.cuda_devices)
 
     print("\nTraining Start")
-    save_dir = 'PianoBart/result/pretrain/' + args.name
+    save_dir = '/result/pretrain/' + args.name
     os.makedirs(save_dir, exist_ok=True)
     filename = os.path.join(save_dir, 'model.ckpt')
     print("   save model at {}".format(filename))

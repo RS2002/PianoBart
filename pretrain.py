@@ -20,7 +20,7 @@ def get_args_pretrain():
 
     ### path setup ###
     parser.add_argument('--dict_file', type=str, default='./Data/Octuple.pkl')
-    parser.add_argument('--name', type=str, default='PianoBart')
+    parser.add_argument('--name', type=str, default='pianobart')
 
     ### pre-train dataset ###
     parser.add_argument("--datasets", type=str, nargs='+', default=['asap', 'EMOPIA', 'Pianist8', 'POP1K7', 'POP909']) #TODO
