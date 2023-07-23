@@ -203,6 +203,7 @@ class FinetuneTrainer:
 def load_data_finetune(dataset, task):
     data_root = 'Data/finetune/others'
 
+
     if dataset == 'emotion':
         dataset = 'emopia'
 
@@ -210,20 +211,31 @@ def load_data_finetune(dataset, task):
         print(f'Dataset {dataset} not supported')
         exit(1)
 
-    X_train = np.load(os.path.join(data_root, f'{dataset}_train.npy'), allow_pickle=True)
-    X_val = np.load(os.path.join(data_root, f'{dataset}_valid.npy'), allow_pickle=True)
-    X_test = np.load(os.path.join(data_root, f'{dataset}_test.npy'), allow_pickle=True)
 
-    print('X_train: {}, X_valid: {}, X_test: {}'.format(X_train.shape, X_val.shape, X_test.shape))
 
-    if dataset == 'pop909':
+    if task=="gen":
+        X_train = np.load(os.path.join(data_root, f'{dataset}_train_gen.npy'), allow_pickle=True)
+        X_val = np.load(os.path.join(data_root, f'{dataset}_valid_gen.npy'), allow_pickle=True)
+        X_test = np.load(os.path.join(data_root, f'{dataset}_test_gen.npy'), allow_pickle=True)
+
+        print('X_train: {}, X_valid: {}, X_test: {}'.format(X_train.shape, X_val.shape, X_test.shape))
         y_train = np.load(os.path.join(data_root, f'{dataset}_train_{task[:3]}ans.npy'), allow_pickle=True)
         y_val = np.load(os.path.join(data_root, f'{dataset}_valid_{task[:3]}ans.npy'), allow_pickle=True)
         y_test = np.load(os.path.join(data_root, f'{dataset}_test_{task[:3]}ans.npy'), allow_pickle=True)
     else:
-        y_train = np.load(os.path.join(data_root, f'{dataset}_train_ans.npy'), allow_pickle=True)
-        y_val = np.load(os.path.join(data_root, f'{dataset}_valid_ans.npy'), allow_pickle=True)
-        y_test = np.load(os.path.join(data_root, f'{dataset}_test_ans.npy'), allow_pickle=True)
+        X_train = np.load(os.path.join(data_root, f'{dataset}_train.npy'), allow_pickle=True)
+        X_val = np.load(os.path.join(data_root, f'{dataset}_valid.npy'), allow_pickle=True)
+        X_test = np.load(os.path.join(data_root, f'{dataset}_test.npy'), allow_pickle=True)
+
+        print('X_train: {}, X_valid: {}, X_test: {}'.format(X_train.shape, X_val.shape, X_test.shape))
+        if dataset == 'pop909':
+            y_train = np.load(os.path.join(data_root, f'{dataset}_train_{task[:3]}ans.npy'), allow_pickle=True)
+            y_val = np.load(os.path.join(data_root, f'{dataset}_valid_{task[:3]}ans.npy'), allow_pickle=True)
+            y_test = np.load(os.path.join(data_root, f'{dataset}_test_{task[:3]}ans.npy'), allow_pickle=True)
+        else:
+            y_train = np.load(os.path.join(data_root, f'{dataset}_train_ans.npy'), allow_pickle=True)
+            y_val = np.load(os.path.join(data_root, f'{dataset}_valid_ans.npy'), allow_pickle=True)
+            y_test = np.load(os.path.join(data_root, f'{dataset}_test_ans.npy'), allow_pickle=True)
 
     print('y_train: {}, y_valid: {}, y_test: {}'.format(y_train.shape, y_val.shape, y_test.shape))
 

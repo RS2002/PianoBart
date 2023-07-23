@@ -11,7 +11,7 @@ import torch
 from dataset import MidiDataset,FinetuneDataset
 from model import TokenClassification,SequenceClassification,PianoBartLM
 from eval import get_args_eval,load_data_eval,conf_mat
-from finetune_generation import get_args_generation,GenerationTrainer,load_data_finetune_generation
+from finetune_generation import get_args_generation,GenerationTrainer
 from eval_generation import get_args_eval_generation
 # import json
 
@@ -51,7 +51,7 @@ def pretrain():
                           args.mask_percent, args.cpu, args.cuda_devices)
 
     print("\nTraining Start")
-    save_dir = '/result/pretrain/' + args.name
+    save_dir = 'result/pretrain/' + args.name
     os.makedirs(save_dir, exist_ok=True)
     filename = os.path.join(save_dir, 'model.ckpt')
     print("   save model at {}".format(filename))
@@ -295,7 +295,7 @@ def finetune_generation():
         e2w, w2e = pickle.load(f)
 
     print("\nLoading Dataset")
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune_generation(datasets=args.datasets,mode="finetune")
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(datasets=args.datasets,mode="gen")
 
     trainset = FinetuneDataset(X=X_train, y=y_train)
     validset = FinetuneDataset(X=X_val, y=y_val)
@@ -408,7 +408,7 @@ def eval_generation():
 
     print("\nLoading Dataset")
 
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune_generation(args.dataset, "finetune")
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(args.dataset, "gen")
 
     '''trainset = FinetuneDataset(X=X_train, y=y_train)
     validset = FinetuneDataset(X=X_val, y=y_val)'''

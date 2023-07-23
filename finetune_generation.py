@@ -118,6 +118,7 @@ class GenerationTrainer:
             attn_encoder = (x[:, :, 0] != self.pianobart.bar_pad_word).float().to(self.device)
             y_shift = torch.zeros_like(y)
             y_shift[:, 1:,:] = y[:, :-1,:]
+            y_shift[:, 0:,:] = torch.tensor(self.pianobart.sos_word_np)
             attn_decoder = (y_shift[:, :, 0] != self.pianobart.bar_pad_word).float().to(self.device)
             y_hat = self.model.forward(input_ids_encoder=x, input_ids_decoder=y_shift, encoder_attention_mask=attn_encoder,decoder_attention_mask=attn_decoder)
 
@@ -194,32 +195,3 @@ class GenerationTrainer:
         if is_best:
             shutil.copyfile(filename, best_mdl)
 
-
-def load_data_finetune_generation(datasets,mode):
-    if mode=="finetune":
-        to_concat = []
-        root = 'Data/finetune/generation'
-
-        # for dataset in datasets:
-        #     data = np.load(os.path.join(root, f'{dataset}.npy'), allow_pickle=True)
-        #     print(f'   {dataset}: {data.shape}')
-        #     to_concat.append(data)
-        for dataset in datasets:
-            data_train = np.load(os.path.join(root, dataset, 'midi_train_split.npy'), allow_pickle = True)
-            data_test = np.load(os.path.join(root, dataset, 'midi_test_split.npy'), allow_pickle = True)
-            data_valid = np.load(os.path.join(root, dataset, 'midi_valid_split.npy'), allow_pickle = True)
-            data = np.concatenate((data_train, data_test, data_valid), axis = 0)
-            print(f'   {dataset}: {data.shape}')
-            to_concat.append(data)
-
-        training_data = np.vstack(to_concat)
-        print('   > all training data:', training_data.shape)
-        # shuffle during training phase
-        index = np.arange(len(training_data))
-        np.random.shuffle(index)
-        training_data = training_data[index]
-        split = int(len(training_data) * 0.85)
-        X_train, X_val = training_data[:split], training_data[split:]
-        return X_train, X_val
-    else:
-        return None

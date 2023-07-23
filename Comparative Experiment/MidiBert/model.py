@@ -137,7 +137,7 @@ if __name__=='__main__':
         output=piano_bart_token_classifier(input_ids_encoder,encoder_attention_mask)
         print("输出维度:",output.size())
 
-    test_SequenceClassifier=False
+    test_SequenceClassifier=True
     if test_SequenceClassifier:
         print("test Sequence Classifier")
         piano_bart_sequence_classifier=SequenceClassification(midibert=midibert, class_num=10, hs=48)
