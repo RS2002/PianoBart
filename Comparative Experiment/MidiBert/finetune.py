@@ -5,9 +5,8 @@ import torch
 import torch.nn as nn
 from transformers import AdamW
 import os
-import argparse
 from model import TokenClassification, SequenceClassification
-# from torch.nn.utils import clip_grad_norm_
+import argparse
 
 def get_args_finetune():
     parser = argparse.ArgumentParser(description='')
@@ -15,20 +14,17 @@ def get_args_finetune():
     ### mode ###
     parser.add_argument('--task', choices=['melody', 'velocity', 'composer', 'emotion'], required=True)
     ### path setup ###
-    parser.add_argument('--dict_file', type=str, default='./Data/Octuple.pkl')
-    parser.add_argument('--name', type=str, default='pianobart')
-    parser.add_argument('--ckpt', default='result/pretrain/pianobart/model_best.ckpt')
+    parser.add_argument('--dict_file', type=str, default='../../Data/Octuple.pkl')
+    parser.add_argument('--name', type=str, default='')
+    parser.add_argument('--ckpt', default='result/pretrain/midibert/model_best.ckpt')
 
     ### parameter setting ###
     parser.add_argument('--num_workers', type=int, default=5)
     parser.add_argument('--class_num', type=int)
-    parser.add_argument('--batch_size', type=int, default=2)
-    parser.add_argument('--max_seq_len', type=int, default=1024, help='all sequences are padded to `max_seq_len`')
-    parser.add_argument('--hs', type=int, default=1024)
-    parser.add_argument('--layers', type=int, default=8)  # layer nums of encoder & decoder
-    parser.add_argument('--ffn_dims', type=int, default=2048)  # FFN dims
-    parser.add_argument('--heads', type=int, default=8)  # attention heads
-
+    parser.add_argument('--batch_size', type=int, default=12)
+    parser.add_argument('--max_seq_len', type=int, default=512, help='all sequences are padded to `max_seq_len`')
+    parser.add_argument('--hs', type=int, default=768)
+    parser.add_argument("--index_layer", type=int, default=12, help="number of layers")
     parser.add_argument('--epochs', type=int, default=10, help='number of training epochs')
     parser.add_argument('--lr', type=float, default=2e-5, help='initial learning rate')
     parser.add_argument('--nopretrain', action="store_true")  # default: false
@@ -53,16 +49,16 @@ def get_args_finetune():
 
 
 class FinetuneTrainer:
-    def __init__(self, pianobart, train_dataloader, valid_dataloader, test_dataloader,
+    def __init__(self, midibert, train_dataloader, valid_dataloader, test_dataloader, layer,
                  lr, class_num, hs, testset_shape, cpu, cuda_devices=None, model=None, SeqClass=False):
-
         device_name = "cuda"
         if cuda_devices is not None and len(cuda_devices) >= 1:
             device_name += ":" + str(cuda_devices[0])
         self.device = torch.device(device_name if torch.cuda.is_available() and not cpu else 'cpu')
         print('   device:', self.device)
-        self.pianobart = pianobart
+        self.midibert = midibert
         self.SeqClass = SeqClass
+        self.layer=layer
 
         if model != None:  # load model
             print('load a fine-tuned model')
@@ -70,9 +66,9 @@ class FinetuneTrainer:
         else:
             print('init a fine-tune model, sequence-level task?', SeqClass)
             if SeqClass:
-                self.model = SequenceClassification(self.pianobart, class_num, hs).to(self.device)
+                self.model = SequenceClassification(self.midibert, class_num, hs).to(self.device)
             else:
-                self.model = TokenClassification(self.pianobart, class_num, hs).to(self.device)
+                self.model = TokenClassification(self.midibert, class_num, hs).to(self.device)
 
         #        for name, param in self.model.named_parameters():
         #            if 'midibert.bert' in name:
@@ -133,20 +129,19 @@ class FinetuneTrainer:
         for x, y in pbar:  # (batch, 512, 768)
             batch = x.shape[0]
             x, y = x.to(self.device), y.to(self.device)  # seq: (batch, 512, 4), (batch) / token: , (batch, 512)
+            x[:, :, 2] = 0
+            x[:, :, 5] = 0
+            x[:, :, 6] = 0
+            x[:, :, 7] = 0
+
 
             # avoid attend to pad word
-            attn = (x[:, :, 0] != self.pianobart.bar_pad_word).float().to(self.device)  # (batch, seq_len)
-
-            if seq:
-                y_hat = self.model.forward(input_ids_encoder=x, encoder_attention_mask=attn)  # seq: (batch, class_num) / token: (batch, 512, class_num)
+            if not seq:
+                attn = (y != 0).float().to(self.device)  # (batch,512)
             else:
-                # TODO:shift y/attn (0表示pad？)
-                y_shift = torch.zeros_like(y)-1
-                attn_shift = torch.zeros_like(attn)
-                y_shift[:,1:] = y[:,:-1]
-                attn_shift[:, 1:] = attn[:, :-1]
-                attn_shift[:,0]=attn[:,0]
-                y_hat = self.model.forward(input_ids_encoder=x, input_ids_decoder=y_shift, encoder_attention_mask=attn, decoder_attention_mask=attn_shift)
+                attn = torch.ones((batch, 512)).to(self.device)  # attend each of them
+
+            y_hat = self.model.forward(x, attn, self.layer)  # seq: (batch, class_num) / token: (batch, 512, class_num)
 
             # get the most likely choice with max
             output = np.argmax(y_hat.cpu().detach().numpy(), axis=-1)
@@ -199,9 +194,8 @@ class FinetuneTrainer:
         if is_best:
             shutil.copyfile(filename, best_mdl)
 
-
 def load_data_finetune(dataset, task):
-    data_root = 'Data/finetune/others'
+    data_root = '../../Data/finetune/others'
 
 
     if dataset == 'emotion':
