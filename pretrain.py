@@ -27,7 +27,7 @@ def get_args_pretrain():
 
     ### parameter setting ###
     parser.add_argument('--num_workers', type=int, default=5)
-    parser.add_argument('--batch_size', type=int, default=2)
+    parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--mask_percent', type=float, default=0.15,
                         help="Up to `valid_seq_len * target_max_percent` tokens will be masked out for prediction")
     parser.add_argument('--max_seq_len', type=int, default=1024, help='all sequences are padded to `max_seq_len`')
@@ -41,7 +41,7 @@ def get_args_pretrain():
 
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default: False
-    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[0,1], help="CUDA device ids")
+    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[2,3,5], help="CUDA device ids")
 
     args = parser.parse_args()
 
@@ -534,6 +534,11 @@ class Pretrainer:
         elif choice == 2:
             n = random.randint(0, 1)
             element_level = (random.randint(0, 1) == 0)
+
+            # ablation study
+            '''n=0
+            element_level=False'''
+
             return TokenMask(input_ids, self.mask_percent, n, element_level)
         elif choice == 3:
             # ASSERTED TRIGGER
@@ -541,6 +546,10 @@ class Pretrainer:
             return SentencePermutation(input_ids)
         elif choice == 4:
             n = random.randint(0, 1)
+
+            # ablation study
+            '''n=0'''
+
             return TokenInfilling(input_ids, self.mask_percent, n=n)
         elif choice == 5:
             return DocumentRotation(input_ids)
