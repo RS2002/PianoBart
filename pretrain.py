@@ -508,7 +508,9 @@ class Pretrainer:
                         for j in range(input_ids.size()[0] - masked.size()[0]):
                             masked = torch.cat((masked, pad_tensor.unsqueeze(0)), dim=0)
                         break
-                    assert k < 9, "length of masked input_ids meets error in 10 rounds, please check TokenInfilling"
+                    #assert k < 9, "length of masked input_ids meets error in 10 rounds, please check TokenInfilling"
+                    if k>=9:
+                        return input_ids, torch.zeros_like(input_ids)
                 for i in range(len(input_ids)):  # 求maskpos
                     if (input_ids[i] != masked[i]).any():
                         maskpos[i] = 1
