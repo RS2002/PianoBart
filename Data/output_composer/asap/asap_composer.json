@@ -1,0 +1,18 @@
+{
+    "Scriabin": 0,
+    "Bach": 1,
+    "Beethoven": 2,
+    "Ravel": 3,
+    "Schubert": 4,
+    "Chopin": 5,
+    "Prokofiev": 6,
+    "Balakirev": 7,
+    "Glinka": 8,
+    "Mozart": 9,
+    "Schumann": 10,
+    "Rachmaninoff": 11,
+    "Haydn": 12,
+    "Brahms": 13,
+    "Debussy": 14,
+    "Liszt": 15
+}

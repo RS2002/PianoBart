@@ -5,13 +5,18 @@ import miditoolkit
 import math
 import hashlib
 import numpy as np
-
+import re
 dataset = input("Please input the dataset for generation: ")
 data_path = f'Data/{dataset}'
 data_zip = zipfile.ZipFile(data_path+'.zip', 'r')
-out_path = f'Data/output/{dataset}'
+out_path = f'Data/output_composer'
+if not os.path.exists(out_path):
+    os.mkdir(out_path)
+out_path = os.path.join(out_path, dataset)
 output_file = None
 midi_dict = dict()
+task = input("Please input the task task ? (default to pretrain) ")
+
 
 
 pos_resolution = 16  # per beat (quarter note)
@@ -42,7 +47,6 @@ max_tp = 48
 tokens_per_note = 8
 token_boundary = (bar_max, max_pos, max_inst, max_pitch, 
                     max_dura, max_velocity, max_ts, max_tp)
-
 
 
 # (0 Measure, 1 Pos, 2 Program, 3 Pitch, 4 Duration, 5 Velocity, 6 TimeSig, 7 Tempo)
@@ -332,6 +336,16 @@ def F(file_name):
             return False
         print('SUCCESS: ' + file_name + '\n', end='')
         e_segment.append(tuple([i + 4 for i in token_boundary]))
+        if task == 'composer':
+            pad_num = max_window -  len(e_segment)
+            for i in range(pad_num):
+                e_segment.append(tuple([i + 1 for i in token_boundary]))
+            if dataset == 'asap':
+                pattern = r"./(.*?)/."
+                composer = re.search(pattern, file_name).group(1)
+            elif dataset == 'Pianist8':
+                composer = re.search(r"/([^/]+)/(.*?)/(.*?)_", file_name).group(2)
+            return e_segment, composer
         return e_segment
         return True
     except BaseException as ex:
@@ -340,6 +354,16 @@ def F(file_name):
     print('ERROR(GENERAL): ' + file_name + '\n', end='')
     return False
 
+def G_composer(file_name, output: list, ans: list):
+    try:
+        ret, comp = F(file_name)
+        if ret:
+            output.append(ret)
+            ans.append(comp)            
+            return True
+    except BaseException as e:
+        print('ERROR(UNCAUGHT): ' + file_name + '\n', end='')
+        return False
 
 def G(file_name, output: list):
     try:
@@ -355,7 +379,7 @@ def data_split(data: np.array):
     m = data.shape[0] // max_window + 1
     pad_num = m * max_window - data.shape[0]
     # padding
-    padded = np.append(data, [[i + 1 for i in token_boundary]]*pad_num,axis=0)
+    padded = np.append(data, [[i + 1 for i in token_boundary]]*pad_num, axis=0)
     return padded.reshape(m, max_window, tokens_per_note)
 
 
@@ -363,12 +387,25 @@ def data_split(data: np.array):
 if __name__ == '__main__':
     if not os.path.exists(out_path):
         os.mkdir(out_path)
+    if dataset == 'asap':
+        comp_path = os.path.join(data_path, 'asap')
+    elif dataset == 'Pianist8':
+        comp_path = os.path.join(data_path, 'Pianist8', 'midi')
     file_list = [n for n in data_zip.namelist() if n[-4:].lower()
                     == '.mid' or n[-5:].lower() == '.midi']
-    random.shuffle(file_list) 
+    random.shuffle(file_list)
+    if task == 'composer':
+        composers = list(set([f.name for f in os.scandir(comp_path) if f.is_dir() and f.name != 'util']))
+        encoding_map = {string: index for index, string in enumerate(composers)}
+        json_file_path = f"{out_path}/{dataset}_{task}.json"
+        with open(json_file_path, "w") as json_file:
+            import json
+            json.dump(encoding_map, json_file, indent=4)
+            
     ok_cnt = 0
     all_cnt = 0
     for sp in ['test','train', 'valid']:
+        print(sp)
         total_file_cnt = len(file_list)
         file_list_split = []
         if sp == 'train':  # 98%
@@ -378,18 +415,29 @@ if __name__ == '__main__':
                                         100: 99 * total_file_cnt // 100]
         if sp == 'test':  # 1%
             file_list_split = file_list[99 * total_file_cnt // 100:]
-        output_file = '{}/midi_{}.npy'.format(out_path, sp)
-        split_file = '{}/midi_{}_split.npy'.format(out_path, sp)
+        output_file = '{}/{}_{}.npy'.format(out_path, dataset, sp)
+        split_file = '{}/{}_{}_split.npy'.format(out_path, dataset, sp)
         res = []
         output = []
+        ans = []
         for mid in file_list_split:
-            res.append(G(mid, output))
+            if task == 'composer':
+                res.append(G_composer(mid, output, ans))
+            elif task == 'pretrain':
+                res.append(G(mid, output))
         all_cnt += sum((1 if i is not None else 0 for i in res))
         ok_cnt += sum((1 if i is True else 0 for i in res))
         output = np.array(output)
         np.save(output_file, output)
-        output_split = data_split(output)
-        np.save(split_file, output_split)
-        output_file = None
+        if task == 'pretrain':
+            output_split = data_split(output)
+            np.save(split_file, output_split)
+        elif task == 'composer':
+            for i, comp in enumerate(ans):
+                ans[i] = encoding_map[comp]
+            ans = np.array(ans)
+            ans_file = f'{out_path}/{dataset}_{sp}_{task[:3]}ans.npy'
+            np.save(ans_file, ans)
+        # output_file = None
     print('{}/{} ({:.2f}%) MIDI files successfully processed'.format(ok_cnt,
                                                                      all_cnt, ok_cnt / all_cnt * 100))
