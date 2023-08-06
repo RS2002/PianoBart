@@ -19,7 +19,7 @@ def get_args_eval():
     parser.add_argument('--task', choices=['melody', 'velocity', 'composer', 'emotion'], required=True)
 
     ### path setup ###
-    parser.add_argument('--dict_file', type=str, default='./Data/Octuple.pkl')
+    parser.add_argument('--dict_file', type=str, default='../../Data/Octuple.pkl')
     parser.add_argument('--ckpt', type=str, default='')
 
     ### parameter setting ###
@@ -43,22 +43,22 @@ def get_args_eval():
 
     if args.task == 'melody':
         args.class_num = 4
-        args.ckpt = root + 'melody_pianobart/model_best.ckpt' if args.ckpt == '' else args.ckpt
+        args.ckpt = root + 'melody_musicbert/model_best.ckpt' if args.ckpt == '' else args.ckpt
     elif args.task == 'velocity':
         args.class_num = 7
-        args.ckpt = root + 'velocity_pianobart/model_best.ckpt' if args.ckpt == '' else args.ckpt
+        args.ckpt = root + 'velocity_musicbert/model_best.ckpt' if args.ckpt == '' else args.ckpt
     elif args.task == 'composer':
         args.class_num = 8
-        args.ckpt = root + 'composer_pianobart/model_best.ckpt' if args.ckpt == '' else args.ckpt
+        args.ckpt = root + 'composer_musicbert/model_best.ckpt' if args.ckpt == '' else args.ckpt
     elif args.task == 'emotion':
         args.class_num = 4
-        args.ckpt = root + 'emotion_pianobart/model_best.ckpt' if args.ckpt == '' else args.ckpt
+        args.ckpt = root + 'emotion_musicbert/model_best.ckpt' if args.ckpt == '' else args.ckpt
 
     return args
 
 
 def load_data_eval(dataset, task):
-    data_root = 'Data/finetune/others'
+    data_root = '../../Data/finetune/others'
 
     if dataset == 'emotion':
         dataset = 'emopia'
