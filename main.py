@@ -2,6 +2,7 @@ import os
 import numpy as np
 import random
 import pickle
+import time
 from torch.utils.data import DataLoader
 from transformers import BartConfig
 from PianoBart import PianoBart
@@ -59,6 +60,8 @@ def pretrain():
     best_acc, best_epoch = 0, 0
     bad_cnt = 0
 
+    start_t = time.time()
+
     for epoch in range(args.epochs):
         if bad_cnt >= 30:
             print('valid acc not improving for 30 epochs')
@@ -86,6 +89,12 @@ def pretrain():
         with open(os.path.join(save_dir, 'log'), 'a') as outfile:
             outfile.write('Epoch {}: train_loss={}, train_acc={}, valid_loss={}, valid_acc={}\n'.format(
                 epoch + 1, train_loss, train_acc, valid_loss, valid_acc))
+    
+    end_t = time.time()
+
+    print(f'Time cost in pretrain of PianoBart is {end_t - start_t}, start_t = {start_t}, end_t = {end_t}')
+    with open(os.path.join(save_dir, 'log'), 'a') as outfile:
+            outfile.write(f'Time cost in pretrain of PianoBart is {end_t - start_t}, start_t = {start_t}, end_t = {end_t}')
 
 def finetune():
     # set seed

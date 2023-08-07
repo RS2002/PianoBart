@@ -26,6 +26,16 @@ We have not yet collected enough data for downstream tasks.
 
 ## 2. How to run the model
 
+### 2.1 About the environment
+
+We provide a conda-based environment. To use this environment, please install it using the following command:
+
+```shell
+conda env create -f environment.yml
+```
+
+This environment has been tested and is working properly.
+
 To run the model, please refer to the code at the bottom of "main.py", which is shown as follows.
 
 ```python
