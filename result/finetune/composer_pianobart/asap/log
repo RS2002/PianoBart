@@ -1,38 +1,4 @@
 Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Loading pre-trained model from model_best.ckpt
-Epoch 1: train_loss=1.7416000366210938, valid_loss=1.937399983406067, test_loss=1.1141999959945679, train_acc=0.4027000069618225, valid_acc=0.3077000081539154, test_acc=0.7142999768257141
-Loading pre-trained model from model_best.ckpt
 Epoch 1: train_loss=1.7416000366210938, valid_loss=1.937399983406067, test_loss=1.1141999959945679, train_acc=0.4027000069618225, valid_acc=0.3077000081539154, test_acc=0.7142999768257141
 Epoch 2: train_loss=1.2447999715805054, valid_loss=1.8960000276565552, test_loss=1.2908999919891357, train_acc=0.5996999740600586, valid_acc=0.46149998903274536, test_acc=0.571399986743927
 Epoch 3: train_loss=0.9204000234603882, valid_loss=1.9699000120162964, test_loss=1.0997999906539917, train_acc=0.6947000026702881, valid_acc=0.5385000109672546, test_acc=0.6428999900817871
