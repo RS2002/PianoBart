@@ -1,0 +1,45 @@
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Loading pre-trained model from model_best.ckpt
+Epoch 1: train_loss=1.7416000366210938, valid_loss=1.937399983406067, test_loss=1.1141999959945679, train_acc=0.4027000069618225, valid_acc=0.3077000081539154, test_acc=0.7142999768257141
+Loading pre-trained model from model_best.ckpt
+Epoch 1: train_loss=1.7416000366210938, valid_loss=1.937399983406067, test_loss=1.1141999959945679, train_acc=0.4027000069618225, valid_acc=0.3077000081539154, test_acc=0.7142999768257141
+Epoch 2: train_loss=1.2447999715805054, valid_loss=1.8960000276565552, test_loss=1.2908999919891357, train_acc=0.5996999740600586, valid_acc=0.46149998903274536, test_acc=0.571399986743927
+Epoch 3: train_loss=0.9204000234603882, valid_loss=1.9699000120162964, test_loss=1.0997999906539917, train_acc=0.6947000026702881, valid_acc=0.5385000109672546, test_acc=0.6428999900817871
+Epoch 4: train_loss=0.7189000248908997, valid_loss=1.3281999826431274, test_loss=0.9595999717712402, train_acc=0.7724000215530396, valid_acc=0.6154000163078308, test_acc=0.6428999900817871
+Epoch 5: train_loss=0.49050000309944153, valid_loss=1.8241000175476074, test_loss=0.8313999772071838, train_acc=0.8461999893188477, valid_acc=0.5385000109672546, test_acc=0.7857000231742859
+Epoch 6: train_loss=0.3255999982357025, valid_loss=1.7899999618530273, test_loss=1.0515999794006348, train_acc=0.9003000259399414, valid_acc=0.6154000163078308, test_acc=0.7142999768257141
+Epoch 7: train_loss=0.2264000028371811, valid_loss=1.6979000568389893, test_loss=1.5742000341415405, train_acc=0.9222999811172485, valid_acc=0.5385000109672546, test_acc=0.571399986743927
+Epoch 8: train_loss=0.16509999334812164, valid_loss=1.7526999711990356, test_loss=1.6548999547958374, train_acc=0.9419000148773193, valid_acc=0.692300021648407, test_acc=0.6428999900817871
+Epoch 9: train_loss=0.08649999648332596, valid_loss=1.4804999828338623, test_loss=1.2680000066757202, train_acc=0.9717000126838684, valid_acc=0.5385000109672546, test_acc=0.7142999768257141
+Epoch 10: train_loss=0.18369999527931213, valid_loss=1.389299988746643, test_loss=0.6887999773025513, train_acc=0.9434999823570251, valid_acc=0.692300021648407, test_acc=0.7857000231742859
