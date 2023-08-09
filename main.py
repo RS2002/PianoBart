@@ -455,7 +455,10 @@ def eval_generation():
     outdir = os.path.dirname(args.ckpt)
     conf_mat(y_test, all_output, args.task, outdir)
 
-
+'''
+to run finetune, for example if use Piani8 dataset:
+python main.py --task composer --dataset Pianist8 --class_num --dataroot ./Data/output_composer/Pianist8 --cuda_devices 0
+'''
 if __name__ == '__main__':
     pretrain()
     #finetune()

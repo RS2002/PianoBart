@@ -14,6 +14,9 @@ def get_args_finetune():
 
     ### mode ###
     parser.add_argument('--task', choices=['melody', 'velocity', 'composer', 'emotion'], required=True)
+    ### dataset & data root ###
+    parser.add_argument('--dataset', choices=['asap', 'Pianist8',], required=True)
+    parser.add_argument('--dataroot', type=str, default=None)
     ### path setup ###
     parser.add_argument('--dict_file', type=str, default='./Data/Octuple.pkl')
     parser.add_argument('--name', type=str, default='pianobart')
@@ -21,7 +24,7 @@ def get_args_finetune():
 
     ### parameter setting ###
     parser.add_argument('--num_workers', type=int, default=5)
-    parser.add_argument('--class_num', type=int)
+    parser.add_argument('--class_num', type=int, default=None)
     parser.add_argument('--batch_size', type=int, default=2)
     parser.add_argument('--max_seq_len', type=int, default=1024, help='all sequences are padded to `max_seq_len`')
     parser.add_argument('--hs', type=int, default=1024)
@@ -39,14 +42,16 @@ def get_args_finetune():
 
     args = parser.parse_args()
 
-    if args.task == 'melody':
-        args.class_num = 4
-    elif args.task == 'velocity':
-        args.class_num = 7
-    elif args.task == 'composer':
-        args.class_num = 8
-    elif args.task == 'emotion':
-        args.class_num = 4
+    # check args
+    if args.class_num is None:
+        if args.task == 'melody':
+            args.class_num = 4
+        elif args.task == 'velocity':
+            args.class_num = 7
+        elif args.task == 'composer':
+            args.class_num = 8
+        elif args.task == 'emotion':
+            args.class_num = 4
 
     return args
 
@@ -169,7 +174,7 @@ class FinetuneTrainer:
             if not seq:
                 y_hat = y_hat.permute(0, 2, 1)
             loss = self.compute_loss(y_hat, y, attn, seq)
-            total_loss += loss.item()
+            total_loss += loss
 
             # udpate only in train
             if mode == 0:
@@ -178,14 +183,14 @@ class FinetuneTrainer:
                 self.optim.step()
 
         if mode == 2:
-            return round(total_loss / len(training_data), 4), round(total_acc.item() / total_cnt, 4), all_output
-        return round(total_loss / len(training_data), 4), round(total_acc.item() / total_cnt, 4)
+            return torch.round(total_loss / len(training_data), decimals=4), torch.round(total_acc / total_cnt, decimals=4), all_output
+        return torch.round(total_loss / len(training_data), decimals=4), torch.round(total_acc / total_cnt, decimals=4)
 
     def save_checkpoint(self, epoch, train_acc, valid_acc,
                         valid_loss, train_loss, is_best, filename):
         state = {
             'epoch': epoch + 1,
-            'state_dict': self.model.module.state_dict(),
+            'state_dict': self.model.state_dict(),
             'valid_acc': valid_acc,
             'valid_loss': valid_loss,
             'train_loss': train_loss,
@@ -200,14 +205,15 @@ class FinetuneTrainer:
             shutil.copyfile(filename, best_mdl)
 
 
-def load_data_finetune(dataset, task):
-    data_root = 'Data/finetune/others'
+def load_data_finetune(dataset, task, data_root=None):
+    if data_root is None:
+        data_root = 'Data/finetune/others'
 
 
     if dataset == 'emotion':
         dataset = 'emopia'
 
-    if dataset not in ['pop909', 'composer', 'emopia']:
+    if dataset not in ['pop909', 'composer', 'emopia', 'asap', 'Pianist8']:
         print(f'Dataset {dataset} not supported')
         exit(1)
 
