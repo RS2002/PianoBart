@@ -117,7 +117,11 @@ def finetune():
     elif args.task == 'emotion':
         dataset = 'emopia'
         seq_class = True
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(dataset, args.task)
+    else:
+        print("ERROR")
+        exit(-1)
+
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(args.dataset, args.task, args.dataroot)
 
     trainset = FinetuneDataset(X=X_train, y=y_train)
     validset = FinetuneDataset(X=X_val, y=y_val)

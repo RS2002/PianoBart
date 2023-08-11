@@ -139,6 +139,9 @@ class FinetuneTrainer:
             batch = x.shape[0]
             x, y = x.to(self.device), y.to(self.device)  # seq: (batch, 512, 4), (batch) / token: , (batch, 512)
 
+            x=x.long()
+            y=y.long()
+
             # avoid attend to pad word
             attn = (x[:, :, 0] != self.pianobart.bar_pad_word).float().to(self.device)  # (batch, seq_len)
 
@@ -183,8 +186,8 @@ class FinetuneTrainer:
                 self.optim.step()
 
         if mode == 2:
-            return torch.round(total_loss / len(training_data), decimals=4), torch.round(total_acc / total_cnt, decimals=4), all_output
-        return torch.round(total_loss / len(training_data), decimals=4), torch.round(total_acc / total_cnt, decimals=4)
+            return round(total_loss.item() / len(training_data), 4), round(total_acc.item() / total_cnt, 4), all_output
+        return round(total_loss.item() / len(training_data), 4), round(total_acc.item() / total_cnt, 4)
 
     def save_checkpoint(self, epoch, train_acc, valid_acc,
                         valid_loss, train_loss, is_best, filename):

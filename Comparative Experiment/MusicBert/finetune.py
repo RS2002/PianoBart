@@ -13,6 +13,9 @@ def get_args_finetune():
 
     ### mode ###
     parser.add_argument('--task', choices=['melody', 'velocity', 'composer', 'emotion'], required=True)
+    ### dataset & data root ###
+    parser.add_argument('--dataset', choices=['asap', 'Pianist8',], required=True)
+    parser.add_argument('--dataroot', type=str, default=None)
     ### path setup ###
     parser.add_argument('--dict_file', type=str, default='../../Data/Octuple.pkl')
     parser.add_argument('--name', type=str, default='')
@@ -20,7 +23,7 @@ def get_args_finetune():
 
     ### parameter setting ###
     parser.add_argument('--num_workers', type=int, default=5)
-    parser.add_argument('--class_num', type=int)
+    parser.add_argument('--class_num', type=int, default=None)
     parser.add_argument('--batch_size', type=int, default=12)
     parser.add_argument('--max_seq_len', type=int, default=512, help='all sequences are padded to `max_seq_len`')
     parser.add_argument('--hs', type=int, default=768)
@@ -35,14 +38,16 @@ def get_args_finetune():
 
     args = parser.parse_args()
 
-    if args.task == 'melody':
-        args.class_num = 4
-    elif args.task == 'velocity':
-        args.class_num = 7
-    elif args.task == 'composer':
-        args.class_num = 8
-    elif args.task == 'emotion':
-        args.class_num = 4
+    # check args
+    if args.class_num is None:
+        if args.task == 'melody':
+            args.class_num = 4
+        elif args.task == 'velocity':
+            args.class_num = 7
+        elif args.task == 'composer':
+            args.class_num = 8
+        elif args.task == 'emotion':
+            args.class_num = 4
 
     return args
 
@@ -130,6 +135,9 @@ class FinetuneTrainer:
             batch = x.shape[0]
             x, y = x.to(self.device), y.to(self.device)  # seq: (batch, 512, 4), (batch) / token: , (batch, 512)
 
+            x=x.long()
+            y=y.long()
+
             # avoid attend to pad word
             if not seq:
                 attn = (y != 0).float().to(self.device)  # (batch,512)
@@ -175,7 +183,7 @@ class FinetuneTrainer:
                         valid_loss, train_loss, is_best, filename):
         state = {
             'epoch': epoch + 1,
-            'state_dict': self.model.module.state_dict(),
+            'state_dict': self.model.state_dict(),
             'valid_acc': valid_acc,
             'valid_loss': valid_loss,
             'train_loss': train_loss,
@@ -189,14 +197,15 @@ class FinetuneTrainer:
         if is_best:
             shutil.copyfile(filename, best_mdl)
 
-def load_data_finetune(dataset, task):
-    data_root = '../../Data/finetune/others'
+def load_data_finetune(dataset, task, data_root=None):
+    if data_root is None:
+        data_root = 'Data/finetune/others'
 
 
     if dataset == 'emotion':
         dataset = 'emopia'
 
-    if dataset not in ['pop909', 'composer', 'emopia']:
+    if dataset not in ['pop909', 'composer', 'emopia', 'asap', 'Pianist8']:
         print(f'Dataset {dataset} not supported')
         exit(1)
 
@@ -218,13 +227,13 @@ def load_data_finetune(dataset, task):
 
         print('X_train: {}, X_valid: {}, X_test: {}'.format(X_train.shape, X_val.shape, X_test.shape))
         if dataset == 'pop909':
-            y_train = np.load(os.path.join(data_root, f'{dataset}_train_{task[:3]}ans.npy'), allow_pickle=True)
-            y_val = np.load(os.path.join(data_root, f'{dataset}_valid_{task[:3]}ans.npy'), allow_pickle=True)
-            y_test = np.load(os.path.join(data_root, f'{dataset}_test_{task[:3]}ans.npy'), allow_pickle=True)
+            y_train = np.load(os.path.join(data_root, f'{dataset}_train_{task[:3]}comans.npy'), allow_pickle=True)
+            y_val = np.load(os.path.join(data_root, f'{dataset}_valid_{task[:3]}comans.npy'), allow_pickle=True)
+            y_test = np.load(os.path.join(data_root, f'{dataset}_test_{task[:3]}comans.npy'), allow_pickle=True)
         else:
-            y_train = np.load(os.path.join(data_root, f'{dataset}_train_ans.npy'), allow_pickle=True)
-            y_val = np.load(os.path.join(data_root, f'{dataset}_valid_ans.npy'), allow_pickle=True)
-            y_test = np.load(os.path.join(data_root, f'{dataset}_test_ans.npy'), allow_pickle=True)
+            y_train = np.load(os.path.join(data_root, f'{dataset}_train_comans.npy'), allow_pickle=True)
+            y_val = np.load(os.path.join(data_root, f'{dataset}_valid_comans.npy'), allow_pickle=True)
+            y_test = np.load(os.path.join(data_root, f'{dataset}_test_comans.npy'), allow_pickle=True)
 
     print('y_train: {}, y_valid: {}, y_test: {}'.format(y_train.shape, y_val.shape, y_test.shape))
 
