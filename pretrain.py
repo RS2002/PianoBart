@@ -41,7 +41,7 @@ def get_args_pretrain():
 
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default: False
-    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[2,3,5], help="CUDA device ids")
+    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[0,1,2], help="CUDA device ids")
 
     args = parser.parse_args()
 

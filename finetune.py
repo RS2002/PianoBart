@@ -68,7 +68,7 @@ class FinetuneTrainer:
         print('   device:', self.device)
         self.pianobart = pianobart
         self.SeqClass = SeqClass
-
+        self.class_num=class_num
         if model != None:  # load model
             print('load a fine-tuned model')
             self.model = model.to(self.device)
@@ -145,8 +145,8 @@ class FinetuneTrainer:
             if seq:
                 y_hat = self.model.forward(input_ids_encoder=x, encoder_attention_mask=attn)  # seq: (batch, class_num) / token: (batch, 512, class_num)
             else:
-                # TODO:shift y/attn (0表示pad？)
-                y_shift = torch.zeros_like(y)-1
+                # class_num表示pad对应的token
+                y_shift = torch.zeros_like(y)+self.class_num
                 attn_shift = torch.zeros_like(attn)
                 y_shift[:,1:] = y[:,:-1]
                 attn_shift[:, 1:] = attn[:, :-1]
@@ -235,13 +235,13 @@ def load_data_finetune(dataset, task, data_root=None):
 
         print('X_train: {}, X_valid: {}, X_test: {}'.format(X_train.shape, X_val.shape, X_test.shape))
         if dataset == 'pop909':
-            y_train = np.load(os.path.join(data_root, f'{dataset}_train_{task[:3]}ans.npy'), allow_pickle=True)
-            y_val = np.load(os.path.join(data_root, f'{dataset}_valid_{task[:3]}ans.npy'), allow_pickle=True)
-            y_test = np.load(os.path.join(data_root, f'{dataset}_test_{task[:3]}ans.npy'), allow_pickle=True)
+            y_train = np.load(os.path.join(data_root, f'{dataset}_train_{task[:3]}comans.npy'), allow_pickle=True)
+            y_val = np.load(os.path.join(data_root, f'{dataset}_valid_{task[:3]}comans.npy'), allow_pickle=True)
+            y_test = np.load(os.path.join(data_root, f'{dataset}_test_{task[:3]}comans.npy'), allow_pickle=True)
         else:
-            y_train = np.load(os.path.join(data_root, f'{dataset}_train_ans.npy'), allow_pickle=True)
-            y_val = np.load(os.path.join(data_root, f'{dataset}_valid_ans.npy'), allow_pickle=True)
-            y_test = np.load(os.path.join(data_root, f'{dataset}_test_ans.npy'), allow_pickle=True)
+            y_train = np.load(os.path.join(data_root, f'{dataset}_train_comans.npy'), allow_pickle=True)
+            y_val = np.load(os.path.join(data_root, f'{dataset}_valid_comans.npy'), allow_pickle=True)
+            y_test = np.load(os.path.join(data_root, f'{dataset}_test_comans.npy'), allow_pickle=True)
 
     print('y_train: {}, y_valid: {}, y_test: {}'.format(y_train.shape, y_val.shape, y_test.shape))
 

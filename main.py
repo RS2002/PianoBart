@@ -126,7 +126,7 @@ def finetune():
         print("ERROR")
         exit(-1)
 
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(dataset, args.task)
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(args.dataset, args.task, args.dataroot)
 
     trainset = FinetuneDataset(X=X_train, y=y_train)
     validset = FinetuneDataset(X=X_val, y=y_val)
@@ -460,8 +460,8 @@ to run finetune, for example if use Piani8 dataset:
 python main.py --task composer --dataset Pianist8 --class_num --dataroot ./Data/output_composer/Pianist8 --cuda_devices 0
 '''
 if __name__ == '__main__':
-    pretrain()
-    #finetune()
+    #pretrain()
+    finetune()
     #eval()
     #finetune_generation()
     #finetune_eval()
