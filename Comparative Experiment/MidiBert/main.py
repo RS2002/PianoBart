@@ -421,8 +421,8 @@ def eval_generation():
 
 
 if __name__ == '__main__':
-    pretrain()
-    #finetune()
+    #pretrain()
+    finetune()
     #eval()
     #finetune_generation()
     #finetune_eval()

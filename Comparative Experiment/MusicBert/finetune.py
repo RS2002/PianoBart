@@ -19,22 +19,22 @@ def get_args_finetune():
     ### path setup ###
     parser.add_argument('--dict_file', type=str, default='../../Data/Octuple.pkl')
     parser.add_argument('--name', type=str, default='')
-    parser.add_argument('--ckpt', default='result/pretrain/musicbert/model_best.ckpt')
+    parser.add_argument('--ckpt', default='result/pretrain/musicbert/model.ckpt')
 
     ### parameter setting ###
     parser.add_argument('--num_workers', type=int, default=5)
     parser.add_argument('--class_num', type=int, default=None)
     parser.add_argument('--batch_size', type=int, default=12)
-    parser.add_argument('--max_seq_len', type=int, default=512, help='all sequences are padded to `max_seq_len`')
+    parser.add_argument('--max_seq_len', type=int, default=1024, help='all sequences are padded to `max_seq_len`')
     parser.add_argument('--hs', type=int, default=768)
     parser.add_argument("--index_layer", type=int, default=12, help="number of layers")
-    parser.add_argument('--epochs', type=int, default=10, help='number of training epochs')
+    parser.add_argument('--epochs', type=int, default=50, help='number of training epochs')
     parser.add_argument('--lr', type=float, default=2e-5, help='initial learning rate')
     parser.add_argument('--nopretrain', action="store_true")  # default: false
 
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default=False
-    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[0, 1], help="CUDA device ids")
+    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[5,7], help="CUDA device ids")
 
     args = parser.parse_args()
 
@@ -142,7 +142,7 @@ class FinetuneTrainer:
             if not seq:
                 attn = (y != 0).float().to(self.device)  # (batch,512)
             else:
-                attn = torch.ones((batch, 512)).to(self.device)  # attend each of them
+                attn = torch.ones((batch, 1024)).to(self.device)  # attend each of them
 
             y_hat = self.model.forward(x, attn, self.layer)  # seq: (batch, class_num) / token: (batch, 512, class_num)
 
