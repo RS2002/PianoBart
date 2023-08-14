@@ -25,7 +25,7 @@ def get_args_finetune():
     ### parameter setting ###
     parser.add_argument('--num_workers', type=int, default=5)
     parser.add_argument('--class_num', type=int, default=None)
-    parser.add_argument('--batch_size', type=int, default=2)
+    parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--max_seq_len', type=int, default=1024, help='all sequences are padded to `max_seq_len`')
     parser.add_argument('--hs', type=int, default=1024)
     parser.add_argument('--layers', type=int, default=8)  # layer nums of encoder & decoder
@@ -38,7 +38,7 @@ def get_args_finetune():
 
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default=False
-    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[0, 1], help="CUDA device ids")
+    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[6,7], help="CUDA device ids")
 
     args = parser.parse_args()
 
@@ -131,6 +131,13 @@ class FinetuneTrainer:
 
         total_acc, total_cnt, total_loss = 0, 0, 0
 
+        if mode ==0:
+            self.model.train()
+            torch.set_grad_enabled(True)
+        else:
+            self.model.eval()
+            torch.set_grad_enabled(False)
+
         if mode == 2:  # testing
             all_output = torch.empty(self.testset_shape)
             cnt = 0
@@ -180,7 +187,7 @@ class FinetuneTrainer:
             total_loss += loss
 
             # udpate only in train
-            if mode == 0:
+            if mode == 0 :
                 self.model.zero_grad()
                 loss.backward()
                 self.optim.step()

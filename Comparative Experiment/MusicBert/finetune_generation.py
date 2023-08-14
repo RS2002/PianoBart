@@ -104,6 +104,13 @@ class GenerationTrainer:
         total_acc, total_loss = [0] * len(self.midibert.e2w), 0
         total_cnt = 0
 
+        if mode ==0:
+            self.model.train()
+            torch.set_grad_enabled(True)
+        else:
+            self.model.eval()
+            torch.set_grad_enabled(False)
+
         if mode == 2:  # testing
             all_output = torch.empty(self.testset_shape)
             cnt = 0
