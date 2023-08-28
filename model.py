@@ -119,7 +119,7 @@ if __name__=='__main__':
         decoder_attention_mask[j, 31] += 1
         decoder_attention_mask[j, 30] += 1
 
-    test_PianoBart=True
+    test_PianoBart=False
     if test_PianoBart:
         print("test PianoBart")
         piano_bart_lm=PianoBartLM(piano_bart).to(device)
@@ -136,7 +136,7 @@ if __name__=='__main__':
         output=piano_bart_token_classifier(input_ids_encoder,label,encoder_attention_mask,decoder_attention_mask)
         print("输出维度:",output.size())
 
-    test_SequenceClassifier=False
+    test_SequenceClassifier=True
     if test_SequenceClassifier:
         print("test Sequence Classifier")
         piano_bart_sequence_classifier=SequenceClassification(pianobart=piano_bart, class_num=10, hs=48)

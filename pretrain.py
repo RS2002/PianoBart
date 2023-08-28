@@ -41,7 +41,7 @@ def get_args_pretrain():
 
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default: False
-    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[2,3,5], help="CUDA device ids")
+    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[5,6,7], help="CUDA device ids")
 
     args = parser.parse_args()
 
@@ -83,11 +83,13 @@ class Pretrainer:
 
     def train(self):
         self.model.train()
+        torch.set_grad_enabled(True)
         train_loss, train_acc = self.iteration(self.train_data, self.max_seq_len)
         return train_loss, train_acc
 
     def valid(self):
         self.model.eval()
+        torch.set_grad_enabled(False)
         valid_loss, valid_acc = self.iteration(self.valid_data, self.max_seq_len, train=False)
         return valid_loss, valid_acc
 

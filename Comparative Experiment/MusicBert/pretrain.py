@@ -27,7 +27,7 @@ def get_args_pretrain():
 
     ### parameter setting ###
     parser.add_argument('--num_workers', type=int, default=5)
-    parser.add_argument('--batch_size', type=int, default=12)
+    parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--mask_percent', type=float, default=0.15,
                         help="Up to `valid_seq_len * target_max_percent` tokens will be masked out for prediction")
     parser.add_argument('--max_seq_len', type=int, default=1024, help='all sequences are padded to `max_seq_len`') #TODO:512
@@ -80,11 +80,13 @@ class Pretrainer:
 
     def train(self):
         self.model.train()
+        torch.set_grad_enabled(True)
         train_loss, train_acc = self.iteration(self.train_data, self.max_seq_len)
         return train_loss, train_acc
 
     def valid(self):
         self.model.eval()
+        torch.set_grad_enabled(False)
         valid_loss, valid_acc = self.iteration(self.valid_data, self.max_seq_len, train=False)
         return valid_loss, valid_acc
 

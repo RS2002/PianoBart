@@ -1,5 +1,6 @@
 import os
 import pickle
+import time
 from torch.utils.data import DataLoader
 from transformers import BertConfig
 from MidiBert import MidiBert
@@ -52,6 +53,8 @@ def pretrain():
     best_acc, best_epoch = 0, 0
     bad_cnt = 0
 
+    start_t = time.time()
+
     for epoch in range(args.epochs):
         if bad_cnt >= 30:
             print('valid acc not improving for 30 epochs')
@@ -81,6 +84,12 @@ def pretrain():
             outfile.write('Epoch {}: train_loss={}, train_acc={}, valid_loss={}, valid_acc={}\n'.format(
                 epoch + 1, train_loss, train_acc, valid_loss, valid_acc))
 
+    end_t = time.time()
+
+    print(f'Time cost in pretrain of MusicBert is {end_t - start_t}, start_t = {start_t}, end_t = {end_t}')
+    with open(os.path.join(save_dir, 'log'), 'a') as outfile:
+            outfile.write(f'Time cost in pretrain of MusicBert is {end_t - start_t}, start_t = {start_t}, end_t = {end_t}')
+
 
 def finetune():
     # set seed
@@ -108,7 +117,11 @@ def finetune():
     elif args.task == 'emotion':
         dataset = 'emopia'
         seq_class = True
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(dataset, args.task)
+    else:
+        print("ERROR")
+        exit(-1)
+
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(args.dataset, args.task, args.dataroot)
 
     trainset = FinetuneDataset(X=X_train, y=y_train)
     validset = FinetuneDataset(X=X_val, y=y_val)
@@ -412,8 +425,8 @@ def eval_generation():
 
 
 if __name__ == '__main__':
-    pretrain()
-    #finetune()
+    #pretrain()
+    finetune()
     #eval()
     #finetune_generation()
     #finetune_eval()

@@ -2,6 +2,7 @@ import os
 import numpy as np
 import random
 import pickle
+import time
 from torch.utils.data import DataLoader
 from transformers import BartConfig
 from PianoBart import PianoBart
@@ -59,6 +60,8 @@ def pretrain():
     best_acc, best_epoch = 0, 0
     bad_cnt = 0
 
+    start_t = time.time()
+
     for epoch in range(args.epochs):
         if bad_cnt >= 30:
             print('valid acc not improving for 30 epochs')
@@ -86,6 +89,12 @@ def pretrain():
         with open(os.path.join(save_dir, 'log'), 'a') as outfile:
             outfile.write('Epoch {}: train_loss={}, train_acc={}, valid_loss={}, valid_acc={}\n'.format(
                 epoch + 1, train_loss, train_acc, valid_loss, valid_acc))
+    
+    end_t = time.time()
+
+    print(f'Time cost in pretrain of PianoBart is {end_t - start_t}, start_t = {start_t}, end_t = {end_t}')
+    with open(os.path.join(save_dir, 'log'), 'a') as outfile:
+            outfile.write(f'Time cost in pretrain of PianoBart is {end_t - start_t}, start_t = {start_t}, end_t = {end_t}')
 
 def finetune():
     # set seed
@@ -117,7 +126,7 @@ def finetune():
         print("ERROR")
         exit(-1)
 
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(dataset, args.task)
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(args.dataset, args.task, args.dataroot)
 
     trainset = FinetuneDataset(X=X_train, y=y_train)
     validset = FinetuneDataset(X=X_val, y=y_val)
@@ -446,7 +455,10 @@ def eval_generation():
     outdir = os.path.dirname(args.ckpt)
     conf_mat(y_test, all_output, args.task, outdir)
 
-
+'''
+to run finetune, for example if use Piani8 dataset:
+python main.py --task composer --dataset Pianist8 --class_num --dataroot ./Data/output_composer/Pianist8 --cuda_devices 0
+'''
 if __name__ == '__main__':
     pretrain()
     #finetune()
