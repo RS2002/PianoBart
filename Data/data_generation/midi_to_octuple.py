@@ -9,16 +9,16 @@ import re
 dataset = input("Please input the dataset for generation: ")
 data_path = f'Data/{dataset}'
 data_zip = zipfile.ZipFile(data_path+'.zip', 'r')
-out_path = f'Data/output_composer'
+out_path = f'Data/output_generation'
 if not os.path.exists(out_path):
     os.mkdir(out_path)
 out_path = os.path.join(out_path, dataset)
 output_file = None
 midi_dict = dict()
-task = input("Please input the task task ? (default to pretrain) ")
+task = input("Please input the task ? (pretrain/composer/generate) ")
 
 
-
+padding = True
 pos_resolution = 16  # per beat (quarter note)
 bar_max = 255
 velocity_quant = 4
@@ -323,6 +323,8 @@ def F(file_name):
             bar_index_offset = random.randint(
                 offset_lower_bound, offset_upper_bound) if offset_lower_bound <= offset_upper_bound else offset_lower_bound
             e_segment = []
+            if task == 'pretrain':
+                e_segment.append(tuple([i + 3 for i in token_boundary]))
             for i in e[L: R + 1]:
                 if i[0] is None or i[0] + bar_index_offset < bar_max:
                     t = list(i)
@@ -334,12 +336,16 @@ def F(file_name):
         if not all(len(i.split()) > tokens_per_note * 2 - 1 for i in output_str_list):
             print('ERROR(ENCODE): ' + file_name + ' ' + str(e) + '\n', end='')
             return False
-        print('SUCCESS: ' + file_name + '\n', end='')
         e_segment.append(tuple([i + 4 for i in token_boundary]))
-        if task == 'composer':
+        print('SUCCESS: ' + file_name + '\n', end='')
+        if padding:
             pad_num = max_window -  len(e_segment)
+            if pad_num < 0:
+                print('ERROR(LENGTH): ' + file_name + ' ' + 'The length of the music is longer than max window(1024).' + '\n', end='')
+                return False
             for i in range(pad_num):
                 e_segment.append(tuple([i + 1 for i in token_boundary]))
+        if task == 'composer':
             if dataset == 'asap':
                 pattern = r"./(.*?)/."
                 composer = re.search(pattern, file_name).group(1)
@@ -365,11 +371,17 @@ def G_composer(file_name, output: list, ans: list):
         print('ERROR(UNCAUGHT): ' + file_name + '\n', end='')
         return False
 
+
+
 def G(file_name, output: list):
     try:
         ret = F(file_name)
         if ret:
-            output += ret
+            if task != 'pretrain':
+                output.append(ret)
+            else:
+                output += ret
+            
             return True
     except BaseException as e:
         print('ERROR(UNCAUGHT): ' + file_name + '\n', end='')
@@ -408,13 +420,13 @@ if __name__ == '__main__':
         print(sp)
         total_file_cnt = len(file_list)
         file_list_split = []
-        if sp == 'train':  # 98%
-            file_list_split = file_list[: 98 * total_file_cnt // 100]
-        if sp == 'valid':  # 1%
-            file_list_split = file_list[98 * total_file_cnt //
-                                        100: 99 * total_file_cnt // 100]
-        if sp == 'test':  # 1%
-            file_list_split = file_list[99 * total_file_cnt // 100:]
+        if sp == 'train':  # 80%
+            file_list_split = file_list[: 80 * total_file_cnt // 100]
+        if sp == 'valid':  # 10%
+            file_list_split = file_list[80 * total_file_cnt //
+                                        100: 90 * total_file_cnt // 100]
+        if sp == 'test':  # 10%
+            file_list_split = file_list[90 * total_file_cnt // 100:]
         output_file = '{}/{}_{}.npy'.format(out_path, dataset, sp)
         split_file = '{}/{}_{}_split.npy'.format(out_path, dataset, sp)
         res = []
@@ -424,6 +436,8 @@ if __name__ == '__main__':
             if task == 'composer':
                 res.append(G_composer(mid, output, ans))
             elif task == 'pretrain':
+                res.append(G(mid, output))
+            elif task == 'generate':
                 res.append(G(mid, output))
         all_cnt += sum((1 if i is not None else 0 for i in res))
         ok_cnt += sum((1 if i is True else 0 for i in res))
