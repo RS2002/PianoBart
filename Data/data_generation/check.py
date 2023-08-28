@@ -2,8 +2,8 @@ import numpy as np
 # 0 Measure, 1 Pos, 2 Program, 3 Pitch, 4 Duration, 5 Velocity, 6 TimeSig, 7 Tempo
 default = ('asap', 'EMOPIA', 'Pianist8', 'POP1K7', 'POP909','')
 composer = ('Pianist8', 'asap')
-
-datasets = {'composer': composer}
+generation = ('maestro',)
+datasets = {'composer': composer, 'generation': generation}
 
 maps = {
     0: 'bar',
@@ -38,20 +38,24 @@ def checkPretrain():
                         m = m.ravel()
                     else:
                         m = a[:, num]
-                        print(f'{file}|{maps[num]}: {max(m)==mmaps[num]}')
+                        print(f'{file}|{maps[num]}: {max(m)==mmaps[num]} and {mmaps[num]-1 in m}')
 
-def checkFintune(task):
+def checkFinetune(task):
     for tag in ('train', 'test', 'valid'):
         for d in datasets[task]:
             print(tag, d)
             file = f'Data\output_{task}\{d}\{d}_{tag}.npy'
-            ans  = f'Data\output_{task}\{d}\{d}_{tag}_{task[:3]}ans.npy'
             a = np.load(file)
-            b = np.load(ans)
-            print(a.shape, b.shape, np.min(b), np.max(b))
-            for num in range(8):
-                m = a[:, :, num]
-                m = m.ravel()
-                print(f'{file}|{maps[num]}: {max(m)==mmaps[num]}')
+            if task == 'composer':
+                ans = f'Data\output_{task}\{d}\{d}_{tag}_{task[:3]}ans.npy'
+                b = np.load(ans)
+                print(b.shape, np.min(b), np.max(b))
+            print(a.shape, np.min(a), np.max(a))
+            # for num in range(8):
+            #     m = a[:, :, num]
+            #     m = m.ravel()
+            #     print(f'{file}|{maps[num]}: {max(m)==mmaps[num]} and {mmaps[num]-1 in m}')
+# checkPretrain()
 
-checkFintune('composer')
+checkFinetune('generation')
+# checkFinetune('composer')
