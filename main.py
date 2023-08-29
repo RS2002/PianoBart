@@ -304,7 +304,8 @@ def finetune_generation():
         e2w, w2e = pickle.load(f)
 
     print("\nLoading Dataset")
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(datasets=args.datasets,mode="gen")
+    #X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetuneload_data_finetune(args.dataset, args.task, args.dataroot)
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(dataset=args.datasets,task="gen",data_root="./Data/out_cgeneration/maestro/gen_method")
 
     trainset = FinetuneDataset(X=X_train, y=y_train)
     validset = FinetuneDataset(X=X_val, y=y_val)
