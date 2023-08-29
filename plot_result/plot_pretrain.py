@@ -35,7 +35,7 @@ def read_from_pretrain(path):
 
 def plot_result(PianoBART,sample,MusicBERT,MidiBERT,task="",title=""):
     plt.plot(PianoBART[task], 'r',label="PianoBART")
-    plt.plot(sample[task], 'g',label="PianoBART-sample")
+    #plt.plot(sample[task], 'g--',label="PianoBART-sample")
     plt.plot(MusicBERT[task], 'b',label="MusicBERT")
     plt.plot(MidiBERT[task], 'y',label="MidiBERT")
     plt.title(title)
@@ -44,7 +44,7 @@ def plot_result(PianoBART,sample,MusicBERT,MidiBERT,task="",title=""):
 
 
 
-PianoBART=read_from_pretrain("./pretrain_result/PianoBART0")
+PianoBART=read_from_pretrain("./pretrain_result/PianoBART")
 sample=read_from_pretrain("./pretrain_result/sample")
 MusicBERT=read_from_pretrain("./pretrain_result/MusicBERT")
 MidiBERT=read_from_pretrain("./pretrain_result/MidiBERT")

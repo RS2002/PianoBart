@@ -15,7 +15,7 @@ from eval import get_args_eval,load_data_eval,conf_mat
 from finetune_generation import get_args_generation,GenerationTrainer
 from eval_generation import get_args_eval_generation
 # import json
-
+from Ablation import AblationTrainer, load_data_ablation, get_args_ablation
 
 def pretrain():
     args = get_args_pretrain()
@@ -455,13 +455,112 @@ def eval_generation():
     outdir = os.path.dirname(args.ckpt)
     conf_mat(y_test, all_output, args.task, outdir)
 
+def abalation():
+    # set seed
+    seed = 2023
+    torch.manual_seed(seed)  # cpu
+    torch.cuda.manual_seed(seed)  # current gpu
+    torch.cuda.manual_seed_all(seed)  # all gpu
+    np.random.seed(seed)
+    random.seed(seed)
+
+    # argument
+    args = get_args_generation()
+
+    print("Loading Dictionary")
+    with open(args.dict_file, 'rb') as f:
+        e2w, w2e = pickle.load(f)
+
+    print("\nLoading Dataset")
+    X_train, X_val, X_test = load_data_ablation(datasets=args.datasets, mode="ablation")
+
+    trainset = MidiDataset(X=X_train)
+    validset = MidiDataset(X=X_val)
+    testset = MidiDataset(X=X_test)
+
+    train_loader = DataLoader(trainset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
+    print("   len of train_loader", len(train_loader))
+    valid_loader = DataLoader(validset, batch_size=args.batch_size, num_workers=args.num_workers)
+    print("   len of valid_loader", len(valid_loader))
+    test_loader = DataLoader(testset, batch_size=args.batch_size, num_workers=args.num_workers)
+    print("   len of valid_loader", len(test_loader))
+
+    print("\nBuilding BART model")
+    configuration = BartConfig(max_position_embeddings=args.max_seq_len,
+                               d_model=args.hs,
+                               encoder_layers=args.layers,
+                               encoder_ffn_dim=args.ffn_dims,
+                               encoder_attention_heads=args.heads,
+                               decoder_layers=args.layers,
+                               decoder_ffn_dim=args.ffn_dims,
+                               decoder_attention_heads=args.heads
+                               )
+
+    pianobart = PianoBart(bartConfig=configuration, e2w=e2w, w2e=w2e)
+
+    best_mdl = ''
+    if not args.nopretrain:
+        best_mdl = args.ckpt
+        print("   Loading pre-trained model from", best_mdl.split('/')[-1])
+        checkpoint = torch.load(best_mdl, map_location='cpu')
+        pianobart.load_state_dict(checkpoint['state_dict'])
+
+    print("\nCreating Finetune Trainer")
+    trainer = AblationTrainer(pianobart, train_loader, valid_loader, test_loader, args.lr, args.cpu, args.cuda_devices, None)
+
+    print("\nTraining Start")
+    save_dir = os.path.join('result/finetune/generation_' + args.name)
+    os.makedirs(save_dir, exist_ok=True)
+    filename = os.path.join(save_dir, 'model.ckpt')
+    print("   save model at {}".format(filename))
+
+    best_acc, best_epoch = 0, 0
+    bad_cnt = 0
+
+    #    train_accs, valid_accs = [], []
+    with open(os.path.join(save_dir, 'log'), 'a') as outfile:
+        outfile.write("Loading pre-trained model from " + best_mdl.split('/')[-1] + '\n')
+        for epoch in range(args.epochs):
+            train_loss, train_acc = trainer.train()
+            valid_loss, valid_acc = trainer.valid()
+            test_loss, test_acc, _ = trainer.test()
+
+            is_best = valid_acc >= best_acc
+            best_acc = max(valid_acc, best_acc)
+
+            if is_best:
+                bad_cnt, best_epoch = 0, epoch
+            else:
+                bad_cnt += 1
+
+            print(
+                'epoch: {}/{} | Train Loss: {} | Train acc: {} | Valid Loss: {} | Valid acc: {} | Test loss: {} | Test acc: {}'.format(
+                    epoch + 1, args.epochs, train_loss, train_acc, valid_loss, valid_acc, test_loss, test_acc))
+
+            #            train_accs.append(train_acc)
+            #            valid_accs.append(valid_acc)
+            trainer.save_checkpoint(epoch, train_acc, valid_acc,
+                                    valid_loss, train_loss, is_best, filename)
+
+            outfile.write(
+                'Epoch {}: train_loss={}, valid_loss={}, test_loss={}, train_acc={}, valid_acc={}, test_acc={}\n'.format(
+                    epoch + 1, train_loss, valid_loss, test_loss, train_acc, valid_acc, test_acc))
+
+            if bad_cnt > 3:
+                print('valid acc not improving for 3 epochs')
+                break
+
+
+
+
 '''
 to run finetune, for example if use Piani8 dataset:
 python main.py --task composer --dataset Pianist8 --class_num --dataroot ./Data/output_composer/Pianist8 --cuda_devices 0
 '''
 if __name__ == '__main__':
-    pretrain()
+    #pretrain()
     #finetune()
     #eval()
-    #finetune_generation()
+    finetune_generation()
     #finetune_eval()
+    #abalation()

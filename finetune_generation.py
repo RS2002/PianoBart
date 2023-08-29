@@ -14,7 +14,7 @@ import sys
 def get_args_generation():
     parser = argparse.ArgumentParser(description='')
 
-    parser.add_argument("--datasets", type=str, nargs='+', default=[]) #TODO
+    parser.add_argument("--datasets", type=str, nargs='+', default=['maestro'])
 
     ### path setup ###
     parser.add_argument('--dict_file', type=str, default='./Data/Octuple.pkl')
