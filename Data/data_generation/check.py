@@ -46,11 +46,11 @@ def checkFinetune(task):
             print(tag, d)
             file = f'Data\output_{task}\{d}\{d}_{tag}.npy'
             a = np.load(file)
-            if task == 'composer':
-                ans = f'Data\output_{task}\{d}\{d}_{tag}_{task[:3]}ans.npy'
-                b = np.load(ans)
-                print(b.shape, np.min(b), np.max(b))
             print(a.shape, np.min(a), np.max(a))
+            # if task == 'composer':
+            ans = f'Data\output_{task}\{d}\{d}_{tag}_{task[:3]}ans.npy'
+            b = np.load(ans)
+            print(b.shape, np.min(b), np.max(b))
             # for num in range(8):
             #     m = a[:, :, num]
             #     m = m.ravel()
