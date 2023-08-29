@@ -268,6 +268,14 @@ def encoding_to_MIDI(encoding):
             cur_tp = new_tp
     return midi_obj
 
+def padding(file_name, e_segment):
+    pad_num = max_window -  len(e_segment)
+    if pad_num < 0:
+        print('ERROR(LENGTH): ' + file_name + ' ' + 'The length of the music is longer than max window(1024).' + '\n', end='')
+        return False
+    for _ in range(pad_num):
+        e_segment.append(tuple([i + 1 for i in token_boundary]))
+    return e_segment
 
 def F(file_name):
     # for test
@@ -336,15 +344,17 @@ def F(file_name):
         if not all(len(i.split()) > tokens_per_note * 2 - 1 for i in output_str_list):
             print('ERROR(ENCODE): ' + file_name + ' ' + str(e) + '\n', end='')
             return False
-        e_segment.append(tuple([i + 4 for i in token_boundary]))
         print('SUCCESS: ' + file_name + '\n', end='')
+        e_segment.append(tuple([i + 4 for i in token_boundary]))
+        if task == 'generate':
+            data_segment = e_segment[:len(e_segment) // 2]
+            data_segment.append(tuple([i + 4 for i in token_boundary]))
+            tag_segment = e_segment[len(e_segment) // 2:]
+            data_segment = padding(file_name, data_segment)
+            tag_segment = padding(file_name, tag_segment)
+            return data_segment, tag_segment
         if padding:
-            pad_num = max_window -  len(e_segment)
-            if pad_num < 0:
-                print('ERROR(LENGTH): ' + file_name + ' ' + 'The length of the music is longer than max window(1024).' + '\n', end='')
-                return False
-            for i in range(pad_num):
-                e_segment.append(tuple([i + 1 for i in token_boundary]))
+            e_segment = padding(file_name, e_segment)
         if task == 'composer':
             if dataset == 'asap':
                 pattern = r"./(.*?)/."
@@ -372,6 +382,16 @@ def G_composer(file_name, output: list, ans: list):
         return False
 
 
+def G_generate(file_name, output: list, ans: list):
+    try:
+        ret, tag = F(file_name)
+        if ret:
+            output.append(ret)
+            ans.append(tag)            
+            return True
+    except BaseException as e:
+        print('ERROR(UNCAUGHT): ' + file_name + '\n', end='')
+        return False
 
 def G(file_name, output: list):
     try:
@@ -438,7 +458,7 @@ if __name__ == '__main__':
             elif task == 'pretrain':
                 res.append(G(mid, output))
             elif task == 'generate':
-                res.append(G(mid, output))
+                res.append(G_generate(mid, output, ans))
         all_cnt += sum((1 if i is not None else 0 for i in res))
         ok_cnt += sum((1 if i is True else 0 for i in res))
         output = np.array(output)
@@ -449,6 +469,10 @@ if __name__ == '__main__':
         elif task == 'composer':
             for i, comp in enumerate(ans):
                 ans[i] = encoding_map[comp]
+            ans = np.array(ans)
+            ans_file = f'{out_path}/{dataset}_{sp}_{task[:3]}ans.npy'
+            np.save(ans_file, ans)
+        elif task == 'generate':
             ans = np.array(ans)
             ans_file = f'{out_path}/{dataset}_{sp}_{task[:3]}ans.npy'
             np.save(ans_file, ans)
