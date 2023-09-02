@@ -1,3 +1,6 @@
+# Coding borrowed from 
+# https://github.com/suryatmodulus/muzic/blob/22c838a4160e871c48c6575bbe082f0ab98094f0/musicbert/preprocess.py#L233
+
 import os
 import zipfile
 import random
@@ -8,19 +11,22 @@ import numpy as np
 import re
 dataset = input("Please input the dataset for generation: ")
 data_path = f'Data/{dataset}'
+task = input("Please input the task (pretrain/composer/generate) : ")
+pad = True
+if task == 'pretrain':
+    pad = int(input("Padding (1/0):"))
+    pad = True if pad == 1 else False
 data_zip = zipfile.ZipFile(data_path+'.zip', 'r')
-out_path = f'Data/output_generation'
+out_path = f'Data/output_{task}'
 if not os.path.exists(out_path):
     os.mkdir(out_path)
 out_path = os.path.join(out_path, dataset)
 output_file = None
 midi_dict = dict()
-task = input("Please input the task ? (pretrain/composer/generate) ")
 
 
-padding = True
 pos_resolution = 16  # per beat (quarter note)
-bar_max = 255
+max_bar = 255
 velocity_quant = 4
 tempo_quant = 12  # 2 ** (1 / 12)
 min_tempo = 16
@@ -45,7 +51,7 @@ max_dura = 127
 max_ts = 253
 max_tp = 48
 tokens_per_note = 8
-token_boundary = (bar_max, max_pos, max_inst, max_pitch, 
+token_boundary = (max_bar, max_pos, max_inst, max_pitch, 
                     max_dura, max_velocity, max_ts, max_tp)
 
 
@@ -218,13 +224,19 @@ def encoding_to_MIDI(encoding):
     cur_pos = 0
     for i in range(len(bar_to_pos)):
         bar_to_pos[i] = cur_pos
-        ts = e2t(bar_to_timesig[i])
-        measure_length = ts[0] * beat_note_factor * pos_resolution // ts[1]
-        cur_pos += measure_length
+        try:
+            ts = e2t(bar_to_timesig[i])
+            measure_length = ts[0] * beat_note_factor * pos_resolution // ts[1]
+            cur_pos += measure_length
+        except:
+            continue
     pos_to_tempo = [list() for _ in range(
         cur_pos + max(map(lambda x: x[1], encoding)))]
     for i in encoding:
-        pos_to_tempo[bar_to_pos[i[0]] + i[1]].append(i[7])
+        try:
+            pos_to_tempo[bar_to_pos[i[0]] + i[1]].append(i[7])
+        except:
+            continue
     pos_to_tempo = [round(sum(i) / len(i)) if len(i) >
                     0 else None for i in pos_to_tempo]
     for i in range(len(pos_to_tempo)):
@@ -246,15 +258,21 @@ def encoding_to_MIDI(encoding):
             duration = 1
         end = start + duration
         velocity = e2v(i[5])
-        midi_obj.instruments[program].notes.append(miditoolkit.containers.Note(
+        try:
+            midi_obj.instruments[program].notes.append(miditoolkit.containers.Note(
             start=start, end=end, pitch=pitch, velocity=velocity))
+        except:
+            continue
     midi_obj.instruments = [
         i for i in midi_obj.instruments if len(i.notes) > 0]
     cur_ts = None
     for i in range(len(bar_to_timesig)):
         new_ts = bar_to_timesig[i]
         if new_ts != cur_ts:
-            numerator, denominator = e2t(new_ts)
+            try:
+                numerator, denominator = e2t(new_ts)
+            except:
+                continue
             midi_obj.time_signature_changes.append(miditoolkit.containers.TimeSignature(
                 numerator=numerator, denominator=denominator, time=get_tick(i, 0)))
             cur_ts = new_ts
@@ -268,11 +286,13 @@ def encoding_to_MIDI(encoding):
             cur_tp = new_tp
     return midi_obj
 
-def padding(file_name, e_segment):
-    pad_num = max_window -  len(e_segment)
+def padding(file_name, e_segment, window=max_window):
+    pad_num = window -  len(e_segment)
     if pad_num < 0:
-        print('ERROR(LENGTH): ' + file_name + ' ' + 'The length of the music is longer than max window(1024).' + '\n', end='')
-        return False
+        print('WARNING(LENGTH): ' + file_name + ' ' + 'The length of the music is longer than max window(1024).' + '\n', end='')
+        e_segment = e_segment[:window-1]
+        e_segment.append(tuple([i + 4 for i in token_boundary]))
+        return e_segment
     for _ in range(pad_num):
         e_segment.append(tuple([i + 1 for i in token_boundary]))
     return e_segment
@@ -312,58 +332,129 @@ def F(file_name):
                 print('ERROR(DUPLICATED): ' + midi_hash + ' ' +
                         file_name + ' == ' + dup_file_name + '\n', end='')
                 return None
-            
-        output_str_list = []
-        sample_step = max(round(sample_len_max / sample_overlap_rate), 1)
-        for p in range(0 - random.randint(0, sample_len_max - 1), len(e), sample_step):
-            L = max(p, 0)
-            R = min(p + sample_len_max, len(e)) - 1
-            bar_index_list = [e[i][0]
-                            for i in range(L, R + 1) if e[i][0] is not None]
-            bar_index_min = 0
-            bar_index_max = 0
-            if len(bar_index_list) > 0:
-                bar_index_min = min(bar_index_list)
-                bar_index_max = max(bar_index_list)
-            offset_lower_bound = -bar_index_min
-            offset_upper_bound = bar_max - 1 - bar_index_max
-            # to make bar index distribute in [0, bar_max)
-            bar_index_offset = random.randint(
-                offset_lower_bound, offset_upper_bound) if offset_lower_bound <= offset_upper_bound else offset_lower_bound
-            e_segment = []
+        # sample_step = max(round(sample_len_max / sample_overlap_rate), 1)
+        # e_segment = []
+        # if task == 'pretrain':
+            # e.insert(0, tuple([i + 3 for i in token_boundary]))
+            # e_segment.append(tuple([i + 3 for i in token_boundary]))
+        # for p in range(0 - random.randint(0, sample_len_max - 1), len(e), sample_step):
+        #     L = max(p, 0)
+        #     R = min(p + sample_len_max, len(e)) - 1
+        #     bar_index_list = [e[i][0]
+        #                     for i in range(L, R + 1) if e[i][0] is not None]
+        #     bar_index_min = 0
+        #     bar_index_max = 0
+        #     if len(bar_index_list) > 0:
+        #         bar_index_min = min(bar_index_list)
+        #         bar_index_max = max(bar_index_list)
+        #     offset_lower_bound = -bar_index_min
+        #     offset_upper_bound = max_bar - 1 - bar_index_max
+        #     # to make bar index distribute in [0, max_bar)
+        #     bar_index_offset = random.randint(
+        #         offset_lower_bound, offset_upper_bound) if offset_lower_bound <= offset_upper_bound else offset_lower_bound
+        #     for i in e[L: R + 1]:
+        #         if i[0] is None or i[0] + bar_index_offset < max_bar:
+        #             t = list(i)
+        #             t[0] += bar_index_offset
+        #             e_segment.append(tuple(t))
+        #         else:
+        #             break
+        # # no empty
+        # if not all(len(i.split()) > tokens_per_note * 2 - 1 for i in output_str_list):
+        #     print('ERROR(ENCODE): ' + file_name + ' ' + str(e) + '\n', end='')
+        #     return False
+        # e_segment.append(tuple([i + 4 for i in token_boundary]))
+        # if task == 'generate':
+        #     data_segment = e_segment[:len(e_segment) // 2]
+        #     data_segment.append(tuple([i + 4 for i in token_boundary]))
+        #     tag_segment = e_segment[len(e_segment) // 2:]
+        #     data_segment = padding(file_name, data_segment)
+        #     tag_segment = padding(file_name, tag_segment)
+        #     print('SUCCESS: ' + file_name + '\n', end='')
+        #     return data_segment, tag_segment
+        # # if pad:
+        # #     e_segment = padding(file_name, e_segment)
+        # print('SUCCESS: ' + file_name + '\n', end='')
+        # if task == 'composer':
+        #     if dataset == 'asap':
+        #         pattern = r"./(.*?)/."
+        #         composer = re.search(pattern, file_name).group(1)
+        #     elif dataset == 'Pianist8':
+        #         composer = re.search(r"/([^/]+)/(.*?)/(.*?)_", file_name).group(2)
+        #     return e_segment, composer
+        # return e_segment
+        # return True
+        e_list = []
+        # e.append(tuple([i + 4 for i in token_boundary]))
+        flag = 1
+        former = 0
+        for i, ei in enumerate(e):
+            if ei[0] > max_bar * flag:
+                temp = list(e[former:i])
+                if flag > 1:
+                    for j, t in enumerate(temp):
+                        tt = list(t)
+                        tt[0] -= max_bar * (flag-1) +1
+                        temp[j] = tuple(tt)
+                temp.append(tuple([i + 4 for i in token_boundary]))
+                e_list.append(temp)
+                former = i
+                flag += 1
+                # e = e[:i]
+        temp = list(e[former:])
+        if flag > 1:
+            for j, t in enumerate(temp):
+                tt = list(t)
+                tt[0] -= max_bar * (flag-1) +1
+                temp[j] = tuple(tt)
+        temp.append(tuple([i + 4 for i in token_boundary]))
+        e_list.append(temp)
+        print(e[0], e[-2], e[-1], len(e), len(e_list))
+        output_list = []
+        for ei in e_list:
+            print(ei[0], ei[-2], ei[-1], len(ei))
+            if task == 'generate':
+                half = max_window-1 if len(ei) >= 2 * max_window else len(ei) // 2 - 1
+                data_segment = ei[:half]
+                for i, ds in enumerate(data_segment):
+                    if ds[0] >= data_segment[-1][0]:
+                        break
+                data_segment = ei[:i]
+                last = data_segment[-1][0]
+                tag_segment = ei[i:]
+                print(len(ei), len(data_segment), len(tag_segment))
+                data_segment.append(tuple([i + 4 for i in token_boundary]))
+                data_segment = padding(file_name, data_segment)
+                tag_segment = padding(file_name, tag_segment)
+                if np.count_nonzero(np.array(data_segment)[:, 0] == 259) != 1:
+                    continue
+                if np.count_nonzero(np.array(data_segment)[:, 0] == 259) != 1:
+                    continue
+                print(data_segment[0], last, data_segment[-2], data_segment[-1], len(data_segment))
+                print(tag_segment[0], tag_segment[-2], tag_segment[-1], len(tag_segment))
+                print('SUCCESS: ' + file_name + '\n', end='')
+                output_list.append((data_segment, tag_segment))
+                # return data_segment, tag_segment
             if task == 'pretrain':
-                e_segment.append(tuple([i + 3 for i in token_boundary]))
-            for i in e[L: R + 1]:
-                if i[0] is None or i[0] + bar_index_offset < bar_max:
-                    t = list(i)
-                    t[0] += bar_index_offset
-                    e_segment.append(tuple(t))
-                else:
-                    break
-        # no empty
-        if not all(len(i.split()) > tokens_per_note * 2 - 1 for i in output_str_list):
-            print('ERROR(ENCODE): ' + file_name + ' ' + str(e) + '\n', end='')
-            return False
-        print('SUCCESS: ' + file_name + '\n', end='')
-        e_segment.append(tuple([i + 4 for i in token_boundary]))
-        if task == 'generate':
-            data_segment = e_segment[:len(e_segment) // 2]
-            data_segment.append(tuple([i + 4 for i in token_boundary]))
-            tag_segment = e_segment[len(e_segment) // 2:]
-            data_segment = padding(file_name, data_segment)
-            tag_segment = padding(file_name, tag_segment)
-            return data_segment, tag_segment
-        if padding:
-            e_segment = padding(file_name, e_segment)
-        if task == 'composer':
-            if dataset == 'asap':
-                pattern = r"./(.*?)/."
-                composer = re.search(pattern, file_name).group(1)
-            elif dataset == 'Pianist8':
-                composer = re.search(r"/([^/]+)/(.*?)/(.*?)_", file_name).group(2)
-            return e_segment, composer
-        return e_segment
+                if pad:
+                    ei = padding(file_name, ei)
+                    print(ei[0], ei[-2], ei[-1], len(ei))
+                output_list.append(ei)
+            print('SUCCESS: ' + file_name + '\n', end='')
+            if task == 'composer':
+                ei = padding(file_name, ei)
+                print(ei[0], ei[-2], ei[-1], len(ei))
+                if dataset == 'asap':
+                    pattern = r"./(.*?)/."
+                    composer = re.search(pattern, file_name).group(1)
+                elif dataset == 'Pianist8':
+                    composer = re.search(r"/([^/]+)/(.*?)/(.*?)_", file_name).group(2)
+                print(composer)
+                output_list.append((ei,composer))
+                # return e, composer
+        return output_list
         return True
+
     except BaseException as ex:
         print('ERROR(PROCESS): ' + file_name + ' ' + str(ex) + '\n', end='')
         return False
@@ -372,10 +463,13 @@ def F(file_name):
 
 def G_composer(file_name, output: list, ans: list):
     try:
-        ret, comp = F(file_name)
+        ret = F(file_name)
+        
+        # ret, comp = F(file_name)
         if ret:
-            output.append(ret)
-            ans.append(comp)            
+            for seq, comp in ret:
+                output.append(seq)
+                ans.append(comp)            
             return True
     except BaseException as e:
         print('ERROR(UNCAUGHT): ' + file_name + '\n', end='')
@@ -384,10 +478,12 @@ def G_composer(file_name, output: list, ans: list):
 
 def G_generate(file_name, output: list, ans: list):
     try:
-        ret, tag = F(file_name)
+        ret = F(file_name)
+        # ret, tag = F(file_name)
         if ret:
-            output.append(ret)
-            ans.append(tag)            
+            for seq, tag in ret:
+                output.append(seq)
+                ans.append(tag)            
             return True
     except BaseException as e:
         print('ERROR(UNCAUGHT): ' + file_name + '\n', end='')
@@ -397,11 +493,11 @@ def G(file_name, output: list):
     try:
         ret = F(file_name)
         if ret:
-            if task != 'pretrain':
-                output.append(ret)
-            else:
-                output += ret
-            
+            for seq in ret:
+                if pad:
+                    output.append(seq)
+                else:
+                    output += seq
             return True
     except BaseException as e:
         print('ERROR(UNCAUGHT): ' + file_name + '\n', end='')
@@ -464,8 +560,9 @@ if __name__ == '__main__':
         output = np.array(output)
         np.save(output_file, output)
         if task == 'pretrain':
-            output_split = data_split(output)
-            np.save(split_file, output_split)
+            if not pad:
+                output_split = data_split(output)
+                np.save(split_file, output_split)
         elif task == 'composer':
             for i, comp in enumerate(ans):
                 ans[i] = encoding_map[comp]
