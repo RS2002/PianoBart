@@ -421,11 +421,15 @@ def F(file_name):
                         break
                 data_segment = ei[:i]
                 last = data_segment[-1][0]
-                data_segment.append(tuple([i + 4 for i in token_boundary]))
-                data_segment = padding(file_name, data_segment)
                 tag_segment = ei[i:]
                 print(len(ei), len(data_segment), len(tag_segment))
+                data_segment.append(tuple([i + 4 for i in token_boundary]))
+                data_segment = padding(file_name, data_segment)
                 tag_segment = padding(file_name, tag_segment)
+                if np.count_nonzero(np.array(data_segment)[:, 0] == 259) != 1:
+                    continue
+                if np.count_nonzero(np.array(data_segment)[:, 0] == 259) != 1:
+                    continue
                 print(data_segment[0], last, data_segment[-2], data_segment[-1], len(data_segment))
                 print(tag_segment[0], tag_segment[-2], tag_segment[-1], len(tag_segment))
                 print('SUCCESS: ' + file_name + '\n', end='')

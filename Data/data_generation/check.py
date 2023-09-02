@@ -3,7 +3,7 @@ import random
 from midi_to_octuple import encoding_to_MIDI
 import os
 # 0 Measure, 1 Pos, 2 Program, 3 Pitch, 4 Duration, 5 Velocity, 6 TimeSig, 7 Tempo
-default = ('asap', 'EMOPIA', 'Pianist8', 'POP1K7', 'POP909','pretrain')
+default = ( 'EMOPIA', 'Pianist8', 'POP1K7', 'POP909')
 composer = ('Pianist8', 'asap')
 generate = ('maestro',)
 datasets = {'composer': composer, 'generate': generate}
@@ -86,6 +86,7 @@ def checkPretrain():
                     if num == 0:
                         print(m, np.count_nonzero(m == mmaps[0]))
             checkMidi(file, d, task='pretrain', tag=tag)
+            
 def checkFinetune(task):
     method = ['gen_method', 'pretrain_method'] if task == 'generate' else ['',]
     for tag in ('train', 'test', 'valid'):
@@ -101,7 +102,9 @@ def checkFinetune(task):
                     m = m.ravel()
                     print(f'{file}|{maps[num]}: {max(m)==mmaps[num]} and {mmaps[num]-1 in m}')
                     if num == 0:
-                        print(m, np.count_nonzero(m == mmaps[0]))
+                        # 检查是否一个1024长度里只有一个eos
+                        cnt = np.count_nonzero(m == mmaps[0])
+                        print(m, cnt, cnt==a.shape[0])
                 if mthd != 'pretrain_method':
                     ans = f'Data\output_{task}\{d}\{mthd}\{d}_{tag}_{task[:3]}ans.npy'
                     b = np.load(ans)
@@ -112,7 +115,8 @@ def checkFinetune(task):
                             m = m.ravel()
                             print(f'{file}|{maps[num]}: {max(m)==mmaps[num]} and {mmaps[num]-1 in m}')
                             if num == 0:
-                                print(m, np.count_nonzero(m == mmaps[0]))
+                                cnt = np.count_nonzero(m == mmaps[0])
+                                print(m, cnt, cnt==b.shape[0])
                         file2 = ans
                 if len(mthd):
                     task_m = task + f"_{mthd}"

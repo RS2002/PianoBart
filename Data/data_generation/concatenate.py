@@ -1,5 +1,5 @@
 import numpy as np
-
+import os
 max_window = 1024
 max_bar = 255
 max_inst = 128
@@ -21,7 +21,9 @@ def data_split(data: np.array):
     return padded.reshape(m, max_window, tokens_per_note)
 
 default = ('asap', 'EMOPIA', 'Pianist8', 'POP1K7', 'POP909')
-
+path = r'Data\output_pretrain\pretrain'
+if not os.path.exists(path):
+    os.mkdir(path)
 for tag in ('train', 'test', 'valid'):
     output = None
     for d in default:
