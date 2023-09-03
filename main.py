@@ -305,7 +305,7 @@ def finetune_generation():
 
     print("\nLoading Dataset")
     #X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetuneload_data_finetune(args.dataset, args.task, args.dataroot)
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(dataset=args.datasets,task="gen",data_root="./Data/out_cgeneration/maestro/gen_method")
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(dataset=args.datasets,task="gen",data_root="./Data/output_generation/maestro/gen_method")
 
     trainset = FinetuneDataset(X=X_train, y=y_train)
     validset = FinetuneDataset(X=X_val, y=y_val)
@@ -359,8 +359,8 @@ def finetune_generation():
             valid_loss, valid_acc = trainer.valid()
             test_loss, test_acc, _ = trainer.test()
 
-            is_best = valid_acc >= best_acc
-            best_acc = max(valid_acc, best_acc)
+            is_best = np.mean(valid_acc) >= np.mean(best_acc)
+            best_acc = max(np.mean(valid_acc), np.mean(best_acc))
 
             if is_best:
                 bad_cnt, best_epoch = 0, epoch
@@ -373,8 +373,8 @@ def finetune_generation():
 
             #            train_accs.append(train_acc)
             #            valid_accs.append(valid_acc)
-            trainer.save_checkpoint(epoch, train_acc, valid_acc,
-                                    valid_loss, train_loss, is_best, filename)
+            '''trainer.save_checkpoint(epoch, train_acc, valid_acc,
+                                    valid_loss, train_loss, is_best, filename)'''
 
             outfile.write(
                 'Epoch {}: train_loss={}, valid_loss={}, test_loss={}, train_acc={}, valid_acc={}, test_acc={}\n'.format(
@@ -507,7 +507,7 @@ def abalation():
         pianobart.load_state_dict(checkpoint['state_dict'])
 
     print("\nCreating Finetune Trainer")
-    trainer = AblationTrainer(pianobart, train_loader, valid_loader, test_loader, args.lr, args.cpu, args.cuda_devices, None)
+    trainer = AblationTrainer(pianobart, train_loader, valid_loader, test_loader, args.lr, X_test.shape, args.cpu, args.cuda_devices, None)
 
     print("\nTraining Start")
     save_dir = os.path.join('result/finetune/generation_' + args.name)
@@ -526,8 +526,8 @@ def abalation():
             valid_loss, valid_acc = trainer.valid()
             test_loss, test_acc, _ = trainer.test()
 
-            is_best = valid_acc >= best_acc
-            best_acc = max(valid_acc, best_acc)
+            is_best = np.mean(valid_acc) >= np.mean(best_acc)
+            best_acc = max(np.mean(valid_acc), np.mean(best_acc))
 
             if is_best:
                 bad_cnt, best_epoch = 0, epoch
@@ -540,8 +540,8 @@ def abalation():
 
             #            train_accs.append(train_acc)
             #            valid_accs.append(valid_acc)
-            trainer.save_checkpoint(epoch, train_acc, valid_acc,
-                                    valid_loss, train_loss, is_best, filename)
+            '''trainer.save_checkpoint(epoch, train_acc, valid_acc,
+                                    valid_loss, train_loss, is_best, filename)'''
 
             outfile.write(
                 'Epoch {}: train_loss={}, valid_loss={}, test_loss={}, train_acc={}, valid_acc={}, test_acc={}\n'.format(
@@ -562,6 +562,6 @@ if __name__ == '__main__':
     #pretrain()
     #finetune()
     #eval()
-    finetune_generation()
+    #finetune_generation()
     #finetune_eval()
-    #abalation()
+    abalation()

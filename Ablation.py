@@ -14,7 +14,7 @@ import os
 def get_args_ablation():
     parser = argparse.ArgumentParser(description='')
 
-    parser.add_argument("--datasets", type=str, nargs='+', default=['maestro'])
+    parser.add_argument("--datasets", type=str, nargs='+', default='maestro')
 
     ### path setup ###
     parser.add_argument('--dict_file', type=str, default='./Data/Octuple.pkl')
@@ -36,7 +36,7 @@ def get_args_ablation():
 
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default=False
-    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[0, 1, 2, 3], help="CUDA device ids")
+    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[5,6,7], help="CUDA device ids")
 
     args = parser.parse_args()
 
@@ -45,7 +45,7 @@ def get_args_ablation():
 
 class AblationTrainer:
     def __init__(self, pianobart, train_dataloader, valid_dataloader, test_dataloader,
-                 lr, cpu, cuda_devices=None, model=None):
+                 lr,testset_shape, cpu, cuda_devices=None, model=None):
         device_name = "cuda"
         if cuda_devices is not None and len(cuda_devices) >= 1:
             device_name += ":" + str(cuda_devices[0])
@@ -71,6 +71,8 @@ class AblationTrainer:
         self.train_data = train_dataloader
         self.valid_data = valid_dataloader
         self.test_data = test_dataloader
+
+        self.testset_shape=testset_shape
 
 
         self.optim = AdamW(self.model.parameters(), lr=lr, weight_decay=0.01)
@@ -121,17 +123,21 @@ class AblationTrainer:
         for ori_seq_batch in pbar:
             batch = ori_seq_batch.shape[0]
             ori_seq_batch = ori_seq_batch.to(self.device)
-            shift_seq_batch = torch.zeros_like(ori_seq_batch)
+            shift_seq_batch = torch.zeros_like(ori_seq_batch).to(self.device)
             shift_seq_batch[:,1:,:]=ori_seq_batch[:,:-1,:]
             shift_seq_batch[:,0,:]=torch.tensor(self.pianobart.sos_word_np)
             shift_seq_batch.to(self.device)
-            length = (ori_seq_batch[:, :, 0] != self.pianobart.bar_pad_word).int()
-            loss_mask = torch.zeros(batch, 1024)
+            length = torch.sum(ori_seq_batch[:, :, 0] != self.pianobart.bar_pad_word,dim=-1)
+            #print(length)
+            loss_mask = torch.zeros(batch, 1024).to(self.device)
             for i in range(batch):
-                ori_seq_batch[i,length//2:,:]=self.pianobart.pad_word_np
-                loss_mask[i,length//2+1:length+1]=1
+                ori_seq_batch[i,length[i].item()//2:,:]=torch.tensor(self.pianobart.pad_word_np)
+                loss_mask[i,length[i].item()//2+1:length[i].item()+1]=1
             attn_encoder = (ori_seq_batch[:, :, 0] != self.pianobart.bar_pad_word).float().to(self.device)
             attn_decoder = (shift_seq_batch[:, :, 0] != self.pianobart.bar_pad_word).float().to(self.device)
+            ori_seq_batch = ori_seq_batch.long()
+            shift_seq_batch = shift_seq_batch.long()
+
             y_hat = self.model.forward(input_ids_encoder=ori_seq_batch, input_ids_decoder=shift_seq_batch, encoder_attention_mask=attn_encoder,decoder_attention_mask=attn_decoder)
             # get the most likely choice with max
             outputs = []
@@ -147,7 +153,7 @@ class AblationTrainer:
 
             all_acc = []
             for i in range(8):
-                acc = torch.sum((shift_seq_batch[:, :, i] == outputs[:, :, i]).float())
+                acc = torch.sum((shift_seq_batch[:, :, i] == outputs[:, :, i]).float()*loss_mask)
                 acc /= torch.sum(loss_mask)
                 all_acc.append(acc)
             total_acc = [sum(x) for x in zip(total_acc, all_acc)]
@@ -183,8 +189,8 @@ class AblationTrainer:
                     np.average(accs), *accs))
 
         if mode == 2:
-            return round(total_loss / len(training_data), 4), round(np.average(total_acc) / total_cnt, 4), all_output
-        return round(total_loss / len(training_data), 4), round(np.average(total_acc)/ total_cnt, 4)
+            return round(total_loss / len(training_data), 4), [round(x.item() / len(training_data), 4) for x in total_acc], all_output
+        return round(total_loss / len(training_data), 4), [round(x.item() / len(training_data), 4) for x in total_acc]
 
 
 
@@ -210,19 +216,18 @@ class AblationTrainer:
 def load_data_ablation(datasets,mode):
     if mode=="ablation":
         to_concat = []
-        root = 'Data/output_generation/pretrain_method'
+        root = 'Data/output_generation'
 
         # for dataset in datasets:
         #     data = np.load(os.path.join(root, f'{dataset}.npy'), allow_pickle=True)
         #     print(f'   {dataset}: {data.shape}')
         #     to_concat.append(data)
-        for dataset in datasets:
-            data_train = np.load(os.path.join(root, dataset, 'train.npy'), allow_pickle = True)
-            data_test = np.load(os.path.join(root, dataset, 'test.npy'), allow_pickle = True)
-            data_valid = np.load(os.path.join(root, dataset, 'valid.npy'), allow_pickle = True)
-            data = np.concatenate((data_train, data_test, data_valid), axis = 0)
-            print(f'   {dataset}: {data.shape}')
-            to_concat.append(data)
+        data_train = np.load(os.path.join(root,datasets,'pretrain_method', datasets+'_train.npy'), allow_pickle = True)
+        data_test = np.load(os.path.join(root,datasets,'pretrain_method', datasets+'_test.npy'), allow_pickle = True)
+        data_valid = np.load(os.path.join(root,datasets,'pretrain_method', datasets+'_valid.npy'), allow_pickle = True)
+        data = np.concatenate((data_train, data_test, data_valid), axis = 0)
+        print(f'   {datasets}: {data.shape}')
+        to_concat.append(data)
 
         training_data = np.vstack(to_concat)
         print('   > all training data:', training_data.shape)

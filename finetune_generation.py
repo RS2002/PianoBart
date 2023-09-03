@@ -14,7 +14,7 @@ import sys
 def get_args_generation():
     parser = argparse.ArgumentParser(description='')
 
-    parser.add_argument("--datasets", type=str, nargs='+', default=['maestro'])
+    parser.add_argument("--datasets", type=str, nargs='+', default='maestro')
 
     ### path setup ###
     parser.add_argument('--dict_file', type=str, default='./Data/Octuple.pkl')
@@ -23,20 +23,20 @@ def get_args_generation():
 
     ### parameter setting ###
     parser.add_argument('--num_workers', type=int, default=5)
-    parser.add_argument('--batch_size', type=int, default=2)
+    parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--max_seq_len', type=int, default=1024, help='all sequences are padded to `max_seq_len`')
     parser.add_argument('--hs', type=int, default=1024)
     parser.add_argument('--layers', type=int, default=8)  # layer nums of encoder & decoder
     parser.add_argument('--ffn_dims', type=int, default=2048)  # FFN dims
     parser.add_argument('--heads', type=int, default=8)  # attention heads
 
-    parser.add_argument('--epochs', type=int, default=10, help='number of training epochs')
+    parser.add_argument('--epochs', type=int, default=30, help='number of training epochs')
     parser.add_argument('--lr', type=float, default=2e-5, help='initial learning rate')
     parser.add_argument('--nopretrain', action="store_true")  # default: false
 
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default=False
-    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[0, 1, 2, 3], help="CUDA device ids")
+    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[5,6,7], help="CUDA device ids")
 
     args = parser.parse_args()
 
@@ -81,6 +81,7 @@ class GenerationTrainer:
 
 
     def compute_loss(self, predict, target, loss_mask):
+        #loss = self.loss_func(torch.softmax(predict, dim=-1), target)
         loss = self.loss_func(predict, target)
         loss = loss * loss_mask
         #TODO: add weights for different attributes
@@ -122,6 +123,8 @@ class GenerationTrainer:
         for x, y in pbar:  # (batch, 512, 768)
             batch = x.shape[0]
             x, y = x.to(self.device), y.to(self.device)
+            x=x.long()
+            y=y.long()
             attn_encoder = (x[:, :, 0] != self.pianobart.bar_pad_word).float().to(self.device)
             y_shift = torch.zeros_like(y)
             y_shift[:, 1:,:] = y[:, :-1,:]
@@ -143,7 +146,7 @@ class GenerationTrainer:
 
             all_acc = []
             for i in range(8):
-                acc = torch.sum((y[:, :, i] == outputs[:, :, i]).float())
+                acc = torch.sum((y[:, :, i] == outputs[:, :, i]).float()*attn_decoder)
                 acc /= torch.sum(attn_decoder)
                 all_acc.append(acc)
             total_acc = [sum(x) for x in zip(total_acc, all_acc)]
@@ -179,8 +182,8 @@ class GenerationTrainer:
                     np.average(accs), *accs))
 
         if mode == 2:
-            return round(total_loss / len(training_data), 4), round(np.average(total_acc) / total_cnt, 4), all_output
-        return round(total_loss / len(training_data), 4), round(np.average(total_acc)/ total_cnt, 4)
+            return round(total_loss / len(training_data), 4), [round(x.item() / len(training_data), 4) for x in total_acc], all_output
+        return round(total_loss / len(training_data), 4), [round(x.item() / len(training_data), 4) for x in total_acc]
 
 
 
