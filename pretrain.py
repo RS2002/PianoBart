@@ -562,16 +562,19 @@ class Pretrainer:
 def load_data_pretrain(datasets,mode):
     if mode=="pretrain":
         to_concat = []
-        root = 'Data/output'
-
+        #root = 'Data/output'
+        root = 'Data/output_pretrain'
         # for dataset in datasets:
         #     data = np.load(os.path.join(root, f'{dataset}.npy'), allow_pickle=True)
         #     print(f'   {dataset}: {data.shape}')
         #     to_concat.append(data)
         for dataset in datasets:
-            data_train = np.load(os.path.join(root, dataset, 'midi_train_split.npy'), allow_pickle = True)
+            '''data_train = np.load(os.path.join(root, dataset, 'midi_train_split.npy'), allow_pickle = True)
             data_test = np.load(os.path.join(root, dataset, 'midi_test_split.npy'), allow_pickle = True)
-            data_valid = np.load(os.path.join(root, dataset, 'midi_valid_split.npy'), allow_pickle = True)
+            data_valid = np.load(os.path.join(root, dataset, 'midi_valid_split.npy'), allow_pickle = True)'''
+            data_train = np.load(os.path.join(root, dataset, dataset+'_train_split.npy'), allow_pickle=True)
+            data_test = np.load(os.path.join(root, dataset, dataset+'_test_split.npy'), allow_pickle=True)
+            data_valid = np.load(os.path.join(root, dataset, dataset+'_valid_split.npy'), allow_pickle=True)
             data = np.concatenate((data_train, data_test, data_valid), axis = 0)
             print(f'   {dataset}: {data.shape}')
             to_concat.append(data)
