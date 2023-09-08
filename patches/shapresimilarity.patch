@@ -1,0 +1,10 @@
+--- shapesimilarity.py	2023-09-08 20:44:12.831661523 +0800
++++ shapesimilarity.patched.py	2023-09-08 20:36:08.679038757 +0800
+@@ -37,5 +37,5 @@
+     if frechet_dist < min_frechet_distance:
+       min_frechet_distance = frechet_dist
+   # divide by Math.sqrt(2) to try to get the low results closer to 
+-  result = max(1 - min_frechet_distance / (geo_avg_curve_len / math.sqrt(2)), 0)
++  result = max(1 - min_frechet_distance / (1e-8 + (geo_avg_curve_len / math.sqrt(2))), 0)
+   return round(result, 4)
+\ No newline at end of file

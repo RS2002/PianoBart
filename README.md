@@ -58,7 +58,17 @@ You can uncomment the corresponding function to perform the desired task.
 ### 2.3 Finetune
 
 
+#### 2.3.1 Generation
 
+> Note: Before run the code, please do the following steps to patch the code.
+
+1. Locate the file of `shapesimilarity.py`, which probably is in the path of `your_env/lib/python{version}/site-packages/shapesimilarity/shapesimilarity.py`.
+
+2. Use the patch we provide, simply just run the following command in the terminal.
+
+```shell
+patch {path of shapesimilarity.py} < patches/shapesimilarity.patch
+```
 
 
 ## 3. Demo
