@@ -331,8 +331,8 @@ def finetune_generation():
             valid_loss, valid_acc = trainer.valid()
             test_loss, test_acc, _ = trainer.test()
 
-            is_best = valid_acc >= best_acc
-            best_acc = max(valid_acc, best_acc)
+            is_best = np.mean(valid_acc) >= np.mean(best_acc)
+            best_acc = max(np.mean(valid_acc), np.mean(best_acc))
 
             if is_best:
                 bad_cnt, best_epoch = 0, epoch
@@ -340,8 +340,8 @@ def finetune_generation():
                 bad_cnt += 1
 
             print(
-                'epoch: {}/{} | Train Loss: {} | Train acc: {} | Valid Loss: {} | Valid acc: {} | Test loss: {} | Test acc: {}'.format(
-                    epoch + 1, args.epochs, train_loss, train_acc, valid_loss, valid_acc, test_loss, test_acc))
+                'epoch: {}/{} | Train Loss: {} | Train acc: {} | Train FAD: {} | Train FAD (BAR): {} | Valid Loss: {} | Valid acc: {} | Valid FAD: {} | Valid FAD(BAR): {} | Test loss: {} | Test acc: {} | Test FAD: {} | Test FAD(BAR): {}'.format(
+                    epoch + 1, args.epochs, train_loss, train_acc, train_FAD, train_FAD_BAR, valid_loss, valid_acc, valid_FAD, valid_FAD_BAR, test_loss, test_acc, test_FAD, test_FAD_BAR))
 
             #            train_accs.append(train_acc)
             #            valid_accs.append(valid_acc)
@@ -349,8 +349,8 @@ def finetune_generation():
                                     valid_loss, train_loss, is_best, filename)
 
             outfile.write(
-                'Epoch {}: train_loss={}, valid_loss={}, test_loss={}, train_acc={}, valid_acc={}, test_acc={}\n'.format(
-                    epoch + 1, train_loss, valid_loss, test_loss, train_acc, valid_acc, test_acc))
+                'Epoch {}: train_loss={}, valid_loss={}, test_loss={}, train_acc={}, valid_acc={}, test_acc={}, train_fad={}, valid_fad={}, test_fad={}, train_fad(bar)={}, valid_fad(bar)={}, test_fad(bar)={}\n'.format(
+                    epoch + 1, train_loss, valid_loss, test_loss, train_acc, valid_acc, test_acc, train_FAD, valid_FAD, test_FAD, train_FAD_BAR, valid_FAD_BAR, test_FAD_BAR))
 
             if bad_cnt > 3:
                 print('valid acc not improving for 3 epochs')

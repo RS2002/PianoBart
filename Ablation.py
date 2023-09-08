@@ -9,7 +9,7 @@ import tqdm
 from torch.nn.utils import clip_grad_norm_
 import sys
 import os
-
+import shapesimilarity
 
 def get_args_ablation():
     parser = argparse.ArgumentParser(description='')
@@ -108,6 +108,10 @@ class AblationTrainer:
 
         total_acc, total_loss = [0] * len(self.pianobart.e2w), 0
         total_cnt = 0
+        total_FAD = 0
+        total_FAD_BAR = 0
+        #total_FAD_pos = 0
+
 
         if mode ==0:
             self.model.train()
@@ -152,10 +156,55 @@ class AblationTrainer:
                 cnt += batch
 
             all_acc = []
+            FAD = 0
+            FAD_BAR = 0
+            #FAD_pos=0
+
             for i in range(8):
                 acc = torch.sum((shift_seq_batch[:, :, i] == outputs[:, :, i]).float()*loss_mask)
                 acc /= torch.sum(loss_mask)
                 all_acc.append(acc)
+                if i==3:
+                    for j in range(shift_seq_batch.shape[0]):
+                        current_FAD=0
+                        current_FAD_BAR=0
+                        #current_FAD_pos=0
+                        index=0
+                        y1=shift_seq_batch[j, loss_mask[j] == 1, i]
+                        y2=outputs[j, loss_mask[j] == 1, i]
+                        bar=shift_seq_batch[j, loss_mask[j] == 1, 0]
+                        '''pos1=y[j, attn_decoder[j] == 1, 1]
+                        pos2=outputs[j, attn_decoder[j] == 1, 1]'''
+                        for k in range(bar[-2]):
+                            c1=y1[bar==k].tolist()
+                            c2=y2[bar==k].tolist()
+                            if len(c1)>1:
+                                index+=len(c1)
+                                x=range(len(c1))
+                                current_FAD_BAR+=shapesimilarity.shape_similarity(list(zip(x,c1)),list(zip(x,c2)))*len(c1)
+                                '''x1=pos1[bar==k].tolist()
+                                x2=pos2[bar==k].tolist()
+                                current_FAD_pos += shapesimilarity.shape_similarity(list(zip(x1, c1)), list(zip(x2, c2))) * len(c1)'''
+                        y1=y1.tolist()
+                        y2=y2.tolist()
+                        l=len(y1)
+                        gap=10
+                        for i in range(l//gap):
+                            c1=y1[i*gap:(i+1)*gap-1]
+                            c2=y2[i*gap:(i+1)*gap-1]
+                            x=range(gap)
+                            current_FAD+=shapesimilarity.shape_similarity(list(zip(x,c1)),list(zip(x,c2)))
+                        if index!=0:
+                            FAD_BAR+=current_FAD_BAR/index
+                            #FAD_pos+=current_FAD_pos/index
+                        if l//gap!=0:
+                            FAD+=current_FAD/(l//gap)
+                    FAD_BAR/=shift_seq_batch.shape[0]
+                    total_FAD_BAR+=FAD_BAR
+                    FAD/=shift_seq_batch.shape[0]
+                    total_FAD+=FAD
+                    #FAD_pos/=y.shape[0]
+                    #total_FAD_pos+=FAD_pos
             total_acc = [sum(x) for x in zip(total_acc, all_acc)]
             total_cnt += torch.sum(attn_decoder).item()
 
@@ -180,18 +229,24 @@ class AblationTrainer:
                 clip_grad_norm_(self.model.parameters(), 3.0)  # 用于裁剪梯度，防止梯度爆炸
                 self.optim.step()
 
-            accs = list(map(float, all_acc))
-            sys.stdout.write(
-                'Loss: {:06f} | loss: {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}\n'.format(
-                    loss, *losses))
-            sys.stdout.write(
-                'Acc: {:06f} | acc: {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}\n'.format(
-                    np.average(accs), *accs))
+                accs = list(map(float, all_acc))
+                sys.stdout.write(
+                    'Loss: {:06f} | loss: {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}\n'.format(
+                        loss, *losses))
+                sys.stdout.write(
+                    'Acc: {:06f} | acc: {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}, {:03f}\n'.format(
+                        np.average(accs), *accs))
+                sys.stdout.write('FAD(BAR) Similarity: {:0.6f} , FAD Similarity {:0.6f} \n'.format(FAD_BAR, FAD))
 
-        if mode == 2:
-            return round(total_loss / len(training_data), 4), [round(x.item() / len(training_data), 4) for x in total_acc], all_output
-        return round(total_loss / len(training_data), 4), [round(x.item() / len(training_data), 4) for x in total_acc]
-
+            if mode == 2:
+                return round(total_loss / len(training_data), 4), [round(x.item() / len(training_data), 4) for x in
+                                                                   total_acc], round(total_FAD_BAR / len(training_data),
+                                                                                     4), round(
+                    total_FAD / len(training_data), 4), all_output
+            return round(total_loss / len(training_data), 4), [round(x.item() / len(training_data), 4) for x in
+                                                               total_acc], round(total_FAD_BAR / len(training_data),
+                                                                                 4), round(
+                total_FAD / len(training_data), 4)
 
 
     def save_checkpoint(self, epoch, train_acc, valid_acc,

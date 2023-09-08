@@ -235,9 +235,9 @@ def load_data_finetune(dataset, task, data_root=None):
         X_test = np.load(os.path.join(data_root, f'{dataset}_test.npy'), allow_pickle=True)
 
         print('X_train: {}, X_valid: {}, X_test: {}'.format(X_train.shape, X_val.shape, X_test.shape))
-        y_train = np.load(os.path.join(data_root, f'{dataset}_train_ans.npy'), allow_pickle=True)
-        y_val = np.load(os.path.join(data_root, f'{dataset}_valid_ans.npy'), allow_pickle=True)
-        y_test = np.load(os.path.join(data_root, f'{dataset}_test_ans.npy'), allow_pickle=True)
+        y_train = np.load(os.path.join(data_root, f'{dataset}_train_genans.npy'), allow_pickle=True)
+        y_val = np.load(os.path.join(data_root, f'{dataset}_valid_genans.npy'), allow_pickle=True)
+        y_test = np.load(os.path.join(data_root, f'{dataset}_test_genans.npy'), allow_pickle=True)
     else:
         X_train = np.load(os.path.join(data_root, f'{dataset}_train.npy'), allow_pickle=True)
         X_val = np.load(os.path.join(data_root, f'{dataset}_valid.npy'), allow_pickle=True)

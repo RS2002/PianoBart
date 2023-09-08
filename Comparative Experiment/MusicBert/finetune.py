@@ -24,7 +24,7 @@ def get_args_finetune():
     ### parameter setting ###
     parser.add_argument('--num_workers', type=int, default=5)
     parser.add_argument('--class_num', type=int, default=None)
-    parser.add_argument('--batch_size', type=int, default=12)
+    parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--max_seq_len', type=int, default=1024, help='all sequences are padded to `max_seq_len`')
     parser.add_argument('--hs', type=int, default=768)
     parser.add_argument("--index_layer", type=int, default=12, help="number of layers")
@@ -225,9 +225,9 @@ def load_data_finetune(dataset, task, data_root=None):
         X_test = np.load(os.path.join(data_root, f'{dataset}_test_gen.npy'), allow_pickle=True)
 
         print('X_train: {}, X_valid: {}, X_test: {}'.format(X_train.shape, X_val.shape, X_test.shape))
-        y_train = np.load(os.path.join(data_root, f'{dataset}_train_{task[:3]}ans.npy'), allow_pickle=True)
-        y_val = np.load(os.path.join(data_root, f'{dataset}_valid_{task[:3]}ans.npy'), allow_pickle=True)
-        y_test = np.load(os.path.join(data_root, f'{dataset}_test_{task[:3]}ans.npy'), allow_pickle=True)
+        y_train = np.load(os.path.join(data_root, f'{dataset}_train_genans.npy'), allow_pickle=True)
+        y_val = np.load(os.path.join(data_root, f'{dataset}_valid_genans.npy'), allow_pickle=True)
+        y_test = np.load(os.path.join(data_root, f'{dataset}_test_genans.npy'), allow_pickle=True)
     else:
         X_train = np.load(os.path.join(data_root, f'{dataset}_train.npy'), allow_pickle=True)
         X_val = np.load(os.path.join(data_root, f'{dataset}_valid.npy'), allow_pickle=True)

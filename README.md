@@ -1,6 +1,6 @@
 # PianoBart
 
-**Authors:** Zijian Zhao, Fupeng He, Weichao Zeng, Yutong He, Yiyi Wang
+**Authors:** Zijian Zhao, Weichao Zeng, Fupeng He, Yutong He, Yiyi Wang
 
 **Supervisors:** Chengying Gao, Xiao Liang
 
@@ -51,7 +51,13 @@ You can uncomment the corresponding function to perform the desired task.
 
 
 
-Please note that we will provide the model parameters in the future. Currently, we can only guarantee that the pretraining part has no bugs, while we are still testing other parts of the model.
+### 2.2 Pretrain
+
+
+
+### 2.3 Finetune
+
+
 
 
 
