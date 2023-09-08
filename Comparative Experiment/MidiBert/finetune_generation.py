@@ -178,9 +178,9 @@ class GenerationTrainer:
                         y2=y2.tolist()
                         l=len(y1)
                         gap=10
-                        for i in range(l//gap):
-                            c1=y1[i*gap:(i+1)*gap-1]
-                            c2=y2[i*gap:(i+1)*gap-1]
+                        for k in range(l//gap):
+                            c1=y1[k*gap:(k+1)*gap-1]
+                            c2=y2[k*gap:(k+1)*gap-1]
                             x=range(gap)
                             current_FAD+=shapesimilarity.shape_similarity(list(zip(x,c1)),list(zip(x,c2)))
                         if index!=0:
