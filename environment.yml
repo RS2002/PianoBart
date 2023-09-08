@@ -1,9 +1,9 @@
 name: Bart
 channels:
   - pytorch
-  - anaconda
   - nvidia
   - https://mirrors.ustc.edu.cn/anaconda/pkgs/main
+  - anaconda
   - https://mirrors.ustc.edu.cn/anaconda/pkgs/main/
   - https://mirrors.ustc.edu.cn/anaconda/pkgs/free/
   - defaults
@@ -208,4 +208,6 @@ dependencies:
   - zipp=3.11.0=py38h06a4308_0
   - zlib=1.2.13=h5eee18b_0
   - zstd=1.5.5=hc292b87_0
+  - pip:
+    - shapesimilarity==0.0.1
 prefix: /root/miniconda3/envs/Bart
