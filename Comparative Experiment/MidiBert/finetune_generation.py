@@ -85,18 +85,18 @@ class GenerationTrainer:
 
     def train(self):
         self.model.train()
-        train_loss, train_acc = self.iteration(self.train_data, 0)
-        return train_loss, train_acc
+        train_loss, train_acc, train_FAD, train_FAD_BAR = self.iteration(self.train_data, 0)
+        return train_loss, train_acc, train_FAD, train_FAD_BAR
 
     def valid(self):
         self.model.eval()
-        valid_loss, valid_acc = self.iteration(self.valid_data, 1)
-        return valid_loss, valid_acc
+        valid_loss, valid_acc, valid_FAD, valid_FAD_BAR = self.iteration(self.valid_data, 1)
+        return valid_loss, valid_acc, valid_FAD, valid_FAD_BAR
 
     def test(self):
         self.model.eval()
-        test_loss, test_acc, all_output = self.iteration(self.test_data, 2)
-        return test_loss, test_acc, all_output
+        test_loss, test_acc, test_FAD, test_FAD_BAR, all_output = self.iteration(self.test_data, 2)
+        return test_loss, test_acc, test_FAD, test_FAD_BAR, all_output
 
     def iteration(self, training_data, mode):
         pbar = tqdm.tqdm(training_data, disable=False)

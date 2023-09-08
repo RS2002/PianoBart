@@ -413,8 +413,8 @@ def eval_generation():
     trainer = GenerationTrainer(midibert, train_loader, valid_loader, test_loader, args.lr,
                                y_test.shape, args.cpu, args.cuda_devices, model)
 
-    test_loss, test_acc, all_output = trainer.test()
-    print('test loss: {}, test_acc: {}'.format(test_loss, test_acc))
+    test_loss, test_acc,FAD_BAR,FAD, all_output = trainer.test()
+    print('test loss: {}, test_acc: {}, test FAD: {}, test_FAD(BAR): {}'.format(test_loss, test_acc,FAD,FAD_BAR))
 
     outdir = os.path.dirname(args.ckpt)
     conf_mat(y_test, all_output, args.task, outdir)

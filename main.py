@@ -15,7 +15,7 @@ from eval import get_args_eval,load_data_eval,conf_mat
 from finetune_generation import get_args_generation,GenerationTrainer
 from eval_generation import get_args_eval_generation
 # import json
-from Ablation import AblationTrainer, load_data_ablation, get_args_ablation
+from ablation import AblationTrainer, load_data_ablation, get_args_ablation
 
 def pretrain():
     args = get_args_pretrain()
@@ -450,8 +450,8 @@ def eval_generation():
     trainer = GenerationTrainer(pianobart, train_loader, valid_loader, test_loader, args.lr,
                                y_test.shape, args.cpu, args.cuda_devices, model)
 
-    test_loss, test_acc, all_output = trainer.test()
-    print('test loss: {}, test_acc: {}'.format(test_loss, test_acc))
+    test_loss, test_acc,FAD_BAR,FAD, all_output = trainer.test()
+    print('test loss: {}, test_acc: {}, test FAD: {}, test_FAD(BAR): {}'.format(test_loss, test_acc,FAD,FAD_BAR))
 
     outdir = os.path.dirname(args.ckpt)
     conf_mat(y_test, all_output, args.task, outdir)
@@ -552,6 +552,66 @@ def abalation():
                 print('valid acc not improving for 3 epochs')
                 break
 
+def ablation_eval():
+    args = get_args_eval_generation()
+
+    print("Loading Dictionary")
+    with open(args.dict_file, 'rb') as f:
+        e2w, w2e = pickle.load(f)
+
+    print("\nBuilding BART model")
+    configuration = BartConfig(max_position_embeddings=args.max_seq_len,
+                               d_model=args.hs,
+                               encoder_layers=args.layers,
+                               encoder_ffn_dim=args.ffn_dims,
+                               encoder_attention_heads=args.heads,
+                               decoder_layers=args.layers,
+                               decoder_ffn_dim=args.ffn_dims,
+                               decoder_attention_heads=args.heads
+                               )
+
+    pianobart = PianoBart(bartConfig=configuration, e2w=e2w, w2e=w2e)
+    model = PianoBartLM(pianobart)
+
+    print("\nLoading Dataset")
+
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(args.dataset, "gen")
+
+    '''trainset = FinetuneDataset(X=X_train, y=y_train)
+    validset = FinetuneDataset(X=X_val, y=y_val)'''
+    testset = FinetuneDataset(X=X_test, y=y_test)
+
+    '''train_loader = DataLoader(trainset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
+    print("   len of train_loader", len(train_loader))
+    valid_loader = DataLoader(validset, batch_size=args.batch_size, num_workers=args.num_workers)
+    print("   len of valid_loader", len(valid_loader))'''
+    train_loader, valid_loader = None, None
+
+    test_loader = DataLoader(testset, batch_size=args.batch_size, num_workers=args.num_workers)
+    print("   len of test_loader", len(test_loader))
+
+    print('\nLoad ckpt from', args.ckpt)
+    best_mdl = args.ckpt
+    checkpoint = torch.load(best_mdl, map_location='cpu')
+    model.load_state_dict(checkpoint['state_dict'])
+
+    # remove module
+    # from collections import OrderedDict
+    # new_state_dict = OrderedDict()
+    # for k, v in checkpoint['state_dict'].items():
+    #    name = k[7:]
+    #    new_state_dict[name] = v
+    # model.load_state_dict(new_state_dict)
+
+    print("\nCreating Finetune Trainer")
+    trainer = AblationTrainer(pianobart, train_loader, valid_loader, test_loader, args.lr,
+                                y_test.shape, args.cpu, args.cuda_devices, model)
+
+    test_loss, test_acc, FAD_BAR, FAD, all_output = trainer.test()
+    print('test loss: {}, test_acc: {}, test FAD: {}, test_FAD(BAR): {}'.format(test_loss, test_acc, FAD, FAD_BAR))
+
+    outdir = os.path.dirname(args.ckpt)
+    conf_mat(y_test, all_output, args.task, outdir)
 
 
 
@@ -566,3 +626,4 @@ if __name__ == '__main__':
     finetune_generation()
     #finetune_eval()
     #abalation()
+    #ablation_eval
