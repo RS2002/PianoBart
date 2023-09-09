@@ -246,7 +246,7 @@ class GenerationTrainer:
                         valid_loss, train_loss, is_best, filename):
         state = {
             'epoch': epoch + 1,
-            'state_dict': self.model.module.state_dict(),
+            'state_dict': self.model.state_dict(),
             'valid_acc': valid_acc,
             'valid_loss': valid_loss,
             'train_loss': train_loss,
