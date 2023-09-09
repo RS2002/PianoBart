@@ -15,7 +15,7 @@ from eval import get_args_eval,load_data_eval,conf_mat
 from finetune_generation import get_args_generation,GenerationTrainer
 from eval_generation import get_args_eval_generation
 # import json
-from ablation import AblationTrainer, load_data_ablation, get_args_ablation
+from Ablation import AblationTrainer, load_data_ablation, get_args_ablation
 
 def pretrain():
     args = get_args_pretrain()
