@@ -359,8 +359,11 @@ def finetune_generation():
             valid_loss, valid_acc, valid_FAD_BAR, valid_FAD = trainer.valid()
             test_loss, test_acc, test_FAD_BAR, test_FAD, _ = trainer.test()
 
-            is_best = np.mean(valid_acc) >= np.mean(best_acc)
-            best_acc = max(np.mean(valid_acc), np.mean(best_acc))
+            weighted_score = [x * y for (x, y) in zip(valid_acc, pianobart.n_tokens)]
+            avg_acc = sum(weighted_score) / sum(pianobart.n_tokens)
+
+            is_best = avg_acc > best_acc
+            best_acc = max(avg_acc, best_acc)
 
             if is_best:
                 bad_cnt, best_epoch = 0, epoch
@@ -380,7 +383,7 @@ def finetune_generation():
                 'Epoch {}: train_loss={}, valid_loss={}, test_loss={}, train_acc={}, valid_acc={}, test_acc={}, train_fad={}, valid_fad={}, test_fad={}, train_fad(bar)={}, valid_fad(bar)={}, test_fad(bar)={}\n'.format(
                     epoch + 1, train_loss, valid_loss, test_loss, train_acc, valid_acc, test_acc, train_FAD, valid_FAD, test_FAD, train_FAD_BAR, valid_FAD_BAR, test_FAD_BAR))
 
-            if bad_cnt > 3:
+            if bad_cnt > 30:
                 print('valid acc not improving for 3 epochs')
                 break
 

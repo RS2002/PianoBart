@@ -32,8 +32,8 @@ def get_args_generation():
     parser.add_argument('--ffn_dims', type=int, default=2048)  # FFN dims
     parser.add_argument('--heads', type=int, default=8)  # attention heads
 
-    parser.add_argument('--epochs', type=int, default=30, help='number of training epochs')
-    parser.add_argument('--lr', type=float, default=2e-5, help='initial learning rate')
+    parser.add_argument('--epochs', type=int, default=500, help='number of training epochs')
+    parser.add_argument('--lr', type=float, default=2e-6, help='initial learning rate')
     parser.add_argument('--nopretrain', action="store_true")  # default: false
 
     ### cuda ###
@@ -77,8 +77,8 @@ class GenerationTrainer:
 
 
         self.optim = AdamW(self.model.parameters(), lr=lr, weight_decay=0.01)
-        self.loss_func = nn.NLLLoss()
-        #self.loss_func = nn.CrossEntropyLoss(reduction='none')
+        #self.loss_func = nn.NLLLoss()
+        self.loss_func = nn.CrossEntropyLoss(reduction='none')
 
 
 
@@ -131,9 +131,10 @@ class GenerationTrainer:
             x=x.long()
             y=y.long()
             attn_encoder = (x[:, :, 0] != self.pianobart.bar_pad_word).float().to(self.device)
-            y_shift = torch.zeros_like(y)
+            '''y_shift = torch.zeros_like(y)
             y_shift[:, 1:,:] = y[:, :-1,:]
-            y_shift[:, 0:,:] = torch.tensor(self.pianobart.sos_word_np)
+            y_shift[:, 0:,:] = torch.tensor(self.pianobart.sos_word_np)'''
+            y_shift=y
             attn_decoder = (y_shift[:, :, 0] != self.pianobart.bar_pad_word).float().to(self.device)
             y_hat = self.model.forward(input_ids_encoder=x, input_ids_decoder=y_shift, encoder_attention_mask=attn_encoder,decoder_attention_mask=attn_decoder)
 
@@ -158,47 +159,47 @@ class GenerationTrainer:
                 acc = torch.sum((y[:, :, i] == outputs[:, :, i]).float()*attn_decoder)
                 acc /= torch.sum(attn_decoder)
                 all_acc.append(acc)
-                if i==3:
-                    for j in range(y.shape[0]):
-                        current_FAD=0
-                        current_FAD_BAR=0
-                        #current_FAD_pos=0
-                        index=0
-                        y1=y[j, attn_decoder[j] == 1, i]
-                        y2=outputs[j, attn_decoder[j] == 1, i]
-                        bar=y[j, attn_decoder[j] == 1, 0]
-                        '''pos1=y[j, attn_decoder[j] == 1, 1]
-                        pos2=outputs[j, attn_decoder[j] == 1, 1]'''
-                        for k in range(bar[-2]):
-                            c1=y1[bar==k].tolist()
-                            c2=y2[bar==k].tolist()
-                            if len(c1)>1:
-                                index+=len(c1)
-                                x=range(len(c1))
-                                current_FAD_BAR+=shapesimilarity.shape_similarity(list(zip(x,c1)),list(zip(x,c2)))*len(c1)
-                                '''x1=pos1[bar==k].tolist()
-                                x2=pos2[bar==k].tolist()
-                                current_FAD_pos += shapesimilarity.shape_similarity(list(zip(x1, c1)), list(zip(x2, c2))) * len(c1)'''
-                        y1=y1.tolist()
-                        y2=y2.tolist()
-                        l=len(y1)
-                        gap=10
-                        for k in range(l//gap):
-                            c1=y1[k*gap:(k+1)*gap-1]
-                            c2=y2[k*gap:(k+1)*gap-1]
-                            x=range(gap)
-                            current_FAD+=shapesimilarity.shape_similarity(list(zip(x,c1)),list(zip(x,c2)))
-                        if index!=0:
-                            FAD_BAR+=current_FAD_BAR/index
-                            #FAD_pos+=current_FAD_pos/index
-                        if l//gap!=0:
-                            FAD+=current_FAD/(l//gap)
-                    FAD_BAR/=y.shape[0]
-                    total_FAD_BAR+=FAD_BAR
-                    FAD/=y.shape[0]
-                    total_FAD+=FAD
-                    #FAD_pos/=y.shape[0]
-                    #total_FAD_pos+=FAD_pos
+                # if i==3:
+                #     for j in range(y.shape[0]):
+                #         current_FAD=0
+                #         current_FAD_BAR=0
+                #         #current_FAD_pos=0
+                #         index=0
+                #         y1=y[j, attn_decoder[j] == 1, i]
+                #         y2=outputs[j, attn_decoder[j] == 1, i]
+                #         bar=y[j, attn_decoder[j] == 1, 0]
+                #         '''pos1=y[j, attn_decoder[j] == 1, 1]
+                #         pos2=outputs[j, attn_decoder[j] == 1, 1]'''
+                #         for k in range(bar[-2]):
+                #             c1=y1[bar==k].tolist()
+                #             c2=y2[bar==k].tolist()
+                #             if len(c1)>1:
+                #                 index+=len(c1)
+                #                 x=range(len(c1))
+                #                 current_FAD_BAR+=shapesimilarity.shape_similarity(list(zip(x,c1)),list(zip(x,c2)))*len(c1)
+                #                 '''x1=pos1[bar==k].tolist()
+                #                 x2=pos2[bar==k].tolist()
+                #                 current_FAD_pos += shapesimilarity.shape_similarity(list(zip(x1, c1)), list(zip(x2, c2))) * len(c1)'''
+                #         y1=y1.tolist()
+                #         y2=y2.tolist()
+                #         l=len(y1)
+                #         gap=10
+                #         for k in range(l//gap):
+                #             c1=y1[k*gap:(k+1)*gap-1]
+                #             c2=y2[k*gap:(k+1)*gap-1]
+                #             x=range(gap)
+                #             current_FAD+=shapesimilarity.shape_similarity(list(zip(x,c1)),list(zip(x,c2)))
+                #         if index!=0:
+                #             FAD_BAR+=current_FAD_BAR/index
+                #             #FAD_pos+=current_FAD_pos/index
+                #         if l//gap!=0:
+                #             FAD+=current_FAD/(l//gap)
+                #     FAD_BAR/=y.shape[0]
+                #     total_FAD_BAR+=FAD_BAR
+                #     FAD/=y.shape[0]
+                #     total_FAD+=FAD
+                #     #FAD_pos/=y.shape[0]
+                #     #total_FAD_pos+=FAD_pos
 
 
             #print(FAD)
@@ -215,7 +216,13 @@ class GenerationTrainer:
             losses, n_tok = [], []
             for i, etype in enumerate(self.pianobart.e2w):
                 n_tok.append(len(self.pianobart.e2w[etype]))
-                losses.append(self.compute_loss(y_hat[i], y[..., i], attn_decoder))
+                if i==2 or i==6 or i==7:
+                        weight = 0.3
+                elif i==3 :
+                    weight = 1.5
+                else:
+                    weight = 1
+                losses.append(self.compute_loss(y_hat[i], y[..., i], attn_decoder)*weight)
             total_loss_all = [x * y for x, y in zip(losses, n_tok)]
             loss = sum(total_loss_all) / sum(n_tok)  # weighted
             total_loss += loss.item()
