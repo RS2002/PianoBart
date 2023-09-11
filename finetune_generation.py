@@ -130,10 +130,15 @@ class GenerationTrainer:
             x, y = x.to(self.device), y.to(self.device)
             x=x.long()
             y=y.long()
+
+            '''pad_num=768
+            y[:,1024-pad_num:,:]=torch.tensor(self.pianobart.pad_word_np)
+            y[:,1024-pad_num-1,:]=torch.tensor(self.pianobart.eos_word_np)'''
+
             attn_encoder = (x[:, :, 0] != self.pianobart.bar_pad_word).float().to(self.device)
             y_shift = torch.zeros_like(y)
             y_shift[:, 1:,:] = y[:, :-1,:]
-            y_shift[:, 0:,:] = torch.tensor(self.pianobart.sos_word_np)
+            y_shift[:, 0,:] = torch.tensor(self.pianobart.sos_word_np)
             # y_shift=y
             attn_decoder = (y_shift[:, :, 0] != self.pianobart.bar_pad_word).float().to(self.device)
             y_hat = self.model.forward(input_ids_encoder=x, input_ids_decoder=y_shift, encoder_attention_mask=attn_encoder,decoder_attention_mask=attn_decoder)

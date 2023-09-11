@@ -238,15 +238,15 @@ class AblationTrainer:
                         np.average(accs), *accs))
                 sys.stdout.write('FAD(BAR) Similarity: {:0.6f} , FAD Similarity {:0.6f} \n'.format(FAD_BAR, FAD))
 
-            if mode == 2:
-                return round(total_loss / len(training_data), 4), [round(x.item() / len(training_data), 4) for x in
-                                                                   total_acc], round(total_FAD_BAR / len(training_data),
-                                                                                     4), round(
-                    total_FAD / len(training_data), 4), all_output
+        if mode == 2:
             return round(total_loss / len(training_data), 4), [round(x.item() / len(training_data), 4) for x in
                                                                total_acc], round(total_FAD_BAR / len(training_data),
                                                                                  4), round(
-                total_FAD / len(training_data), 4)
+                total_FAD / len(training_data), 4), all_output
+        return round(total_loss / len(training_data), 4), [round(x.item() / len(training_data), 4) for x in
+                                                           total_acc], round(total_FAD_BAR / len(training_data),
+                                                                             4), round(
+            total_FAD / len(training_data), 4)
 
 
     def save_checkpoint(self, epoch, train_acc, valid_acc,
