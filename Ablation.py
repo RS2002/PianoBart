@@ -127,6 +127,7 @@ class AblationTrainer:
         for ori_seq_batch in pbar:
             batch = ori_seq_batch.shape[0]
             ori_seq_batch = ori_seq_batch.to(self.device)
+            label=ori_seq_batch.clone()
             shift_seq_batch = torch.zeros_like(ori_seq_batch).to(self.device)
             shift_seq_batch[:,1:,:]=ori_seq_batch[:,:-1,:]
             shift_seq_batch[:,0,:]=torch.tensor(self.pianobart.sos_word_np)
@@ -161,7 +162,7 @@ class AblationTrainer:
             #FAD_pos=0
 
             for i in range(8):
-                acc = torch.sum((shift_seq_batch[:, :, i] == outputs[:, :, i]).float()*loss_mask)
+                acc = torch.sum((shift_seq_batch[:, :, i] == label[:, :, i]).float()*loss_mask)
                 acc /= torch.sum(loss_mask)
                 all_acc.append(acc)
                 if i==3:
@@ -171,7 +172,7 @@ class AblationTrainer:
                         #current_FAD_pos=0
                         index=0
                         y1=shift_seq_batch[j, loss_mask[j] == 1, i]
-                        y2=outputs[j, loss_mask[j] == 1, i]
+                        y2=label[j, loss_mask[j] == 1, i]
                         bar=shift_seq_batch[j, loss_mask[j] == 1, 0]
                         '''pos1=y[j, attn_decoder[j] == 1, 1]
                         pos2=outputs[j, attn_decoder[j] == 1, 1]'''
@@ -217,7 +218,7 @@ class AblationTrainer:
             losses, n_tok = [], []
             for i, etype in enumerate(self.pianobart.e2w):
                 n_tok.append(len(self.pianobart.e2w[etype]))
-                losses.append(self.compute_loss(y_hat[i], shift_seq_batch[..., i], loss_mask))
+                losses.append(self.compute_loss(y_hat[i], label[..., i], loss_mask))
             total_loss_all = [x * y for x, y in zip(losses, n_tok)]
             loss = sum(total_loss_all) / sum(n_tok)  # weighted
             total_loss += loss.item()
