@@ -11,11 +11,14 @@ import numpy as np
 import re
 dataset = input("Please input the dataset for generation: ")
 data_path = f'Data/{dataset}'
-task = input("Please input the task (pretrain/composer/generate) : ")
-pad = True
+task = input("Please input the task (pretrain/composer/generate/melody) : ")
 if task == 'pretrain':
     pad = int(input("Padding (1/0):"))
     pad = True if pad == 1 else False
+elif task == 'melody':
+    pad = False
+else:
+    pad = True
 data_zip = zipfile.ZipFile(data_path+'.zip', 'r')
 out_path = f'Data/output_{task}'
 if not os.path.exists(out_path):
@@ -54,6 +57,19 @@ tokens_per_note = 8
 token_boundary = (max_bar, max_pos, max_inst, max_pitch, 
                     max_dura, max_velocity, max_ts, max_tp)
 
+# melody_map = {
+#     "MELODY": 0,
+#     "BRIDGE": 1,
+#     "PIANO": 2,
+#     "OTHER": 3
+# }
+
+melody_map = {
+    "MELODY": 1,
+    "BRIDGE": 0,
+    "PIANO": 0,
+    "OTHER": 2
+}
 
 # (0 Measure, 1 Pos, 2 Program, 3 Pitch, 4 Duration, 5 Velocity, 6 TimeSig, 7 Tempo)
 # (Measure, TimeSig)
@@ -192,8 +208,14 @@ def MIDI_to_encoding(midi_obj):
                 continue
             start_distribution[time_to_pos(note.start) % pos_resolution] += 1
             info = pos_to_info[time_to_pos(note.start)]
-            encoding.append((info[0], info[2], max_inst + 1 if inst.is_drum else inst.program, note.pitch + max_pitch +
-                            1 if inst.is_drum else note.pitch, d2e(time_to_pos(note.end) - time_to_pos(note.start)), v2e(note.velocity), info[1], info[3]))
+            if task == 'melody':
+                label = melody_map[inst.name] if inst.name in melody_map.keys() else melody_map['OTHER']
+                    # label = melody_map[inst.name] if inst.name in melody_map.keys() else melody_map['OTHER']
+                encoding.append((info[0], info[2], max_inst + 1 if inst.is_drum else inst.program, note.pitch + max_pitch +
+                    1 if inst.is_drum else note.pitch, d2e(time_to_pos(note.end) - time_to_pos(note.start)), v2e(note.velocity), info[1], info[3], label))
+            else:
+                encoding.append((info[0], info[2], max_inst + 1 if inst.is_drum else inst.program, note.pitch + max_pitch +
+                    1 if inst.is_drum else note.pitch, d2e(time_to_pos(note.end) - time_to_pos(note.start)), v2e(note.velocity), info[1], info[3]))
     if len(encoding) == 0:
         return list()
     tot = sum(start_distribution)
@@ -435,13 +457,12 @@ def F(file_name):
                 print('SUCCESS: ' + file_name + '\n', end='')
                 output_list.append((data_segment, tag_segment))
                 # return data_segment, tag_segment
-            if task == 'pretrain':
+            elif task == 'pretrain':
                 if pad:
                     ei = padding(file_name, ei)
                     print(ei[0], ei[-2], ei[-1], len(ei))
                 output_list.append(ei)
-            print('SUCCESS: ' + file_name + '\n', end='')
-            if task == 'composer':
+            elif task == 'composer':
                 ei = padding(file_name, ei)
                 print(ei[0], ei[-2], ei[-1], len(ei))
                 if dataset == 'asap':
@@ -451,6 +472,14 @@ def F(file_name):
                     composer = re.search(r"/([^/]+)/(.*?)/(.*?)_", file_name).group(2)
                 print(composer)
                 output_list.append((ei,composer))
+            elif task == 'melody':
+                melody = [label[-1] if len(label) == 9 else melody_map['OTHER'] for label in ei]
+                ei = [eii[:tokens_per_note] for eii in ei]
+                print(ei[0], ei[-2], ei[-1], len(ei))
+                print(melody[0], melody[-2], melody[-1], len(melody))
+                assert len(melody) == len(ei)
+                output_list.append((ei,melody))
+            print('SUCCESS: ' + file_name + '\n', end='')
                 # return e, composer
         return output_list
         return True
@@ -461,29 +490,30 @@ def F(file_name):
     print('ERROR(GENERAL): ' + file_name + '\n', end='')
     return False
 
-def G_composer(file_name, output: list, ans: list):
-    try:
-        ret = F(file_name)
-        
-        # ret, comp = F(file_name)
-        if ret:
-            for seq, comp in ret:
-                output.append(seq)
-                ans.append(comp)            
-            return True
-    except BaseException as e:
-        print('ERROR(UNCAUGHT): ' + file_name + '\n', end='')
-        return False
+# def G_composer(file_name, output: list, ans: list):
+#     try:
+#         ret = F(file_name)
+#         if ret:
+#             for seq, comp in ret:
+#                 output.append(seq)
+#                 ans.append(comp)            
+#             return True
+#     except BaseException as e:
+#         print('ERROR(UNCAUGHT): ' + file_name + '\n', end='')
+#         return False
 
 
-def G_generate(file_name, output: list, ans: list):
+def G_downstream(file_name, output: list, ans: list):
     try:
         ret = F(file_name)
-        # ret, tag = F(file_name)
         if ret:
             for seq, tag in ret:
-                output.append(seq)
-                ans.append(tag)            
+                if pad:
+                    output.append(seq)
+                    ans.append(tag)            
+                else:
+                    output += seq
+                    ans += tag
             return True
     except BaseException as e:
         print('ERROR(UNCAUGHT): ' + file_name + '\n', end='')
@@ -503,12 +533,12 @@ def G(file_name, output: list):
         print('ERROR(UNCAUGHT): ' + file_name + '\n', end='')
         return False
 
-def data_split(data: np.array):
+def data_split(data: np.array, content=[i + 1 for i in token_boundary], tokens_per_line=tokens_per_note):
     m = data.shape[0] // max_window + 1
     pad_num = m * max_window - data.shape[0]
     # padding
-    padded = np.append(data, [[i + 1 for i in token_boundary]]*pad_num, axis=0)
-    return padded.reshape(m, max_window, tokens_per_note)
+    padded = np.append(data, [content]*pad_num, axis=0)
+    return padded.reshape(m, max_window, tokens_per_line)
 
 
     
@@ -544,35 +574,38 @@ if __name__ == '__main__':
         if sp == 'test':  # 10%
             file_list_split = file_list[90 * total_file_cnt // 100:]
         output_file = '{}/{}_{}.npy'.format(out_path, dataset, sp)
-        split_file = '{}/{}_{}_split.npy'.format(out_path, dataset, sp)
+        ans_file = f'{out_path}/{dataset}_{sp}_ans.npy'
         res = []
         output = []
         ans = []
         for mid in file_list_split:
             if task == 'composer':
-                res.append(G_composer(mid, output, ans))
+                res.append(G_downstream(mid, output, ans))
             elif task == 'pretrain':
                 res.append(G(mid, output))
             elif task == 'generate':
-                res.append(G_generate(mid, output, ans))
+                res.append(G_downstream(mid, output, ans))
+            elif task == 'melody':
+                res.append(G_downstream(mid, output, ans))
         all_cnt += sum((1 if i is not None else 0 for i in res))
         ok_cnt += sum((1 if i is True else 0 for i in res))
         output = np.array(output)
-        np.save(output_file, output)
         if task == 'pretrain':
             if not pad:
-                output_split = data_split(output)
-                np.save(split_file, output_split)
+                output = data_split(output)
+        elif task == 'melody':
+            output = data_split(output)
+            ans = data_split(np.array(ans), melody_map['OTHER'], 1)
         elif task == 'composer':
             for i, comp in enumerate(ans):
                 ans[i] = encoding_map[comp]
+        # elif task == 'generate':
+        if len(output):
+            np.save(output_file, output)
+        if len(ans):
             ans = np.array(ans)
-            ans_file = f'{out_path}/{dataset}_{sp}_{task[:3]}ans.npy'
             np.save(ans_file, ans)
-        elif task == 'generate':
-            ans = np.array(ans)
-            ans_file = f'{out_path}/{dataset}_{sp}_{task[:3]}ans.npy'
-            np.save(ans_file, ans)
+        
         # output_file = None
     print('{}/{} ({:.2f}%) MIDI files successfully processed'.format(ok_cnt,
                                                                      all_cnt, ok_cnt / all_cnt * 100))
