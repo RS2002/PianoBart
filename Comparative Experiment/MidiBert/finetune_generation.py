@@ -14,7 +14,7 @@ import shapesimilarity
 def get_args_generation():
     parser = argparse.ArgumentParser(description='')
 
-    parser.add_argument("--datasets", type=str, nargs='+', default=[]) #TODO
+    parser.add_argument("--datasets", type=str, nargs='+', default='maestro')
 
     ### path setup ###
     parser.add_argument('--dict_file', type=str, default='./../Data/Octuple.pkl')
@@ -153,47 +153,47 @@ class GenerationTrainer:
                 acc = torch.sum((y[:, :, i] == outputs[:, :, i]).float())
                 acc /= torch.sum(attn_decoder)
                 all_acc.append(acc)
-                if i==3:
-                    for j in range(y.shape[0]):
-                        current_FAD=0
-                        current_FAD_BAR=0
-                        #current_FAD_pos=0
-                        index=0
-                        y1=y[j, attn_decoder[j] == 1, i]
-                        y2=outputs[j, attn_decoder[j] == 1, i]
-                        bar=y[j, attn_decoder[j] == 1, 0]
-                        '''pos1=y[j, attn_decoder[j] == 1, 1]
-                        pos2=outputs[j, attn_decoder[j] == 1, 1]'''
-                        for k in range(bar[-2]):
-                            c1=y1[bar==k].tolist()
-                            c2=y2[bar==k].tolist()
-                            if len(c1)>1:
-                                index+=len(c1)
-                                x=range(len(c1))
-                                current_FAD_BAR+=shapesimilarity.shape_similarity(list(zip(x,c1)),list(zip(x,c2)))*len(c1)
-                                '''x1=pos1[bar==k].tolist()
-                                x2=pos2[bar==k].tolist()
-                                current_FAD_pos += shapesimilarity.shape_similarity(list(zip(x1, c1)), list(zip(x2, c2))) * len(c1)'''
-                        y1=y1.tolist()
-                        y2=y2.tolist()
-                        l=len(y1)
-                        gap=10
-                        for k in range(l//gap):
-                            c1=y1[k*gap:(k+1)*gap-1]
-                            c2=y2[k*gap:(k+1)*gap-1]
-                            x=range(gap)
-                            current_FAD+=shapesimilarity.shape_similarity(list(zip(x,c1)),list(zip(x,c2)))
-                        if index!=0:
-                            FAD_BAR+=current_FAD_BAR/index
-                            #FAD_pos+=current_FAD_pos/index
-                        if l//gap!=0:
-                            FAD+=current_FAD/(l//gap)
-                    FAD_BAR/=y.shape[0]
-                    total_FAD_BAR+=FAD_BAR
-                    FAD/=y.shape[0]
-                    total_FAD+=FAD
-                    #FAD_pos/=y.shape[0]
-                    #total_FAD_pos+=FAD_pos
+                # if i==3:
+                #     for j in range(y.shape[0]):
+                #         current_FAD=0
+                #         current_FAD_BAR=0
+                #         #current_FAD_pos=0
+                #         index=0
+                #         y1=y[j, attn_decoder[j] == 1, i]
+                #         y2=outputs[j, attn_decoder[j] == 1, i]
+                #         bar=y[j, attn_decoder[j] == 1, 0]
+                #         '''pos1=y[j, attn_decoder[j] == 1, 1]
+                #         pos2=outputs[j, attn_decoder[j] == 1, 1]'''
+                #         for k in range(bar[-2]):
+                #             c1=y1[bar==k].tolist()
+                #             c2=y2[bar==k].tolist()
+                #             if len(c1)>1:
+                #                 index+=len(c1)
+                #                 x=range(len(c1))
+                #                 current_FAD_BAR+=shapesimilarity.shape_similarity(list(zip(x,c1)),list(zip(x,c2)))*len(c1)
+                #                 '''x1=pos1[bar==k].tolist()
+                #                 x2=pos2[bar==k].tolist()
+                #                 current_FAD_pos += shapesimilarity.shape_similarity(list(zip(x1, c1)), list(zip(x2, c2))) * len(c1)'''
+                #         y1=y1.tolist()
+                #         y2=y2.tolist()
+                #         l=len(y1)
+                #         gap=10
+                #         for k in range(l//gap):
+                #             c1=y1[k*gap:(k+1)*gap-1]
+                #             c2=y2[k*gap:(k+1)*gap-1]
+                #             x=range(gap)
+                #             current_FAD+=shapesimilarity.shape_similarity(list(zip(x,c1)),list(zip(x,c2)))
+                #         if index!=0:
+                #             FAD_BAR+=current_FAD_BAR/index
+                #             #FAD_pos+=current_FAD_pos/index
+                #         if l//gap!=0:
+                #             FAD+=current_FAD/(l//gap)
+                #     FAD_BAR/=y.shape[0]
+                #     total_FAD_BAR+=FAD_BAR
+                #     FAD/=y.shape[0]
+                #     total_FAD+=FAD
+                #     #FAD_pos/=y.shape[0]
+                #     #total_FAD_pos+=FAD_pos
 
             total_acc = [sum(x) for x in zip(total_acc, all_acc)]
             total_cnt += torch.sum(attn_decoder).item()

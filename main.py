@@ -551,7 +551,7 @@ def abalation():
                     epoch + 1, train_loss, valid_loss, test_loss, train_acc, valid_acc, test_acc, train_FAD, valid_FAD, test_FAD, train_FAD_BAR, valid_FAD_BAR, test_FAD_BAR))
 
 
-            if bad_cnt > 3:
+            if bad_cnt > 30:
                 print('valid acc not improving for 3 epochs')
                 break
 

@@ -23,15 +23,15 @@ def get_args_ablation():
 
     ### parameter setting ###
     parser.add_argument('--num_workers', type=int, default=5)
-    parser.add_argument('--batch_size', type=int, default=2)
+    parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--max_seq_len', type=int, default=1024, help='all sequences are padded to `max_seq_len`')
     parser.add_argument('--hs', type=int, default=1024)
     parser.add_argument('--layers', type=int, default=8)  # layer nums of encoder & decoder
     parser.add_argument('--ffn_dims', type=int, default=2048)  # FFN dims
     parser.add_argument('--heads', type=int, default=8)  # attention heads
 
-    parser.add_argument('--epochs', type=int, default=10, help='number of training epochs')
-    parser.add_argument('--lr', type=float, default=2e-5, help='initial learning rate')
+    parser.add_argument('--epochs', type=int, default=500, help='number of training epochs')
+    parser.add_argument('--lr', type=float, default=2e-6, help='initial learning rate')
     parser.add_argument('--nopretrain', action="store_true")  # default: false
 
     ### cuda ###
@@ -76,8 +76,8 @@ class AblationTrainer:
 
 
         self.optim = AdamW(self.model.parameters(), lr=lr, weight_decay=0.01)
-        self.loss_func = nn.NLLLoss()
-        #self.loss_func = nn.CrossEntropyLoss(reduction='none')
+        # self.loss_func = nn.NLLLoss()
+        self.loss_func = nn.CrossEntropyLoss(reduction='none')
 
 
 
