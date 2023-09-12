@@ -6,7 +6,8 @@ import os
 default = ( 'EMOPIA', 'Pianist8', 'POP1K7', 'POP909')
 composer = ('Pianist8', 'asap')
 generate = ('maestro',)
-datasets = {'composer': composer, 'generate': generate}
+melody = ('POP909',)
+datasets = {'composer': composer, 'generate': generate, 'melody':melody}
 
 maps = {
     0: 'bar',
@@ -88,7 +89,12 @@ def checkPretrain():
             checkMidi(file, d, task='pretrain', tag=tag)
             
 def checkFinetune(task):
-    method = ['gen_method', 'pretrain_method'] if task == 'generate' else ['',]
+    if task == 'generate':
+        method = ['gen_method', 'pretrain_method'] 
+    elif task == 'melody':
+        method = ['default', 'simplified']
+    else:
+        method = ['',]
     for tag in ('train', 'test', 'valid'):
         for d in datasets[task]:
             for mthd in method:
@@ -106,10 +112,10 @@ def checkFinetune(task):
                         cnt = np.count_nonzero(m == mmaps[0])
                         print(m, cnt, cnt==a.shape[0])
                 if mthd != 'pretrain_method':
-                    ans = f'Data\output_{task}\{d}\{mthd}\{d}_{tag}_{task[:3]}ans.npy'
+                    ans = f'Data\output_{task}\{d}\{mthd}\{d}_{tag}_ans.npy'
                     b = np.load(ans)
-                    print(b.shape)
-                    if mthd== 'gen_method':
+                    print(b.shape, b.max(), b.min(), b[50:100])
+                    if mthd == 'gen_method':
                         for num in range(8):
                             m = b[:, :, num]
                             m = m.ravel()
@@ -124,10 +130,10 @@ def checkFinetune(task):
                     task_m = task
                 checkMidi(file, d, task_m, tag, file2)
                 
-checkPretrain()
-checkFinetune('generate')
-checkFinetune('composer')
-
+# checkPretrain()
+# checkFinetune('generate')
+# checkFinetune('composer')
+checkFinetune('melody')
 
 
     
