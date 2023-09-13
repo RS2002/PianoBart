@@ -73,7 +73,7 @@ class FinetuneTrainer:
             if SeqClass:
                 self.model = SequenceClassification(self.midibert, class_num, hs).to(self.device)
             else:
-                self.model = TokenClassification(self.midibert, class_num, hs).to(self.device)
+                self.model = TokenClassification(self.midibert,  class_num+1, hs).to(self.device)
 
         #        for name, param in self.model.named_parameters():
         #            if 'midibert.bert' in name:
