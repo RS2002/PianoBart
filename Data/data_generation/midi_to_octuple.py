@@ -11,7 +11,7 @@ import numpy as np
 import re
 dataset = input("Please input the dataset for generation: ")
 data_path = f'Data/{dataset}'
-task = input("Please input the task (pretrain/composer/generate/melody/velocity) : ")
+task = input("Please input the task (pretrain/composer/generate/melody/velocity/emotion) : ")
 if task == 'pretrain':
     pad = int(input("Padding (1/0):"))
     pad = True if pad == 1 else False
@@ -74,7 +74,12 @@ velocity_map = {
     "OTHER": 6
 }
 
-
+emotion_map = {
+    'HVHA':0,
+    'HVLA':1,
+    'LVHA':2,
+    'LVLA':3
+}
 # melody_map = {
 #     "MELODY": 1,
 #     "BRIDGE": 0,
@@ -474,7 +479,6 @@ def F(file_name):
                     continue
                 print(data_segment[0], last, data_segment[-2], data_segment[-1], len(data_segment))
                 print(tag_segment[0], tag_segment[-2], tag_segment[-1], len(tag_segment))
-                print('SUCCESS: ' + file_name + '\n', end='')
                 output_list.append((data_segment, tag_segment))
                 # return data_segment, tag_segment
             elif task == 'pretrain':
@@ -492,6 +496,12 @@ def F(file_name):
                     composer = re.search(r"/([^/]+)/(.*?)/(.*?)_", file_name).group(2)
                 print(composer)
                 output_list.append((ei,composer))
+            elif task == 'emotion':
+                ei = padding(file_name, ei)
+                print(ei[0], ei[-2], ei[-1], len(ei))
+                emotion = int(file_name.split('/')[-1][1])-1
+                print(emotion)
+                output_list.append((ei,emotion))
             elif task == 'melody':
                 melody = [label[-1] if len(label) == 9 else melody_map['OTHER'] for label in ei]
                 ei = [eii[:tokens_per_note] for eii in ei]
