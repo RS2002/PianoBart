@@ -7,7 +7,7 @@ default = ( 'EMOPIA', 'Pianist8', 'POP1K7', 'POP909')
 composer = ('Pianist8', 'asap')
 generate = ('maestro',)
 melody = ('POP909',)
-datasets = {'composer': composer, 'generate': generate, 'melody':melody}
+datasets = {'composer': composer, 'generate': generate, 'melody':melody, 'velocity':melody}
 
 maps = {
     0: 'bar',
@@ -133,7 +133,8 @@ def checkFinetune(task):
 # checkPretrain()
 # checkFinetune('generate')
 # checkFinetune('composer')
-checkFinetune('melody')
+# checkFinetune('melody')
+checkFinetune('velocity')
 
 
     
