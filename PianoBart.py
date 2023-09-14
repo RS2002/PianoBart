@@ -53,7 +53,7 @@ class PianoBart(nn.Module):
         self.decoder_emb=None
         #self.decoder_linear= nn.Linear(np.sum(self.emb_sizes), bartConfig.d_model)
 
-    def forward(self, input_ids_encoder, input_ids_decoder=None, encoder_attention_mask=None, decoder_attention_mask=None, output_hidden_states=True):
+    def forward(self, input_ids_encoder, input_ids_decoder=None, encoder_attention_mask=None, decoder_attention_mask=None, output_hidden_states=True, generate=False):
         # convert input_ids into embeddings and merge them through linear layer
         encoder_embs = []
         decoder_embs = []
@@ -72,7 +72,7 @@ class PianoBart(nn.Module):
         '''print('emb_lin', emb_linear_encoder.shape)
         print('emb_lin_dec', emb_linear_decoder.shape)'''
         # feed to bart
-        if input_ids_decoder is not None:
+        if input_ids_decoder is not None or generate:
             y = self.bart(inputs_embeds=emb_linear_encoder, decoder_inputs_embeds=emb_linear_decoder, attention_mask=encoder_attention_mask, decoder_attention_mask=decoder_attention_mask, output_hidden_states=output_hidden_states) #attention_mask用于屏蔽<PAD> (PAD作用是在结尾补齐长度)
         else:
             y=self.bart.encoder(inputs_embeds=emb_linear_encoder,attention_mask=encoder_attention_mask)

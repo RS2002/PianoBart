@@ -86,11 +86,7 @@ if __name__ == '__main__':
     input = input.long()
     attn_encoder = (input[:, :, 0] != pianobart.bar_pad_word).float().to(device)
 
-
-    #TODO:output (current version maybe not right)
-    y=model(input_ids_encoder=input,encoder_attention_mask=attn_encoder)
-
-
+    y=model(input_ids_encoder=input,encoder_attention_mask=attn_encoder,generate=True)
 
     outputs = []
     for i, etype in enumerate(pianobart.e2w):
