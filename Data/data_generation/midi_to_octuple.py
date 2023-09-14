@@ -11,11 +11,11 @@ import numpy as np
 import re
 dataset = input("Please input the dataset for generation: ")
 data_path = f'Data/{dataset}'
-task = input("Please input the task (pretrain/composer/generate/melody) : ")
+task = input("Please input the task (pretrain/composer/generate/melody/velocity/emotion) : ")
 if task == 'pretrain':
     pad = int(input("Padding (1/0):"))
     pad = True if pad == 1 else False
-elif task == 'melody':
+elif task == 'melody' or task == 'velocity':
     pad = False
 else:
     pad = True
@@ -57,19 +57,35 @@ tokens_per_note = 8
 token_boundary = (max_bar, max_pos, max_inst, max_pitch, 
                     max_dura, max_velocity, max_ts, max_tp)
 
-# melody_map = {
-#     "MELODY": 0,
-#     "BRIDGE": 1,
-#     "PIANO": 2,
-#     "OTHER": 3
-# }
-
 melody_map = {
-    "MELODY": 1,
-    "BRIDGE": 0,
-    "PIANO": 0,
-    "OTHER": 2
+    "MELODY": 0,
+    "BRIDGE": 1,
+    "PIANO": 2,
+    "OTHER": 3
 }
+
+velocity_map = {
+    "pp": 0,
+    "p": 1,
+    "mp": 2,
+    "mf": 3,
+    "f": 4,
+    "ff": 5,
+    "OTHER": 6
+}
+
+emotion_map = {
+    'HVHA':0,
+    'HVLA':1,
+    'LVHA':2,
+    'LVLA':3
+}
+# melody_map = {
+#     "MELODY": 1,
+#     "BRIDGE": 0,
+#     "PIANO": 0,
+#     "OTHER": 2
+# }
 
 # (0 Measure, 1 Pos, 2 Program, 3 Pitch, 4 Duration, 5 Velocity, 6 TimeSig, 7 Tempo)
 # (Measure, TimeSig)
@@ -210,7 +226,16 @@ def MIDI_to_encoding(midi_obj):
             info = pos_to_info[time_to_pos(note.start)]
             if task == 'melody':
                 label = melody_map[inst.name] if inst.name in melody_map.keys() else melody_map['OTHER']
-                    # label = melody_map[inst.name] if inst.name in melody_map.keys() else melody_map['OTHER']
+                encoding.append((info[0], info[2], max_inst + 1 if inst.is_drum else inst.program, note.pitch + max_pitch +
+                    1 if inst.is_drum else note.pitch, d2e(time_to_pos(note.end) - time_to_pos(note.start)), v2e(note.velocity), info[1], info[3], label))
+            elif task == 'velocity':
+                if note.velocity >= 0 and note.velocity <= 15:
+                    label = 0
+                elif note.velocity >= 112 and note.velocity <= 127:
+                    label = 5
+                else:
+                    label = (note.velocity-32) // 16 + 1
+                assert label >= 0 and label <= 5
                 encoding.append((info[0], info[2], max_inst + 1 if inst.is_drum else inst.program, note.pitch + max_pitch +
                     1 if inst.is_drum else note.pitch, d2e(time_to_pos(note.end) - time_to_pos(note.start)), v2e(note.velocity), info[1], info[3], label))
             else:
@@ -454,7 +479,6 @@ def F(file_name):
                     continue
                 print(data_segment[0], last, data_segment[-2], data_segment[-1], len(data_segment))
                 print(tag_segment[0], tag_segment[-2], tag_segment[-1], len(tag_segment))
-                print('SUCCESS: ' + file_name + '\n', end='')
                 output_list.append((data_segment, tag_segment))
                 # return data_segment, tag_segment
             elif task == 'pretrain':
@@ -472,6 +496,12 @@ def F(file_name):
                     composer = re.search(r"/([^/]+)/(.*?)/(.*?)_", file_name).group(2)
                 print(composer)
                 output_list.append((ei,composer))
+            elif task == 'emotion':
+                ei = padding(file_name, ei)
+                print(ei[0], ei[-2], ei[-1], len(ei))
+                emotion = int(file_name.split('/')[-1][1])-1
+                print(emotion)
+                output_list.append((ei,emotion))
             elif task == 'melody':
                 melody = [label[-1] if len(label) == 9 else melody_map['OTHER'] for label in ei]
                 ei = [eii[:tokens_per_note] for eii in ei]
@@ -479,6 +509,13 @@ def F(file_name):
                 print(melody[0], melody[-2], melody[-1], len(melody))
                 assert len(melody) == len(ei)
                 output_list.append((ei,melody))
+            elif task == 'velocity':
+                velocity = [label[-1] if len(label) == 9 else velocity_map['OTHER'] for label in ei]
+                ei = [eii[:tokens_per_note] for eii in ei]
+                print(ei[0], ei[-2], ei[-1], len(ei))
+                print(velocity[0], velocity[-2], velocity[-1], len(velocity))
+                assert len(velocity) == len(ei)
+                output_list.append((ei,velocity))
             print('SUCCESS: ' + file_name + '\n', end='')
                 # return e, composer
         return output_list
@@ -579,13 +616,9 @@ if __name__ == '__main__':
         output = []
         ans = []
         for mid in file_list_split:
-            if task == 'composer':
-                res.append(G_downstream(mid, output, ans))
-            elif task == 'pretrain':
+            if task == 'pretrain':
                 res.append(G(mid, output))
-            elif task == 'generate':
-                res.append(G_downstream(mid, output, ans))
-            elif task == 'melody':
+            else:
                 res.append(G_downstream(mid, output, ans))
         all_cnt += sum((1 if i is not None else 0 for i in res))
         ok_cnt += sum((1 if i is True else 0 for i in res))
@@ -596,6 +629,9 @@ if __name__ == '__main__':
         elif task == 'melody':
             output = data_split(output)
             ans = data_split(np.array(ans), melody_map['OTHER'], 1)
+        elif task == 'velocity':
+            output = data_split(output)
+            ans = data_split(np.array(ans), velocity_map['OTHER'], 1)
         elif task == 'composer':
             for i, comp in enumerate(ans):
                 ans[i] = encoding_map[comp]
