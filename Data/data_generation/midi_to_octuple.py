@@ -589,6 +589,7 @@ if __name__ == '__main__':
     file_list = [n for n in data_zip.namelist() if n[-4:].lower()
                     == '.mid' or n[-5:].lower() == '.midi']
     random.shuffle(file_list)
+
     if task == 'composer':
         composers = list(set([f.name for f in os.scandir(comp_path) if f.is_dir() and f.name != 'util']))
         encoding_map = {string: index for index, string in enumerate(composers)}

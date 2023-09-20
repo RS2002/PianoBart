@@ -5,7 +5,7 @@ import os
 # 0 Measure, 1 Pos, 2 Program, 3 Pitch, 4 Duration, 5 Velocity, 6 TimeSig, 7 Tempo
 default = ( 'EMOPIA', 'Pianist8', 'POP1K7', 'POP909')
 composer = ('Pianist8', 'asap')
-generate = ('maestro',)
+generate = ('GiantMIDI1k',)
 melody = ('POP909',)
 emotion = ('EMOPIA',)
 datasets = {'composer': composer, 'generate': generate, 'melody':melody, 'velocity':melody, 'emotion':emotion}
@@ -136,7 +136,7 @@ def checkFinetune(task):
 # checkFinetune('composer')
 # checkFinetune('melody')
 # checkFinetune('velocity')
-checkFinetune('emotion')
+# checkFinetune('emotion')
 
 
     
