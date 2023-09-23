@@ -34,11 +34,42 @@ def get_args():
 
     return args
 
+
+'''
+input: Midi文件的路径
+return: Octuple (1*1024*8)
+如果长度大于1023，则只保留最后1023个token
+音频序列末尾添加<EOS>，不足1024的用<PAD>补齐
+'''
 def Midi2Octuple(Midi_path):
     pass
 
+
 def Octuple2Midi(octuple,Midi_path):
-    pass
+    octuple=torch.squeeze(octuple)
+    end_flag=False
+    pad=torch.tensor([256,128,129,256,128,32,254,49])
+    eos=pad+3
+
+    for i in range(1024):
+        for j in range(8):
+            if octuple[i,j]>=pad[j]:
+                end_flag=True
+                octuple[i]=eos
+                octuple[i+1:]=pad
+                break
+        if end_flag:
+            break
+
+    if not end_flag:
+        octuple[-1]=eos
+
+    #TODO
+    '''
+    接下来要做的内容：
+    将octuple（1024*8）转为Midi
+    将Midi输出到Midi_path中
+    '''
 
 
 
