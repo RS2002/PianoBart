@@ -9,22 +9,7 @@ import math
 import hashlib
 import numpy as np
 import re
-dataset = input("Please input the dataset for generation: ")
-data_path = f'Data/{dataset}'
-task = input("Please input the task (pretrain/composer/generate/melody/velocity/emotion) : ")
-if task == 'pretrain':
-    pad = int(input("Padding (1/0):"))
-    pad = True if pad == 1 else False
-elif task == 'melody' or task == 'velocity':
-    pad = False
-else:
-    pad = True
-data_zip = zipfile.ZipFile(data_path+'.zip', 'r')
-out_path = f'Data/output_{task}'
-if not os.path.exists(out_path):
-    os.mkdir(out_path)
-out_path = os.path.join(out_path, dataset)
-output_file = None
+
 midi_dict = dict()
 
 
@@ -169,7 +154,7 @@ def writer(file_name, output_str_list):
         for output_str in output_str_list:
             f.write(output_str + '\n')
 
-def MIDI_to_encoding(midi_obj):
+def MIDI_to_encoding(midi_obj, task='pretrain'):
     
     def time_to_pos(t):
         return round(t * pos_resolution / midi_obj.ticks_per_beat)
@@ -344,16 +329,15 @@ def padding(file_name, e_segment, window=max_window):
         e_segment.append(tuple([i + 1 for i in token_boundary]))
     return e_segment
 
-def F(file_name):
-    # for test
-    # midi_obj = miditoolkit.midi.parser.MidiFile(file_name)
-    midi_obj = miditoolkit.midi.parser.MidiFile(f'{data_path}/{file_name}')
+def F(file_name, task='pretrain', pad=True, dataset=None):
+    midi_obj = miditoolkit.midi.parser.MidiFile(file_name)
+    # midi_obj = miditoolkit.midi.parser.MidiFile(f'{data_path}/{file_name}')
     midi_notes_count = sum(len(inst.notes) for inst in midi_obj.instruments)
     if midi_notes_count == 0:
         print('ERROR(BLANK): ' + file_name + '\n', end='')
         return None
     try:
-        e = MIDI_to_encoding(midi_obj)
+        e = MIDI_to_encoding(midi_obj, task)
         if len(e) == 0:
             print('ERROR(BLANK): ' + file_name + '\n', end='')
             return None
@@ -540,9 +524,9 @@ def F(file_name):
 #         return False
 
 
-def G_downstream(file_name, output: list, ans: list):
+def G_downstream(file_name, output: list, ans: list, task, pad, dataset):
     try:
-        ret = F(file_name)
+        ret = F(file_name, task, pad, dataset)
         if ret:
             for seq, tag in ret:
                 if pad:
@@ -556,9 +540,9 @@ def G_downstream(file_name, output: list, ans: list):
         print('ERROR(UNCAUGHT): ' + file_name + '\n', end='')
         return False
 
-def G(file_name, output: list):
+def G(file_name, output: list, task, pad, dataset):
     try:
-        ret = F(file_name)
+        ret = F(file_name, task, pad, dataset)
         if ret:
             for seq in ret:
                 if pad:
@@ -580,13 +564,29 @@ def data_split(data: np.array, content=[i + 1 for i in token_boundary], tokens_p
 
     
 if __name__ == '__main__':
+    dataset = input("Please input the dataset for generation: ")
+    data_path = f'Data/{dataset}'
+    task = input("Please input the task (pretrain/composer/generate/melody/velocity/emotion) : ")
+    if task == 'pretrain':
+        pad = int(input("Padding (1/0):"))
+        pad = True if pad == 1 else False
+    elif task == 'melody' or task == 'velocity':
+        pad = False
+    else:
+        pad = True
+    data_zip = zipfile.ZipFile(data_path+'.zip', 'r')
+    out_path = f'Data/output_{task}'
+    if not os.path.exists(out_path):
+        os.mkdir(out_path)
+    out_path = os.path.join(out_path, dataset)
+    output_file = None
     if not os.path.exists(out_path):
         os.mkdir(out_path)
     if dataset == 'asap':
         comp_path = os.path.join(data_path, 'asap')
     elif dataset == 'Pianist8':
         comp_path = os.path.join(data_path, 'Pianist8', 'midi')
-    file_list = [n for n in data_zip.namelist() if n[-4:].lower()
+    file_list = [data_path+'/'+n for n in data_zip.namelist() if n[-4:].lower()
                     == '.mid' or n[-5:].lower() == '.midi']
     random.shuffle(file_list)
 
@@ -618,9 +618,9 @@ if __name__ == '__main__':
         ans = []
         for mid in file_list_split:
             if task == 'pretrain':
-                res.append(G(mid, output))
+                res.append(G(mid, output, task, pad, dataset))
             else:
-                res.append(G_downstream(mid, output, ans))
+                res.append(G_downstream(mid, output, ans, task, pad, dataset))
         all_cnt += sum((1 if i is not None else 0 for i in res))
         ok_cnt += sum((1 if i is True else 0 for i in res))
         output = np.array(output)
