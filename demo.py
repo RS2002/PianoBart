@@ -6,6 +6,8 @@ from model import PianoBartLM
 import torch
 import torch.nn as nn
 import numpy as np
+import miditoolkit
+from Data.data_generation.convert import MIDI_to_encoding, encoding_to_MIDI, padding, token_boundary
 
 def get_args():
     parser = argparse.ArgumentParser(description='')
@@ -42,10 +44,15 @@ return: Octuple (1*1024*8)
 音频序列末尾添加<EOS>，不足1024的用<PAD>补齐
 '''
 def Midi2Octuple(Midi_path):
-    pass
+    midi_obj = miditoolkit.midi.parser.MidiFile(Midi_path)
+    encoding = MIDI_to_encoding(midi_obj, task='pretrain')
+    encoding = padding(file_name=Midi_path, e_segment=encoding, window=1024)
+    encoding = torch.Tensor([encoding]).to(torch.int)
+    return encoding
 
+encoding = Midi2Octuple(r'Data\POP909\POP909\001\001.mid')
 
-def Octuple2Midi(octuple,Midi_path):
+def Octuple2Midi(octuple, Midi_path):
     octuple=torch.squeeze(octuple)
     end_flag=False
     pad=torch.tensor([256,128,129,256,128,32,254,49])
@@ -70,6 +77,14 @@ def Octuple2Midi(octuple,Midi_path):
     将octuple（1024*8）转为Midi
     将Midi输出到Midi_path中
     '''
+    octuple = octuple.tolist()
+    f = 0
+    for i, line in enumerate(octuple):
+        if line[0] == 259:
+            octuple = octuple[f:i]
+            break
+    midi = encoding_to_MIDI(octuple)
+    midi.dump(Midi_path)
 
 
 
