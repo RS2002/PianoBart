@@ -7,7 +7,7 @@ import torch
 import torch.nn as nn
 import numpy as np
 import miditoolkit
-from Data.data_generation.convert import MIDI_to_encoding, encoding_to_MIDI, padding, token_boundary
+from Data.data_generation.convert import MIDI_to_encoding, encoding_to_MIDI, padding
 
 def get_args():
     parser = argparse.ArgumentParser(description='')
@@ -15,7 +15,7 @@ def get_args():
     ### path setup ###
     parser.add_argument('--dict_file', type=str, default='./Data/Octuple.pkl')
     parser.add_argument('--ckpt', default='result/pretrain/pianobart/model_best.ckpt')
-    parser.add_argument('--input',default='./input.mid')
+    parser.add_argument('--input',default='./Data/POP909/POP909/001/001.mid')
     parser.add_argument('--output',default='./output.mid')
 
     ### parameter setting ###
@@ -26,7 +26,7 @@ def get_args():
     parser.add_argument('--ffn_dims', type=int, default=2048)  # FFN dims
     parser.add_argument('--heads', type=int, default=8)  # attention heads
 
-    parser.add_argument('--nopretrain', action="store_true")  # default: false
+    parser.add_argument('--nopretrain', action="store_true",default=True)  # default: false
 
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default=False
@@ -37,12 +37,6 @@ def get_args():
     return args
 
 
-'''
-input: Midi文件的路径
-return: Octuple (1*1024*8)
-如果长度大于1023，则只保留最后1023个token
-音频序列末尾添加<EOS>，不足1024的用<PAD>补齐
-'''
 def Midi2Octuple(Midi_path):
     midi_obj = miditoolkit.midi.parser.MidiFile(Midi_path)
     encoding = MIDI_to_encoding(midi_obj, task='pretrain')
@@ -50,7 +44,6 @@ def Midi2Octuple(Midi_path):
     encoding = torch.Tensor([encoding]).to(torch.int)
     return encoding
 
-encoding = Midi2Octuple(r'Data\POP909\POP909\001\001.mid')
 
 def Octuple2Midi(octuple, Midi_path):
     octuple=torch.squeeze(octuple)
@@ -60,7 +53,7 @@ def Octuple2Midi(octuple, Midi_path):
 
     for i in range(1024):
         for j in range(8):
-            if octuple[i,j]>=pad[j]:
+            if octuple[i,j]>=pad[j] or (j==0 and octuple[i,j]>127): #暂时不生成鼓
                 end_flag=True
                 octuple[i]=eos
                 octuple[i+1:]=pad
@@ -71,18 +64,13 @@ def Octuple2Midi(octuple, Midi_path):
     if not end_flag:
         octuple[-1]=eos
 
-    #TODO
-    '''
-    接下来要做的内容：
-    将octuple（1024*8）转为Midi
-    将Midi输出到Midi_path中
-    '''
     octuple = octuple.tolist()
     f = 0
     for i, line in enumerate(octuple):
         if line[0] == 259:
             octuple = octuple[f:i]
             break
+
     midi = encoding_to_MIDI(octuple)
     midi.dump(Midi_path)
 
