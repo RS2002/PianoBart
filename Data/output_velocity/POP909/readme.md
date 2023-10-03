@@ -1,6 +1,6 @@
 # Velocity Classification
 
-Dataset: POP909
+Dataset: ~~POP909~~（数据泄露）改用  GiantMIDI1k，velocity属性全部pad
 
 classify Pitch events into six classes with the POP909 dataset. MIDI velocity values range from 0–127, and we quantize the information into six categories, pp (0–31), p (32–47), mp (48–63), mf (64–79), f (80–95), and ff (96–127)
 
