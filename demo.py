@@ -26,7 +26,7 @@ def get_args():
     parser.add_argument('--ffn_dims', type=int, default=2048)  # FFN dims
     parser.add_argument('--heads', type=int, default=8)  # attention heads
 
-    parser.add_argument('--nopretrain', action="store_true",default=True)  # default: false
+    parser.add_argument('--nopretrain', action="store_true",default=False)  # default: false
 
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default=False

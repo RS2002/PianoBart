@@ -4,7 +4,7 @@
 
 **Supervisors:** Chengying Gao, Xiao Liang
 
-**Article:**  under way
+**Article:** Zijian Zhao, Weichao Zeng, Fupeng He, Yutong He, Yiyi Wang, Xiao Liang, Chengying Gao*: PianoBART: Symbolic Piano Music Understanding and Generating with Large-Scale Pre-Training (in progress)
 
 Some parts of our code borrows from [muzic/musicbert at main · microsoft/muzic (github.com)](https://github.com/microsoft/muzic/tree/main/musicbert) and [wazenmai/MIDI-BERT: This is the official repository for the paper, MidiBERT-Piano: Large-scale Pre-training for Symbolic Music Understanding. (github.com)](https://github.com/wazenmai/MIDI-BERT).
 
@@ -12,15 +12,17 @@ Some parts of our code borrows from [muzic/musicbert at main · microsoft/muzic 
 
 ## 1. Dataset
 
-### 1.1 Pretrain
+**Pretrain:** POP1K7, ASAP, POP909, Pianist8, EMOPIA
 
-Our pretraining dataset includes POP1K7, ASAP, POP909, Pianist8, and EMOPIA.
+**Generation:** Maestro, GiantMidi
 
+**Composer Classification:** ASAP, Pianist8
 
+**Emotion Classification:** EMOPIA
 
-### 1.2 Others
+**Velocity Prediction:** GiantMidi
 
-We have not yet collected enough data for downstream tasks.
+**Melody Prediction:** POP909
 
 
 
@@ -45,6 +47,8 @@ if __name__ == '__main__':
     #eval()
     #finetune_generation()
     #finetune_eval()
+    #abalation()
+    #ablation_eval
 ```
 
 You can uncomment the corresponding function to perform the desired task.
@@ -52,6 +56,12 @@ You can uncomment the corresponding function to perform the desired task.
 
 
 ### 2.2 Pretrain
+
+Uncomment the “pretrain()” in main.py and run it.
+
+```shell
+python main.py
+```
 
 
 
@@ -71,9 +81,60 @@ patch {path of shapesimilarity.py} < patches/shapesimilarity.patch
 ```
 
 
+
+Uncomment the “finetune_generation()” in main.py and run it.
+
+```shell
+python main.py
+```
+
+
+
+#### 2.3.2 Composer Classification
+
+Uncomment the “finetune()” in main.py and run it.
+
+```
+
+```
+
+
+
+####2.3.3 Emotion Classification
+
+Uncomment the “finetune()” in main.py and run it.
+
+```
+
+```
+
+
+
+####2.3.4 Velocity Prediction
+
+Uncomment the “finetune()” in main.py and run it.
+
+```
+
+```
+
+
+
+####2.3.5 Melody Prediction
+
+Uncomment the “finetune()” in main.py and run it.
+
+```
+
+```
+
+
+
 ## 3. Demo
 
-A demo is currently under development.
-
 In this section, you can input an intro (MIDI file) to PianoBart, and it will generate a new MIDI file inspired by the input. Simply provide the intro as input, and PianoBart will use its trained models to generate a new MIDI file with a similar style and tone.
+
+```shell
+python --ckpt <model path> --input <input path> --output <output path> demo.py
+```
 
