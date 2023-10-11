@@ -1,6 +1,6 @@
 import numpy as np
 import random
-from midi_to_octuple import encoding_to_MIDI
+from convert import encoding_to_MIDI
 import os
 # 0 Measure, 1 Pos, 2 Program, 3 Pitch, 4 Duration, 5 Velocity, 6 TimeSig, 7 Tempo
 default = ( 'EMOPIA', 'Pianist8', 'POP1K7', 'POP909')
@@ -8,7 +8,7 @@ composer = ('Pianist8', 'asap')
 generate = ('GiantMIDI1k',)
 melody = ('POP909',)
 emotion = ('EMOPIA',)
-datasets = {'composer': composer, 'generate': generate, 'melody':melody, 'velocity':melody, 'emotion':emotion}
+datasets = {'composer': composer, 'generate': generate, 'melody':melody, 'velocity':generate, 'emotion':emotion}
 
 maps = {
     0: 'bar',
@@ -36,7 +36,7 @@ def checkMidi(file: str, dataset, task, tag, file2='', padding=True):
         a = a.reshape(-1, 8)
     cnt = 0
     print(a.shape)
-    a = list(a)
+    a = a.tolist()
     f = 0
     index = random.randint(0, 50)
     for i in range(len(a)):
@@ -47,18 +47,19 @@ def checkMidi(file: str, dataset, task, tag, file2='', padding=True):
             cnt+=1
             f = i+1
 
-    midi = encoding_to_MIDI(aa)
-    # 保存 MIDI 字节到文件
-    output_path = f'Data/output_test/{task}'
-    if not os.path.exists(output_path):
-        os.mkdir(output_path)
-    midi.dump(output_path+f'/{dataset}_{tag}_{task}_sample.mid')
-    
+    if task != 'velocity':
+        midi = encoding_to_MIDI(aa)
+        # 保存 MIDI 字节到文件
+        output_path = f'Data/output_test/{task}'
+        if not os.path.exists(output_path):
+            os.mkdir(output_path)
+        midi.dump(output_path+f'/{dataset}_{tag}_{task}_sample.mid')
+
     if len(file2):
         b = np.load(file2)
         b = b.reshape(-1,8)
         print(b.shape)
-        b = list(b)
+        b = b.tolist()
         f = 0
         for i in range(len(b)):
             if b[i][0] == 259:
@@ -67,6 +68,7 @@ def checkMidi(file: str, dataset, task, tag, file2='', padding=True):
                     break
                 cnt+=1
                 f = i+1
+    if task != 'velocity':
         midib = encoding_to_MIDI(bb)
         midib.dump(output_path+f'/{dataset}_{tag}_{task}_sample_b.mid')
 
@@ -112,10 +114,12 @@ def checkFinetune(task):
                         # 检查是否一个1024长度里只有一个eos
                         cnt = np.count_nonzero(m == mmaps[0])
                         print(m, cnt, cnt==a.shape[0])
+                    if num == 5:
+                        print(f'velocity Padding: {list(m == 32).count(True) == m.shape[0]-cnt}')
                 if mthd != 'pretrain_method':
                     ans = f'Data\output_{task}\{d}\{mthd}\{d}_{tag}_ans.npy'
                     b = np.load(ans)
-                    print(b.shape, b.max(), b.min(), b[50:100])
+                    print(b.shape, b.max(), b.min(), b[50][:5])
                     if mthd == 'gen_method':
                         for num in range(8):
                             m = b[:, :, num]
