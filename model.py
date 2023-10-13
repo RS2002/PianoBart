@@ -108,10 +108,10 @@ if __name__=='__main__':
     with open('./Data/Octuple.pkl', 'rb') as f:
         e2w, w2e = pickle.load(f)
     piano_bart=PianoBart(config,e2w,w2e).to(device)
-    input_ids_encoder = torch.randint(1, 10, (2, 32, 8)).to(device)
+    input_ids_encoder = torch.randint(0, 10, (2, 32, 8)).to(device)
     print("输入维度:",input_ids_encoder.size())
-    input_ids_decoder = torch.randint(1, 10, (2, 32, 8)).to(device)
-    label = torch.randint(1, 10, (2, 32)).to(device)
+    input_ids_decoder = torch.randint(0, 10, (2, 32, 8)).to(device)
+    label = torch.randint(0, 10, (2, 32)).to(device)
     encoder_attention_mask = torch.zeros((2, 32)).to(device)
     decoder_attention_mask = torch.zeros((2, 32)).to(device)
     for j in range(2):
@@ -129,14 +129,14 @@ if __name__=='__main__':
         for temp in output:
             print(temp.size())
 
-    test_TokenClassifier=False
+    test_TokenClassifier=True
     if test_TokenClassifier:
         print("test Token Classifier")
         piano_bart_token_classifier=TokenClassification(pianobart=piano_bart, class_num=10, hs=48)
         output=piano_bart_token_classifier(input_ids_encoder,label,encoder_attention_mask,decoder_attention_mask)
         print("输出维度:",output.size())
 
-    test_SequenceClassifier=True
+    test_SequenceClassifier=False
     if test_SequenceClassifier:
         print("test Sequence Classifier")
         piano_bart_sequence_classifier=SequenceClassification(pianobart=piano_bart, class_num=10, hs=48)

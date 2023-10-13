@@ -163,6 +163,7 @@ class FinetuneTrainer:
 
             x = x.long()
             y = y.long()
+            y=y.squeeze()
 
             # avoid attend to pad word
             attn = (x[:, :, 0] != self.pianobart.bar_pad_word).float().to(
