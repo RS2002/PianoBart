@@ -77,10 +77,16 @@ python main.py
 2. Use the patch we provide, simply just run the following command in the terminal.
 
 ```shell
-patch {path of shapesimilarity.py} < patches/shapesimilarity.patch
+patch <path of shapesimilarity.py> < patches/shapesimilarity.patch
 ```
 
+For example, if you use the conda-based environment we provide, you can run the following command.
 
+> Assume the conda environment is located in `~/anaconda3/envs/Bart`.
+
+```shell
+patch ~/anaconda3/envs/Bart/lib/python3.8/site-packages/shapesimilarity/shapesimilarity.py < patches/shapesimilarity.patch
+```
 
 Uncomment the “finetune_generation()” in main.py and run it.
 
@@ -94,7 +100,7 @@ python main.py
 
 Uncomment the “finetune()” in main.py and run it.
 
-```
+```shell
 
 ```
 
@@ -104,7 +110,7 @@ Uncomment the “finetune()” in main.py and run it.
 
 Uncomment the “finetune()” in main.py and run it.
 
-```
+```shell
 
 ```
 
@@ -114,7 +120,7 @@ Uncomment the “finetune()” in main.py and run it.
 
 Uncomment the “finetune()” in main.py and run it.
 
-```
+```shell
 
 ```
 
@@ -124,7 +130,7 @@ Uncomment the “finetune()” in main.py and run it.
 
 Uncomment the “finetune()” in main.py and run it.
 
-```
+```shell
 
 ```
 
