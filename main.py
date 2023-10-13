@@ -305,7 +305,7 @@ def finetune_generation():
 
     print("\nLoading Dataset")
     #X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetuneload_data_finetune(args.dataset, args.task, args.dataroot)
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(dataset=args.datasets,task="gen",data_root="./Data/output_generation/maestro/gen_method")
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(dataset=args.datasets,task="gen",data_root=args.dataroot)
 
     trainset = FinetuneDataset(X=X_train, y=y_train)
     validset = FinetuneDataset(X=X_val, y=y_val)
@@ -624,9 +624,9 @@ python main.py --task composer --dataset Pianist8 --class_num --dataroot ./Data/
 '''
 if __name__ == '__main__':
     #pretrain()
-    #finetune()
+    finetune()
     #eval()
-    finetune_generation()
-    #finetune_eval()
+    # finetune_generation()
+    # finetune_eval()
     #abalation()
     #ablation_eval
