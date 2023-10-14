@@ -6,16 +6,17 @@ import time
 from torch.utils.data import DataLoader
 from transformers import BartConfig
 from PianoBart import PianoBart
-from pretrain import Pretrainer,get_args_pretrain,load_data_pretrain
-from finetune import FinetuneTrainer,get_args_finetune,load_data_finetune
+from pretrain import Pretrainer, get_args_pretrain, load_data_pretrain
+from finetune import FinetuneTrainer, get_args_finetune, load_data_finetune
 import torch
-from dataset import MidiDataset,FinetuneDataset
-from model import TokenClassification,SequenceClassification,PianoBartLM
-from eval import get_args_eval,load_data_eval,conf_mat
-from finetune_generation import get_args_generation,GenerationTrainer
+from dataset import MidiDataset, FinetuneDataset
+from model import TokenClassification, SequenceClassification, PianoBartLM
+from eval import get_args_eval, load_data_eval, conf_mat
+from finetune_generation import get_args_generation, GenerationTrainer
 from eval_generation import get_args_eval_generation
 # import json
 from Ablation import AblationTrainer, load_data_ablation, get_args_ablation
+
 
 def pretrain():
     args = get_args_pretrain()
@@ -25,14 +26,17 @@ def pretrain():
         e2w, w2e = pickle.load(f)
 
     print("\nLoading Dataset", args.datasets)
-    X_train, X_val = load_data_pretrain(datasets=args.datasets,mode="pretrain")
+    X_train, X_val = load_data_pretrain(
+        datasets=args.datasets, mode="pretrain")
 
     trainset = MidiDataset(X=X_train)
     validset = MidiDataset(X=X_val)
 
-    train_loader = DataLoader(trainset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
+    train_loader = DataLoader(
+        trainset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
     print("   len of train_loader", len(train_loader))
-    valid_loader = DataLoader(validset, batch_size=args.batch_size, num_workers=args.num_workers)
+    valid_loader = DataLoader(
+        validset, batch_size=args.batch_size, num_workers=args.num_workers)
     print("   len of valid_loader", len(valid_loader))
 
     print("\nBuilding BART model")
@@ -49,7 +53,7 @@ def pretrain():
     pianobart = PianoBart(bartConfig=configuration, e2w=e2w, w2e=w2e)
     print("\nCreating BART Trainer")
     trainer = Pretrainer(pianobart, train_loader, valid_loader, args.lr, args.batch_size, args.max_seq_len,
-                          args.mask_percent, args.cpu, args.cuda_devices)
+                         args.mask_percent, args.cpu, args.cuda_devices)
 
     print("\nTraining Start")
     save_dir = 'result/pretrain/' + args.name
@@ -69,7 +73,8 @@ def pretrain():
         train_loss, train_acc = trainer.train()
         valid_loss, valid_acc = trainer.valid()
 
-        weighted_score = [x * y for (x, y) in zip(valid_acc, pianobart.n_tokens)]
+        weighted_score = [
+            x * y for (x, y) in zip(valid_acc, pianobart.n_tokens)]
         avg_acc = sum(weighted_score) / sum(pianobart.n_tokens)
 
         is_best = avg_acc > best_acc
@@ -89,12 +94,15 @@ def pretrain():
         with open(os.path.join(save_dir, 'log'), 'a') as outfile:
             outfile.write('Epoch {}: train_loss={}, train_acc={}, valid_loss={}, valid_acc={}\n'.format(
                 epoch + 1, train_loss, train_acc, valid_loss, valid_acc))
-    
+
     end_t = time.time()
 
-    print(f'Time cost in pretrain of PianoBart is {end_t - start_t}, start_t = {start_t}, end_t = {end_t}')
+    print(
+        f'Time cost in pretrain of PianoBart is {end_t - start_t}, start_t = {start_t}, end_t = {end_t}')
     with open(os.path.join(save_dir, 'log'), 'a') as outfile:
-            outfile.write(f'Time cost in pretrain of PianoBart is {end_t - start_t}, start_t = {start_t}, end_t = {end_t}')
+        outfile.write(
+            f'Time cost in pretrain of PianoBart is {end_t - start_t}, start_t = {start_t}, end_t = {end_t}')
+
 
 def finetune():
     # set seed
@@ -126,17 +134,21 @@ def finetune():
         print("ERROR")
         exit(-1)
 
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(args.dataset, args.task, args.dataroot)
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(
+        args.dataset, args.task, args.dataroot)
 
     trainset = FinetuneDataset(X=X_train, y=y_train)
     validset = FinetuneDataset(X=X_val, y=y_val)
     testset = FinetuneDataset(X=X_test, y=y_test)
 
-    train_loader = DataLoader(trainset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
+    train_loader = DataLoader(
+        trainset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
     print("   len of train_loader", len(train_loader))
-    valid_loader = DataLoader(validset, batch_size=args.batch_size, num_workers=args.num_workers)
+    valid_loader = DataLoader(
+        validset, batch_size=args.batch_size, num_workers=args.num_workers)
     print("   len of valid_loader", len(valid_loader))
-    test_loader = DataLoader(testset, batch_size=args.batch_size, num_workers=args.num_workers)
+    test_loader = DataLoader(
+        testset, batch_size=args.batch_size, num_workers=args.num_workers)
     print("   len of valid_loader", len(test_loader))
 
     print("\nBuilding BART model")
@@ -161,7 +173,7 @@ def finetune():
 
     print("\nCreating Finetune Trainer")
     trainer = FinetuneTrainer(pianobart, train_loader, valid_loader, test_loader, args.lr, args.class_num,
-                              args.hs, y_test.shape, args.cpu, args.cuda_devices, None, seq_class)
+                              args.hs, y_test.shape, args.cpu, args.cuda_devices, None, seq_class, args.error_correction)
 
     print("\nTraining Start")
     save_dir = os.path.join('result/finetune/', args.task + '_' + args.name)
@@ -174,7 +186,8 @@ def finetune():
 
     #    train_accs, valid_accs = [], []
     with open(os.path.join(save_dir, 'log'), 'a') as outfile:
-        outfile.write("Loading pre-trained model from " + best_mdl.split('/')[-1] + '\n')
+        outfile.write("Loading pre-trained model from " +
+                      best_mdl.split('/')[-1] + '\n')
         for epoch in range(args.epochs):
             train_loss, train_acc = trainer.train()
             valid_loss, valid_acc = trainer.valid()
@@ -249,7 +262,8 @@ def eval():
         print("ERROR")
         exit(-1)
 
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_eval(dataset, args.task)
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_eval(
+        dataset, args.task)
 
     '''trainset = FinetuneDataset(X=X_train, y=y_train)
     validset = FinetuneDataset(X=X_val, y=y_val)'''
@@ -259,9 +273,10 @@ def eval():
     print("   len of train_loader", len(train_loader))
     valid_loader = DataLoader(validset, batch_size=args.batch_size, num_workers=args.num_workers)
     print("   len of valid_loader", len(valid_loader))'''
-    train_loader,valid_loader=None,None
+    train_loader, valid_loader = None, None
 
-    test_loader = DataLoader(testset, batch_size=args.batch_size, num_workers=args.num_workers)
+    test_loader = DataLoader(
+        testset, batch_size=args.batch_size, num_workers=args.num_workers)
     print("   len of test_loader", len(test_loader))
 
     print('\nLoad ckpt from', args.ckpt)
@@ -287,6 +302,7 @@ def eval():
     outdir = os.path.dirname(args.ckpt)
     conf_mat(y_test, all_output, args.task, outdir)
 
+
 def finetune_generation():
     # set seed
     seed = 2023
@@ -305,17 +321,21 @@ def finetune_generation():
 
     print("\nLoading Dataset")
     #X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetuneload_data_finetune(args.dataset, args.task, args.dataroot)
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(dataset=args.datasets,task="gen",data_root=args.dataroot)
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(
+        dataset=args.datasets, task="gen", data_root=args.dataroot)
 
     trainset = FinetuneDataset(X=X_train, y=y_train)
     validset = FinetuneDataset(X=X_val, y=y_val)
     testset = FinetuneDataset(X=X_test, y=y_test)
 
-    train_loader = DataLoader(trainset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
+    train_loader = DataLoader(
+        trainset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
     print("   len of train_loader", len(train_loader))
-    valid_loader = DataLoader(validset, batch_size=args.batch_size, num_workers=args.num_workers)
+    valid_loader = DataLoader(
+        validset, batch_size=args.batch_size, num_workers=args.num_workers)
     print("   len of valid_loader", len(valid_loader))
-    test_loader = DataLoader(testset, batch_size=args.batch_size, num_workers=args.num_workers)
+    test_loader = DataLoader(
+        testset, batch_size=args.batch_size, num_workers=args.num_workers)
     print("   len of valid_loader", len(test_loader))
 
     print("\nBuilding BART model")
@@ -340,7 +360,7 @@ def finetune_generation():
 
     print("\nCreating Finetune Trainer")
     trainer = GenerationTrainer(pianobart, train_loader, valid_loader, test_loader, args.lr,
-                               y_test.shape, args.cpu, args.cuda_devices, None)
+                                y_test.shape, args.cpu, args.cuda_devices, None)
 
     print("\nTraining Start")
     save_dir = os.path.join('result/finetune/generation_' + args.name)
@@ -353,13 +373,15 @@ def finetune_generation():
 
     #    train_accs, valid_accs = [], []
     with open(os.path.join(save_dir, 'log'), 'a') as outfile:
-        outfile.write("Loading pre-trained model from " + best_mdl.split('/')[-1] + '\n')
+        outfile.write("Loading pre-trained model from " +
+                      best_mdl.split('/')[-1] + '\n')
         for epoch in range(args.epochs):
             train_loss, train_acc, train_FAD_BAR, train_FAD,  = trainer.train()
             valid_loss, valid_acc, valid_FAD_BAR, valid_FAD = trainer.valid()
             test_loss, test_acc, test_FAD_BAR, test_FAD, _ = trainer.test()
 
-            weighted_score = [x * y for (x, y) in zip(valid_acc, pianobart.n_tokens)]
+            weighted_score = [
+                x * y for (x, y) in zip(valid_acc, pianobart.n_tokens)]
             avg_acc = sum(weighted_score) / sum(pianobart.n_tokens)
 
             is_best = avg_acc > best_acc
@@ -421,7 +443,8 @@ def eval_generation():
 
     print("\nLoading Dataset")
 
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(args.dataset, "gen")
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(
+        args.dataset, "gen")
 
     '''trainset = FinetuneDataset(X=X_train, y=y_train)
     validset = FinetuneDataset(X=X_val, y=y_val)'''
@@ -431,9 +454,10 @@ def eval_generation():
     print("   len of train_loader", len(train_loader))
     valid_loader = DataLoader(validset, batch_size=args.batch_size, num_workers=args.num_workers)
     print("   len of valid_loader", len(valid_loader))'''
-    train_loader,valid_loader=None,None
+    train_loader, valid_loader = None, None
 
-    test_loader = DataLoader(testset, batch_size=args.batch_size, num_workers=args.num_workers)
+    test_loader = DataLoader(
+        testset, batch_size=args.batch_size, num_workers=args.num_workers)
     print("   len of test_loader", len(test_loader))
 
     print('\nLoad ckpt from', args.ckpt)
@@ -451,13 +475,15 @@ def eval_generation():
 
     print("\nCreating Finetune Trainer")
     trainer = GenerationTrainer(pianobart, train_loader, valid_loader, test_loader, args.lr,
-                               y_test.shape, args.cpu, args.cuda_devices, model)
+                                y_test.shape, args.cpu, args.cuda_devices, model)
 
-    test_loss, test_acc,FAD_BAR,FAD, all_output = trainer.test()
-    print('test loss: {}, test_acc: {}, test FAD: {}, test_FAD(BAR): {}'.format(test_loss, test_acc,FAD,FAD_BAR))
+    test_loss, test_acc, FAD_BAR, FAD, all_output = trainer.test()
+    print('test loss: {}, test_acc: {}, test FAD: {}, test_FAD(BAR): {}'.format(
+        test_loss, test_acc, FAD, FAD_BAR))
 
     outdir = os.path.dirname(args.ckpt)
     conf_mat(y_test, all_output, args.task, outdir)
+
 
 def abalation():
     # set seed
@@ -476,17 +502,21 @@ def abalation():
         e2w, w2e = pickle.load(f)
 
     print("\nLoading Dataset")
-    X_train, X_val, X_test = load_data_ablation(datasets=args.datasets, mode="ablation")
+    X_train, X_val, X_test = load_data_ablation(
+        datasets=args.datasets, mode="ablation")
 
     trainset = MidiDataset(X=X_train)
     validset = MidiDataset(X=X_val)
     testset = MidiDataset(X=X_test)
 
-    train_loader = DataLoader(trainset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
+    train_loader = DataLoader(
+        trainset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
     print("   len of train_loader", len(train_loader))
-    valid_loader = DataLoader(validset, batch_size=args.batch_size, num_workers=args.num_workers)
+    valid_loader = DataLoader(
+        validset, batch_size=args.batch_size, num_workers=args.num_workers)
     print("   len of valid_loader", len(valid_loader))
-    test_loader = DataLoader(testset, batch_size=args.batch_size, num_workers=args.num_workers)
+    test_loader = DataLoader(
+        testset, batch_size=args.batch_size, num_workers=args.num_workers)
     print("   len of valid_loader", len(test_loader))
 
     print("\nBuilding BART model")
@@ -510,7 +540,8 @@ def abalation():
         pianobart.load_state_dict(checkpoint['state_dict'])
 
     print("\nCreating Finetune Trainer")
-    trainer = AblationTrainer(pianobart, train_loader, valid_loader, test_loader, args.lr, X_test.shape, args.cpu, args.cuda_devices, None)
+    trainer = AblationTrainer(pianobart, train_loader, valid_loader,
+                              test_loader, args.lr, X_test.shape, args.cpu, args.cuda_devices, None)
 
     print("\nTraining Start")
     save_dir = os.path.join('result/finetune/generation_' + args.name)
@@ -523,7 +554,8 @@ def abalation():
 
     #    train_accs, valid_accs = [], []
     with open(os.path.join(save_dir, 'log'), 'a') as outfile:
-        outfile.write("Loading pre-trained model from " + best_mdl.split('/')[-1] + '\n')
+        outfile.write("Loading pre-trained model from " +
+                      best_mdl.split('/')[-1] + '\n')
         for epoch in range(args.epochs):
             train_loss, train_acc, train_FAD_BAR, train_FAD,  = trainer.train()
             valid_loss, valid_acc, valid_FAD_BAR, valid_FAD = trainer.valid()
@@ -550,10 +582,10 @@ def abalation():
                 'Epoch {}: train_loss={}, valid_loss={}, test_loss={}, train_acc={}, valid_acc={}, test_acc={}, train_fad={}, valid_fad={}, test_fad={}, train_fad(bar)={}, valid_fad(bar)={}, test_fad(bar)={}\n'.format(
                     epoch + 1, train_loss, valid_loss, test_loss, train_acc, valid_acc, test_acc, train_FAD, valid_FAD, test_FAD, train_FAD_BAR, valid_FAD_BAR, test_FAD_BAR))
 
-
             if bad_cnt > 30:
                 print('valid acc not improving for 3 epochs')
                 break
+
 
 def ablation_eval():
     args = get_args_eval_generation()
@@ -578,7 +610,8 @@ def ablation_eval():
 
     print("\nLoading Dataset")
 
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(args.dataset, "gen")
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(
+        args.dataset, "gen")
 
     '''trainset = FinetuneDataset(X=X_train, y=y_train)
     validset = FinetuneDataset(X=X_val, y=y_val)'''
@@ -590,7 +623,8 @@ def ablation_eval():
     print("   len of valid_loader", len(valid_loader))'''
     train_loader, valid_loader = None, None
 
-    test_loader = DataLoader(testset, batch_size=args.batch_size, num_workers=args.num_workers)
+    test_loader = DataLoader(
+        testset, batch_size=args.batch_size, num_workers=args.num_workers)
     print("   len of test_loader", len(test_loader))
 
     print('\nLoad ckpt from', args.ckpt)
@@ -608,14 +642,14 @@ def ablation_eval():
 
     print("\nCreating Finetune Trainer")
     trainer = AblationTrainer(pianobart, train_loader, valid_loader, test_loader, args.lr,
-                                y_test.shape, args.cpu, args.cuda_devices, model)
+                              y_test.shape, args.cpu, args.cuda_devices, model)
 
     test_loss, test_acc, FAD_BAR, FAD, all_output = trainer.test()
-    print('test loss: {}, test_acc: {}, test FAD: {}, test_FAD(BAR): {}'.format(test_loss, test_acc, FAD, FAD_BAR))
+    print('test loss: {}, test_acc: {}, test FAD: {}, test_FAD(BAR): {}'.format(
+        test_loss, test_acc, FAD, FAD_BAR))
 
     outdir = os.path.dirname(args.ckpt)
     conf_mat(y_test, all_output, args.task, outdir)
-
 
 
 '''
@@ -623,10 +657,10 @@ to run finetune, for example if use Piani8 dataset:
 python main.py --task composer --dataset Pianist8 --class_num --dataroot ./Data/output_composer/Pianist8 --cuda_devices 0
 '''
 if __name__ == '__main__':
-    #pretrain()
+    # pretrain()
     finetune()
-    #eval()
+    # eval()
     # finetune_generation()
     # finetune_eval()
-    #abalation()
-    #ablation_eval
+    # abalation()
+    # ablation_eval
