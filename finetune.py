@@ -116,7 +116,7 @@ class FinetuneTrainer:
 
         self.testset_shape = testset_shape if not error else testset_shape[:-1]
 
-        print(self.testset_shape)
+        # print(self.testset_shape)
 
     def compute_loss(self, predict, target, loss_mask, seq):
         loss = self.loss_func(predict, target)
