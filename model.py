@@ -82,12 +82,13 @@ class SequenceClassification(nn.Module):
 
 
 class TokenClassification(nn.Module):
-    def __init__(self, pianobart, class_num, hs):
+    def __init__(self, pianobart, class_num, hs,d_model=64):
         super().__init__()
 
         self.pianobart = pianobart
-        new_embedding=Embeddings(n_token=class_num,d_model=np.sum(pianobart.emb_sizes))
-        self.pianobart.change_decoder_embedding(new_embedding)
+        new_embedding=Embeddings(n_token=class_num,d_model=d_model)
+        new_linear=nn.Linear(d_model,pianobart.bartConfig.d_model)
+        self.pianobart.change_decoder_embedding(new_embedding,new_linear)
         self.classifier = nn.Sequential(
             nn.Dropout(0.1),
             nn.Linear(hs, 256),

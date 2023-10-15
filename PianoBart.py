@@ -85,8 +85,10 @@ class PianoBart(nn.Module):
             rand[i]=random.choice(range(self.n_tokens[i]))
         return np.array(rand)
 
-    def change_decoder_embedding(self,new_embedding):
+    def change_decoder_embedding(self,new_embedding,new_linear=None):
         self.decoder_emb=new_embedding
+        if new_linear is not None:
+            self.decoder_linear=new_linear
 
 
 #test
