@@ -279,7 +279,7 @@ def finetune_generation():
         e2w, w2e = pickle.load(f)
 
     print("\nLoading Dataset")
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(datasets=args.datasets,mode="gen")
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(args.datasets, "gen", args.dataroot)
 
     trainset = FinetuneDataset(X=X_train, y=y_train)
     validset = FinetuneDataset(X=X_val, y=y_val)
@@ -423,7 +423,7 @@ def eval_generation():
 
 if __name__ == '__main__':
     #pretrain()
-    finetune()
+    # finetune()
     #eval()
-    #finetune_generation()
+    finetune_generation()
     #finetune_eval()

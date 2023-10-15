@@ -49,6 +49,9 @@ def get_args_finetune():
     parser.add_argument("--cuda_devices", type=int, nargs='+',
                         default=[6, 7], help="CUDA device ids")
 
+    parser.add_argument("--error_correction",
+                        action="store_true")  # default: false
+
     args = parser.parse_args()
 
     # check args
@@ -67,7 +70,7 @@ def get_args_finetune():
 
 class FinetuneTrainer:
     def __init__(self, pianobart, train_dataloader, valid_dataloader, test_dataloader,
-                 lr, class_num, hs, testset_shape, cpu, cuda_devices=None, model=None, SeqClass=False):
+                 lr, class_num, hs, testset_shape, cpu, cuda_devices=None, model=None, SeqClass=False, error=False):
 
         device_name = "cuda"
         if cuda_devices is not None and len(cuda_devices) >= 1:
@@ -111,7 +114,9 @@ class FinetuneTrainer:
         self.optim = AdamW(self.model.parameters(), lr=lr, weight_decay=0.01)
         self.loss_func = nn.CrossEntropyLoss(reduction='none')
 
-        self.testset_shape = testset_shape
+        self.testset_shape = testset_shape if not error else testset_shape[:-1]
+
+        # print(self.testset_shape)
 
     def compute_loss(self, predict, target, loss_mask, seq):
         loss = self.loss_func(predict, target)
@@ -163,7 +168,10 @@ class FinetuneTrainer:
 
             x = x.long()
             y = y.long()
-            y=y.squeeze()
+            # y=y.squeeze()
+            # Remove the last dimension
+            y = torch.squeeze(y, dim=-1)
+            # print(y.shape)
 
             # avoid attend to pad word
             attn = (x[:, :, 0] != self.pianobart.bar_pad_word).float().to(

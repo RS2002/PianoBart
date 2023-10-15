@@ -283,7 +283,7 @@ def finetune_generation():
         e2w, w2e = pickle.load(f)
 
     print("\nLoading Dataset")
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(datasets=args.datasets,mode="gen")
+    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(args.datasets,task="gen", data_root=args.dataroot)
 
     trainset = FinetuneDataset(X=X_train, y=y_train)
     validset = FinetuneDataset(X=X_val, y=y_val)
@@ -327,9 +327,9 @@ def finetune_generation():
     with open(os.path.join(save_dir, 'log'), 'a') as outfile:
         outfile.write("Loading pre-trained model from " + best_mdl.split('/')[-1] + '\n')
         for epoch in range(args.epochs):
-            train_loss, train_acc = trainer.train()
-            valid_loss, valid_acc = trainer.valid()
-            test_loss, test_acc, _ = trainer.test()
+            train_loss, train_acc, train_FAD_BAR, train_FAD, = trainer.train()
+            valid_loss, valid_acc, valid_FAD_BAR, valid_FAD = trainer.valid()
+            test_loss, test_acc, test_FAD_BAR, test_FAD, _ = trainer.test()
 
             is_best = np.mean(valid_acc) >= np.mean(best_acc)
             best_acc = max(np.mean(valid_acc), np.mean(best_acc))
@@ -426,7 +426,7 @@ def eval_generation():
 
 if __name__ == '__main__':
     #pretrain()
-    finetune()
+    #finetune()
     #eval()
-    #finetune_generation()
+    finetune_generation()
     #finetune_eval()
