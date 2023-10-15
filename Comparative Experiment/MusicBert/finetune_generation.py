@@ -15,12 +15,12 @@ import shapesimilarity
 def get_args_generation():
     parser = argparse.ArgumentParser(description='')
 
-    parser.add_argument("--datasets", type=str, nargs='+', default='maestro')
+    parser.add_argument("--datasets", type=str, default='maestro')
 
     ### path setup ###
     parser.add_argument('--dict_file', type=str, default='./../Data/Octuple.pkl')
-    parser.add_argument('--name', type=str, default='midibert')
-    parser.add_argument('--ckpt', default='result/pretrain/midibert/model_best.ckpt')
+    parser.add_argument('--name', type=str, default='musicbert')
+    parser.add_argument('--ckpt', default='result/pretrain/musicbert/model_best.ckpt')
 
     ### parameter setting ###
     parser.add_argument('--num_workers', type=int, default=5)
@@ -35,6 +35,10 @@ def get_args_generation():
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default=False
     parser.add_argument("--cuda_devices", type=int, nargs='+', default=[0, 1, 2, 3], help="CUDA device ids")
+    
+    parser.add_argument("--dataroot", type=str, default=None, help="path to dataset")
+    
+    parser.add_argument("--nopretrain", action="store_true", help="do not use pretrained model") # default=False
 
     args = parser.parse_args()
 
@@ -78,7 +82,7 @@ class GenerationTrainer:
 
 
     def compute_loss(self, predict, target, loss_mask):
-        loss = self.loss_func(predict, target)
+        loss = self.loss_func(predict, target.long())
         loss = loss * loss_mask
         #TODO: add weights for different attributes
         loss = torch.sum(loss) / torch.sum(loss_mask)
