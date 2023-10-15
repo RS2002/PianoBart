@@ -19,8 +19,8 @@ def get_args_generation():
 
     ### path setup ###
     parser.add_argument('--dict_file', type=str, default='./../Data/Octuple.pkl')
-    parser.add_argument('--name', type=str, default='musicbert')
-    parser.add_argument('--ckpt', default='result/pretrain/musicbert/model_best.ckpt')
+    parser.add_argument('--name', type=str, default='midibert')
+    parser.add_argument('--ckpt', default='result/pretrain/midibert/model_best.ckpt')
 
     ### parameter setting ###
     parser.add_argument('--num_workers', type=int, default=5)
@@ -148,7 +148,7 @@ class GenerationTrainer:
             #FAD_pos=0
 
             for i in range(8):
-                acc = torch.sum((y[:, :, i] == outputs[:, :, i]).float()*attn_decoder)
+                acc = torch.sum((y[:, :, i] == outputs[:, :, i]).float())
                 acc /= torch.sum(attn_decoder)
                 all_acc.append(acc)
                 # if i==3:
@@ -235,7 +235,7 @@ class GenerationTrainer:
                         valid_loss, train_loss, is_best, filename):
         state = {
             'epoch': epoch + 1,
-            'state_dict': self.model.module.state_dict(),
+            'state_dict': self.model.state_dict(),
             'valid_acc': valid_acc,
             'valid_loss': valid_loss,
             'train_loss': train_loss,

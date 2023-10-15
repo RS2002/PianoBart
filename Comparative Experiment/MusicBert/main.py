@@ -150,7 +150,7 @@ def finetune():
     index_layer = int(args.index_layer) - 13
     print("\nCreating Finetune Trainer using index layer", index_layer)
     trainer = FinetuneTrainer(midibert, train_loader, valid_loader, test_loader, index_layer, args.lr, args.class_num,
-                              args.hs, y_test.shape, args.cpu, args.cuda_devices, None, seq_class)
+                              args.hs, y_test.shape, args.cpu, args.cuda_devices, None, seq_class, args.error_correction)
 
     print("\nTraining Start")
     save_dir = os.path.join('result/finetune/', args.task + '_' + args.name)
@@ -426,7 +426,7 @@ def eval_generation():
 
 if __name__ == '__main__':
     #pretrain()
-    #finetune()
+    finetune()
     #eval()
-    finetune_generation()
+    # finetune_generation()
     #finetune_eval()
