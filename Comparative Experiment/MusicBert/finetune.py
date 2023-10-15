@@ -14,7 +14,7 @@ def get_args_finetune():
     ### mode ###
     parser.add_argument('--task', choices=['melody', 'velocity', 'composer', 'emotion'], required=True)
     ### dataset & data root ###
-    parser.add_argument('--dataset', choices=['asap', 'Pianist8',], required=True)
+    parser.add_argument('--dataset', choices=['asap', 'Pianist8', 'POP909'], required=True)
     parser.add_argument('--dataroot', type=str, default=None)
     ### path setup ###
     parser.add_argument('--dict_file', type=str, default='../../Data/Octuple.pkl')
@@ -35,6 +35,9 @@ def get_args_finetune():
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default=False
     parser.add_argument("--cuda_devices", type=int, nargs='+', default=[5,7], help="CUDA device ids")
+    
+    parser.add_argument("--error_correction",
+                        action="store_true")  # default: false
 
     args = parser.parse_args()
 
@@ -54,7 +57,7 @@ def get_args_finetune():
 
 class FinetuneTrainer:
     def __init__(self, midibert, train_dataloader, valid_dataloader, test_dataloader, layer,
-                 lr, class_num, hs, testset_shape, cpu, cuda_devices=None, model=None, SeqClass=False):
+                 lr, class_num, hs, testset_shape, cpu, cuda_devices=None, model=None, SeqClass=False, error=False):
         device_name = "cuda"
         if cuda_devices is not None and len(cuda_devices) >= 1:
             device_name += ":" + str(cuda_devices[0])
@@ -96,7 +99,7 @@ class FinetuneTrainer:
         self.optim = AdamW(self.model.parameters(), lr=lr, weight_decay=0.01)
         self.loss_func = nn.CrossEntropyLoss(reduction='none')
 
-        self.testset_shape = testset_shape
+        self.testset_shape = testset_shape if not error else testset_shape[:-1]
 
     def compute_loss(self, predict, target, loss_mask, seq):
         loss = self.loss_func(predict, target)
@@ -145,6 +148,8 @@ class FinetuneTrainer:
 
             x=x.long()
             y=y.long()
+            
+            y = torch.squeeze(y, dim=-1)
 
             # avoid attend to pad word
             if not seq:
@@ -213,7 +218,7 @@ def load_data_finetune(dataset, task, data_root=None):
     if dataset == 'emotion':
         dataset = 'emopia'
 
-    if dataset not in ['pop909', 'composer', 'emopia', 'asap', 'Pianist8', 'GiantMIDI1k']:
+    if dataset not in ['pop909', 'POP909', 'composer', 'emopia', 'asap', 'Pianist8', 'GiantMIDI1k']:
         print(f'Dataset {dataset} not supported')
         exit(1)
 
@@ -234,10 +239,10 @@ def load_data_finetune(dataset, task, data_root=None):
         X_test = np.load(os.path.join(data_root, f'{dataset}_test.npy'), allow_pickle=True)
 
         print('X_train: {}, X_valid: {}, X_test: {}'.format(X_train.shape, X_val.shape, X_test.shape))
-        if dataset == 'pop909':
-            y_train = np.load(os.path.join(data_root, f'{dataset}_train_{task[:3]}comans.npy'), allow_pickle=True)
-            y_val = np.load(os.path.join(data_root, f'{dataset}_valid_{task[:3]}comans.npy'), allow_pickle=True)
-            y_test = np.load(os.path.join(data_root, f'{dataset}_test_{task[:3]}comans.npy'), allow_pickle=True)
+        if dataset == 'pop909' or dataset == 'POP909':
+            y_train = np.load(os.path.join(data_root, f'{dataset}_train_ans.npy'), allow_pickle=True)
+            y_val = np.load(os.path.join(data_root, f'{dataset}_valid_ans.npy'), allow_pickle=True)
+            y_test = np.load(os.path.join(data_root, f'{dataset}_test_ans.npy'), allow_pickle=True)
         else:
             y_train = np.load(os.path.join(data_root, f'{dataset}_train_comans.npy'), allow_pickle=True)
             y_val = np.load(os.path.join(data_root, f'{dataset}_valid_comans.npy'), allow_pickle=True)

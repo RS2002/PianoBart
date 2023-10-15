@@ -154,7 +154,7 @@ class GenerationTrainer:
             #FAD_pos=0
 
             for i in [0,1,3,4]:
-                acc = torch.sum((y[:, :, i] == outputs[:, :, i]).float()*attn_decoder)
+                acc = torch.sum((y[:, :, i] == outputs[:, :, i]).float())
                 acc /= torch.sum(attn_decoder)
                 all_acc.append(acc)
                 # if i==3:
@@ -242,7 +242,7 @@ class GenerationTrainer:
                         valid_loss, train_loss, is_best, filename):
         state = {
             'epoch': epoch + 1,
-            'state_dict': self.model.module.state_dict(),
+            'state_dict': self.model.state_dict(),
             'valid_acc': valid_acc,
             'valid_loss': valid_loss,
             'train_loss': train_loss,
