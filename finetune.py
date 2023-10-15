@@ -183,9 +183,14 @@ class FinetuneTrainer:
                     input_ids_encoder=x, encoder_attention_mask=attn)
             else:
                 # class_num表示pad对应的token
-                y_shift = torch.zeros_like(y)+self.class_num
+                '''y_shift = torch.zeros_like(y)+self.class_num
+                y_shift[:, 1:] = y[:, :-1]'''
+
+                y_shift = torch.zeros_like(x)
+                y_shift[:, 1:, :] = x[:, :-1, :]
+                y_shift[:, 0, :] = torch.tensor(self.pianobart.sos_word_np)
+
                 attn_shift = torch.zeros_like(attn)
-                y_shift[:, 1:] = y[:, :-1]
                 attn_shift[:, 1:] = attn[:, :-1]
                 attn_shift[:, 0] = attn[:, 0]
                 y_hat = self.model.forward(input_ids_encoder=x, input_ids_decoder=y_shift,

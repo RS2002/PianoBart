@@ -86,9 +86,9 @@ class TokenClassification(nn.Module):
         super().__init__()
 
         self.pianobart = pianobart
-        new_embedding=Embeddings(n_token=class_num,d_model=d_model)
+        '''new_embedding=Embeddings(n_token=class_num,d_model=d_model)
         new_linear=nn.Linear(d_model,pianobart.bartConfig.d_model)
-        self.pianobart.change_decoder_embedding(new_embedding,new_linear)
+        self.pianobart.change_decoder_embedding(new_embedding,new_linear)'''
         self.classifier = nn.Sequential(
             nn.Dropout(0.1),
             nn.Linear(hs, 256),
@@ -112,7 +112,8 @@ if __name__=='__main__':
     input_ids_encoder = torch.randint(0, 10, (2, 32, 8)).to(device)
     print("输入维度:",input_ids_encoder.size())
     input_ids_decoder = torch.randint(0, 10, (2, 32, 8)).to(device)
-    label = torch.randint(0, 10, (2, 32)).to(device)
+    # label = torch.randint(0, 10, (2, 32)).to(device)
+    label = torch.randint(0, 10, (2, 32, 8)).to(device)
     encoder_attention_mask = torch.zeros((2, 32)).to(device)
     decoder_attention_mask = torch.zeros((2, 32)).to(device)
     for j in range(2):
