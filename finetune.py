@@ -186,6 +186,8 @@ class FinetuneTrainer:
                 '''y_shift = torch.zeros_like(y)+self.class_num
                 y_shift[:, 1:] = y[:, :-1]'''
 
+                x[(x[:, :, 6] == self.pianobart.pad_word_np[6]).any(dim=1), 6] = self.pianobart.mask_word_np[6]
+
                 '''y_shift = torch.zeros_like(x)
                 y_shift[:, 1:, :] = x[:, :-1, :]
                 y_shift[:, 0, :] = torch.tensor(self.pianobart.sos_word_np)
@@ -195,7 +197,6 @@ class FinetuneTrainer:
                 y_hat = self.model.forward(input_ids_encoder=x, input_ids_decoder=y_shift,
                                            encoder_attention_mask=attn, decoder_attention_mask=attn_shift)'''
 
-                #test
                 y_hat = self.model.forward(input_ids_encoder=x, input_ids_decoder=x,
                                            encoder_attention_mask=attn, decoder_attention_mask=attn)
 

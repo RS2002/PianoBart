@@ -60,6 +60,26 @@ class SelfAttention(nn.Module):
         attn_mat = attn_mat.permute(0,2,1)
         return attn_mat
 
+# class SequenceClassification(nn.Module):
+#     def __init__(self, pianobart, class_num, hs, da=128, r=4):
+#         super().__init__()
+#         self.pianobart = pianobart
+#         self.attention = SelfAttention(hs, da, r)
+#         self.classifier = nn.Sequential(
+#             nn.Linear(hs*r, 256),
+#             nn.ReLU(),
+#             nn.Linear(256, class_num)
+#         )
+#
+#     def forward(self, input_ids_encoder, encoder_attention_mask=None):
+#         x = self.pianobart(input_ids_encoder=input_ids_encoder,encoder_attention_mask=encoder_attention_mask)
+#         x = x.last_hidden_state
+#         attn_mat = self.attention(x)  # attn_mat: (batch, r, 512)
+#         m = torch.bmm(attn_mat, x)  # m: (batch, r, 768)
+#         flatten = m.view(m.size()[0], -1)  # flatten: (batch, r*768)
+#         res = self.classifier(flatten)  # res: (batch, class_num)
+#         return res
+
 class SequenceClassification(nn.Module):
     def __init__(self, pianobart, class_num, hs, da=128, r=4):
         super().__init__()
@@ -72,7 +92,7 @@ class SequenceClassification(nn.Module):
         )
 
     def forward(self, input_ids_encoder, encoder_attention_mask=None):
-        x = self.pianobart(input_ids_encoder=input_ids_encoder,encoder_attention_mask=encoder_attention_mask)
+        x = self.pianobart(input_ids_encoder=input_ids_encoder,input_ids_decoder=input_ids_encoder,encoder_attention_mask=encoder_attention_mask,decoder_attention_mask=encoder_attention_mask)
         x = x.last_hidden_state
         attn_mat = self.attention(x)  # attn_mat: (batch, r, 512)
         m = torch.bmm(attn_mat, x)  # m: (batch, r, 768)
@@ -131,14 +151,14 @@ if __name__=='__main__':
         for temp in output:
             print(temp.size())
 
-    test_TokenClassifier=True
+    test_TokenClassifier=False
     if test_TokenClassifier:
         print("test Token Classifier")
         piano_bart_token_classifier=TokenClassification(pianobart=piano_bart, class_num=10, hs=48)
         output=piano_bart_token_classifier(input_ids_encoder,label,encoder_attention_mask,decoder_attention_mask)
         print("输出维度:",output.size())
 
-    test_SequenceClassifier=False
+    test_SequenceClassifier=True
     if test_SequenceClassifier:
         print("test Sequence Classifier")
         piano_bart_sequence_classifier=SequenceClassification(pianobart=piano_bart, class_num=10, hs=48)
