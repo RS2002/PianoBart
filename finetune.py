@@ -1,3 +1,4 @@
+import copy
 import shutil
 import numpy as np
 import tqdm
@@ -193,12 +194,13 @@ class FinetuneTrainer:
                 y_shift[:, 0, :] = torch.tensor(self.pianobart.sos_word_np)
                 attn_shift = torch.zeros_like(attn)
                 attn_shift[:, 1:] = attn[:, :-1]
-                attn_shift[:, 0] = attn[:, 0]
-                y_hat = self.model.forward(input_ids_encoder=x, input_ids_decoder=y_shift,
-                                           encoder_attention_mask=attn, decoder_attention_mask=attn_shift)'''
+                attn_shift[:, 0] = attn[:, 0]'''
 
-                y_hat = self.model.forward(input_ids_encoder=x, input_ids_decoder=x,
-                                           encoder_attention_mask=attn, decoder_attention_mask=attn)
+                y_shift=copy.deepcopy(x)
+                attn_shift=copy.deepcopy(attn)
+
+                y_hat = self.model.forward(input_ids_encoder=x, input_ids_decoder=y_shift,
+                                           encoder_attention_mask=attn, decoder_attention_mask=attn_shift)
 
             # get the most likely choice with max
             output = np.argmax(y_hat.cpu().detach().numpy(), axis=-1)
