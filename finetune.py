@@ -186,15 +186,18 @@ class FinetuneTrainer:
                 '''y_shift = torch.zeros_like(y)+self.class_num
                 y_shift[:, 1:] = y[:, :-1]'''
 
-                y_shift = torch.zeros_like(x)
+                '''y_shift = torch.zeros_like(x)
                 y_shift[:, 1:, :] = x[:, :-1, :]
                 y_shift[:, 0, :] = torch.tensor(self.pianobart.sos_word_np)
-
                 attn_shift = torch.zeros_like(attn)
                 attn_shift[:, 1:] = attn[:, :-1]
                 attn_shift[:, 0] = attn[:, 0]
                 y_hat = self.model.forward(input_ids_encoder=x, input_ids_decoder=y_shift,
-                                           encoder_attention_mask=attn, decoder_attention_mask=attn_shift)
+                                           encoder_attention_mask=attn, decoder_attention_mask=attn_shift)'''
+
+                #test
+                y_hat = self.model.forward(input_ids_encoder=x, input_ids_decoder=x,
+                                           encoder_attention_mask=attn, decoder_attention_mask=attn)
 
             # get the most likely choice with max
             output = np.argmax(y_hat.cpu().detach().numpy(), axis=-1)
