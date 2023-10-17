@@ -92,7 +92,16 @@ class SequenceClassification(nn.Module):
         )
 
     def forward(self, input_ids_encoder, encoder_attention_mask=None):
+        # y_shift = torch.zeros_like(input_ids_encoder)
+        # y_shift[:, 1:, :] = input_ids_encoder[:, :-1, :]
+        # y_shift[:, 0, :] = torch.tensor(self.pianobart.sos_word_np)
+        # attn_shift = torch.zeros_like(encoder_attention_mask)
+        # attn_shift[:, 1:] = encoder_attention_mask[:, :-1]
+        # attn_shift[:, 0] = encoder_attention_mask[:, 0]
+        # x = self.pianobart(input_ids_encoder=input_ids_encoder,input_ids_decoder=y_shift,encoder_attention_mask=encoder_attention_mask,decoder_attention_mask=attn_shift)
+
         x = self.pianobart(input_ids_encoder=input_ids_encoder,input_ids_decoder=input_ids_encoder,encoder_attention_mask=encoder_attention_mask,decoder_attention_mask=encoder_attention_mask)
+
         x = x.last_hidden_state
         attn_mat = self.attention(x)  # attn_mat: (batch, r, 512)
         m = torch.bmm(attn_mat, x)  # m: (batch, r, 768)
@@ -106,9 +115,12 @@ class TokenClassification(nn.Module):
         super().__init__()
 
         self.pianobart = pianobart
-        '''new_embedding=Embeddings(n_token=class_num,d_model=d_model)
-        new_linear=nn.Linear(d_model,pianobart.bartConfig.d_model)
-        self.pianobart.change_decoder_embedding(new_embedding,new_linear)'''
+
+        if class_num>=5: #力度预测
+            new_embedding=Embeddings(n_token=class_num,d_model=d_model)
+            new_linear=nn.Linear(d_model,pianobart.bartConfig.d_model)
+            self.pianobart.change_decoder_embedding(new_embedding,new_linear)
+
         self.classifier = nn.Sequential(
             nn.Dropout(0.1),
             nn.Linear(hs, 256),

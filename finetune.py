@@ -187,7 +187,7 @@ class FinetuneTrainer:
                 '''y_shift = torch.zeros_like(y)+self.class_num
                 y_shift[:, 1:] = y[:, :-1]'''
 
-                x[(x[:, :, 6] == self.pianobart.pad_word_np[6]).any(dim=1), 6] = self.pianobart.mask_word_np[6]
+                # x[(x[:, :, 6] == self.pianobart.pad_word_np[6]).any(dim=1), 6] = self.pianobart.mask_word_np[6]
 
                 '''y_shift = torch.zeros_like(x)
                 y_shift[:, 1:, :] = x[:, :-1, :]
