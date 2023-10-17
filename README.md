@@ -6,11 +6,13 @@
 
 **Article:** Zijian Zhao, Weichao Zeng, Fupeng He, Yutong He, Yiyi Wang, Xiao Liang, Chengying Gao*: PianoBART: Symbolic Piano Music Understanding and Generating with Large-Scale Pre-Training (in progress)
 
-Some parts of our code borrows from [muzic/musicbert at main · microsoft/muzic (github.com)](https://github.com/microsoft/muzic/tree/main/musicbert) and [wazenmai/MIDI-BERT: This is the official repository for the paper, MidiBERT-Piano: Large-scale Pre-training for Symbolic Music Understanding. (github.com)](https://github.com/wazenmai/MIDI-BERT).
+Some parts of our code borrows from [muzic/musicbert at main · microsoft/muzic (github.com) [1]](https://github.com/microsoft/muzic/tree/main/musicbert) and [wazenmai/MIDI-BERT: This is the official repository for the paper, MidiBERT-Piano: Large-scale Pre-training for Symbolic Music Understanding. (github.com) [2]](https://github.com/wazenmai/MIDI-BERT).
 
 
 
 ## 1. Dataset
+
+The datasets utilized in our paper are as follows:
 
 **Pretrain:** POP1K7, ASAP, POP909, Pianist8, EMOPIA
 
@@ -23,6 +25,10 @@ Some parts of our code borrows from [muzic/musicbert at main · microsoft/muzic 
 **Velocity Prediction:** GiantMidi
 
 **Melody Prediction:** POP909
+
+
+
+You can generate data using the repositories mentioned in [[1]](https://github.com/microsoft/muzic/tree/main/musicbert) and [[2]](https://github.com/wazenmai/MIDI-BERT). The process of organizing the data is the same as described in [[2]](https://github.com/wazenmai/MIDI-BERT). Additionally, you can use the `--datasets` and `--dataroot` options to specify the name and root path of your dataset.
 
 
 
@@ -133,6 +139,12 @@ Uncomment the “finetune()” in main.py and run it.
 ```shell
 
 ```
+
+
+
+#### 2.3.6 Eval
+
+We apologize for the limited testing of the "eval" code due to time constraints. If you need to use this code, you may need to handle the decoding process yourself.
 
 
 
