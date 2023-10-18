@@ -50,6 +50,9 @@ def get_args_finetune():
     parser.add_argument("--cuda_devices", type=int, nargs='+',
                         default=[6, 7], help="CUDA device ids")
 
+    parser.add_argument("--weight", type=float, default=None,
+                        help="weight of regularization")
+
     parser.add_argument("--error_correction",
                         action="store_true")  # default: false
 
@@ -71,7 +74,7 @@ def get_args_finetune():
 
 class FinetuneTrainer:
     def __init__(self, pianobart, train_dataloader, valid_dataloader, test_dataloader,
-                 lr, class_num, hs, testset_shape, cpu, cuda_devices=None, model=None, SeqClass=False, error=False):
+                 lr, class_num, hs, testset_shape, cpu, cuda_devices=None, model=None, SeqClass=False, error=False, weight=None):
 
         device_name = "cuda"
         if cuda_devices is not None and len(cuda_devices) >= 1:
@@ -116,6 +119,7 @@ class FinetuneTrainer:
         self.loss_func = nn.CrossEntropyLoss(reduction='none')
 
         self.testset_shape = testset_shape if not error else testset_shape[:-1]
+        self.weight = weight
 
         # print(self.testset_shape)
 
@@ -196,8 +200,8 @@ class FinetuneTrainer:
                 attn_shift[:, 1:] = attn[:, :-1]
                 attn_shift[:, 0] = attn[:, 0]'''
 
-                y_shift=copy.deepcopy(x).to(self.device)
-                attn_shift=copy.deepcopy(attn).to(self.device)
+                y_shift = copy.deepcopy(x).to(self.device)
+                attn_shift = copy.deepcopy(attn).to(self.device)
 
                 y_hat = self.model.forward(input_ids_encoder=x, input_ids_decoder=y_shift,
                                            encoder_attention_mask=attn, decoder_attention_mask=attn_shift)
@@ -224,10 +228,13 @@ class FinetuneTrainer:
                 y_hat = y_hat.permute(0, 2, 1)
             loss = self.compute_loss(y_hat, y, attn, seq)
 
-            #正则化
-            weight=0.001
-            for param in self.model.parameters():
-                loss += weight*torch.norm(param, p=2)
+            # 正则化
+            # weight = 0.001
+            # for param in self.model.parameters():
+            #     loss += weight*torch.norm(param, p=2)
+            if self.weight is not None:
+                for param in self.model.parameters():
+                    loss += self.weight * torch.norm(param, p=2)
 
             total_loss += loss
 
