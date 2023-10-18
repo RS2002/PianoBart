@@ -223,6 +223,12 @@ class FinetuneTrainer:
             if not seq:
                 y_hat = y_hat.permute(0, 2, 1)
             loss = self.compute_loss(y_hat, y, attn, seq)
+
+            #正则化
+            weight=0.001
+            for param in self.model.parameters():
+                loss += weight*torch.norm(param, p=2)
+
             total_loss += loss
 
             # udpate only in train
