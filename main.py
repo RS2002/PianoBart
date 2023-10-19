@@ -173,7 +173,7 @@ def finetune():
 
     print("\nCreating Finetune Trainer")
     trainer = FinetuneTrainer(pianobart, train_loader, valid_loader, test_loader, args.lr, args.class_num,
-                              args.hs, y_test.shape, args.cpu, args.cuda_devices, None, seq_class, args.error_correction)
+                              args.hs, y_test.shape, args.cpu, args.cuda_devices, None, seq_class, args.error_correction, args.weight)
 
     print("\nTraining Start")
     save_dir = os.path.join('result/finetune/', args.task + '_' + args.name)
