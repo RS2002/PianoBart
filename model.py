@@ -86,8 +86,17 @@ class SequenceClassification(nn.Module):
         self.pianobart = pianobart
         self.attention = SelfAttention(hs, da, r)
         self.classifier = nn.Sequential(
+            # nn.BatchNorm1d(hs*r),
+            nn.Dropout(0.1),
+            # nn.ReLU(),
             nn.Linear(hs*r, 256),
+            # nn.BatchNorm1d(256),
             nn.ReLU(),
+            # nn.Dropout(0.3),
+            # nn.Linear(256, 256),
+            # nn.BatchNorm1d(256),
+            # nn.ReLU(),
+            # nn.Dropout(0.3),
             nn.Linear(256, class_num)
         )
 

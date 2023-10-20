@@ -14,7 +14,8 @@ def get_args_finetune():
     ### mode ###
     parser.add_argument('--task', choices=['melody', 'velocity', 'composer', 'emotion'], required=True)
     ### dataset & data root ###
-    parser.add_argument('--dataset', choices=['asap', 'Pianist8', 'POP909'], required=True)
+    parser.add_argument(
+        '--dataset', type=str, choices=('asap', 'Pianist8', 'POP909', 'EMOPIA', 'GiantMIDI1k'), required=True)
     parser.add_argument('--dataroot', type=str, default=None)
     ### path setup ###
     parser.add_argument('--dict_file', type=str, default='../../Data/Octuple.pkl')
@@ -34,8 +35,8 @@ def get_args_finetune():
 
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default=False
-    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[5,7], help="CUDA device ids")
-    
+    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[2,3,6], help="CUDA device ids")
+
     parser.add_argument("--error_correction",
                         action="store_true")  # default: false
 
@@ -148,7 +149,7 @@ class FinetuneTrainer:
 
             x=x.long()
             y=y.long()
-            
+
             y = torch.squeeze(y, dim=-1)
 
             # avoid attend to pad word
@@ -216,11 +217,11 @@ def load_data_finetune(dataset, task, data_root=None):
 
 
     if dataset == 'emotion':
-        dataset = 'emopia'
+        dataset = 'EMOPIA'
 
-    if dataset not in ['pop909', 'POP909', 'composer', 'emopia', 'asap', 'Pianist8', 'GiantMIDI1k']:
+    '''if dataset not in ['pop909', 'POP909', 'composer', 'emopia', 'asap', 'Pianist8', 'GiantMIDI1k']:
         print(f'Dataset {dataset} not supported')
-        exit(1)
+        exit(1)'''
 
 
 
@@ -239,14 +240,14 @@ def load_data_finetune(dataset, task, data_root=None):
         X_test = np.load(os.path.join(data_root, f'{dataset}_test.npy'), allow_pickle=True)
 
         print('X_train: {}, X_valid: {}, X_test: {}'.format(X_train.shape, X_val.shape, X_test.shape))
-        if dataset == 'pop909' or dataset == 'POP909':
+        if dataset == 'pop909' or dataset == 'POP909' or dataset=='EMOPIA':
             y_train = np.load(os.path.join(data_root, f'{dataset}_train_ans.npy'), allow_pickle=True)
             y_val = np.load(os.path.join(data_root, f'{dataset}_valid_ans.npy'), allow_pickle=True)
             y_test = np.load(os.path.join(data_root, f'{dataset}_test_ans.npy'), allow_pickle=True)
         else:
-            y_train = np.load(os.path.join(data_root, f'{dataset}_train_comans.npy'), allow_pickle=True)
-            y_val = np.load(os.path.join(data_root, f'{dataset}_valid_comans.npy'), allow_pickle=True)
-            y_test = np.load(os.path.join(data_root, f'{dataset}_test_comans.npy'), allow_pickle=True)
+            y_train = np.load(os.path.join(data_root, f'{dataset}_train.npy'), allow_pickle=True)
+            y_val = np.load(os.path.join(data_root, f'{dataset}_valid.npy'), allow_pickle=True)
+            y_test = np.load(os.path.join(data_root, f'{dataset}_test.npy'), allow_pickle=True)
 
     print('y_train: {}, y_valid: {}, y_test: {}'.format(y_train.shape, y_val.shape, y_test.shape))
 

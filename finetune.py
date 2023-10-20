@@ -8,7 +8,7 @@ from transformers import AdamW
 import os
 import argparse
 from model import TokenClassification, SequenceClassification
-# from torch.nn.utils import clip_grad_norm_
+from torch.nn.utils import clip_grad_norm_
 
 
 def get_args_finetune():
@@ -241,6 +241,7 @@ class FinetuneTrainer:
             # udpate only in train
             if mode == 0:
                 self.model.zero_grad()
+                #clip_grad_norm_(self.model.parameters(), 3.0)
                 loss.backward()
                 self.optim.step()
 

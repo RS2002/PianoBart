@@ -54,7 +54,7 @@ class TokenClassification(nn.Module):
 
         self.midibert = midibert
         self.classifier = nn.Sequential(
-            nn.Dropout(0.1),
+            #nn.Dropout(0.1),
             nn.Linear(hs, 256),
             nn.ReLU(),
             nn.Linear(256, class_num)
@@ -73,7 +73,8 @@ class SequenceClassification(nn.Module):
         self.midibert = midibert
         self.attention = SelfAttention(hs, da, r)
         self.classifier = nn.Sequential(
-            nn.Linear(hs * r, 256),
+            #nn.Linear(hs * r, 256),
+            nn.Linear(hs, 256),
             nn.ReLU(),
             nn.Linear(256, class_num)
         )
@@ -81,12 +82,13 @@ class SequenceClassification(nn.Module):
     def forward(self, x, attn, layer=-1):  # x: (batch, 512, 4)
         x = self.midibert(x, attn, output_hidden_states=True)  # (batch, 512, 768)
         # y = y.last_hidden_state         # (batch_size, seq_len, 768)
-        x = x.hidden_states[layer]
+        '''x = x.hidden_states[layer]
         attn_mat = self.attention(x)  # attn_mat: (batch, r, 512)
         m = torch.bmm(attn_mat, x)  # m: (batch, r, 768)
         flatten = m.view(m.size()[0], -1)  # flatten: (batch, r*768)
         res = self.classifier(flatten)  # res: (batch, class_num)
-        return res
+        return res'''
+        return self.classifier(x.hidden_states[layer][:,0,:])
 
 class SelfAttention(nn.Module):
     def __init__(self, input_dim, da, r):

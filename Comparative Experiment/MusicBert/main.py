@@ -183,8 +183,8 @@ def finetune():
 
             #            train_accs.append(train_acc)
             #            valid_accs.append(valid_acc)
-            trainer.save_checkpoint(epoch, train_acc, valid_acc,
-                                    valid_loss, train_loss, is_best, filename)
+            '''trainer.save_checkpoint(epoch, train_acc, valid_acc,
+                                    valid_loss, train_loss, is_best, filename)'''
 
             outfile.write(
                 'Epoch {}: train_loss={}, valid_loss={}, test_loss={}, train_acc={}, valid_acc={}, test_acc={}\n'.format(
