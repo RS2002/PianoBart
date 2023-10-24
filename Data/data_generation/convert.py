@@ -318,11 +318,14 @@ def encoding_to_MIDI(encoding):
             cur_tp = new_tp
     return midi_obj
 
-def padding(file_name, e_segment, window=max_window):
+def padding(file_name, e_segment, window=max_window, last=False):
     pad_num = window -  len(e_segment)
     if pad_num < 0:
         print('WARNING(LENGTH): ' + file_name + ' ' + 'The length of the music is longer than max window(1024).' + '\n', end='')
-        e_segment = e_segment[:window-1]
+        if last:
+            e_segment = e_segment[1-window:]
+        else:
+            e_segment = e_segment[:window-1]
         e_segment.append(tuple([i + 4 for i in token_boundary]))
         return e_segment
     for _ in range(pad_num):
