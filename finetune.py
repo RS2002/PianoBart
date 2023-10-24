@@ -48,7 +48,7 @@ def get_args_finetune():
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default=False
     parser.add_argument("--cuda_devices", type=int, nargs='+',
-                        default=[2,5,6], help="CUDA device ids")
+                        default=[2, 5, 6], help="CUDA device ids")
 
     parser.add_argument("--weight", type=float, default=None,
                         help="weight of regularization")
@@ -120,6 +120,7 @@ class FinetuneTrainer:
 
         self.testset_shape = testset_shape if not error else testset_shape[:-1]
         self.weight = weight
+        self.error = error
 
         # print(self.testset_shape)
 
@@ -174,8 +175,9 @@ class FinetuneTrainer:
             x = x.long()
             y = y.long()
             # y=y.squeeze()
-            # Remove the last dimension
-            y = torch.squeeze(y, dim=-1)
+            # Remove the last dimension if error
+            if self.error:
+                y = torch.squeeze(y, dim=-1)
             # print(y.shape)
 
             # avoid attend to pad word
@@ -188,7 +190,7 @@ class FinetuneTrainer:
                     input_ids_encoder=x, encoder_attention_mask=attn)
             else:
                 # class_num表示pad对应的token
-                if self.class_num>=5: #力度预测
+                if self.class_num >= 5:  # 力度预测
                     y_shift = torch.zeros_like(y)+self.class_num
                     y_shift[:, 1:] = y[:, :-1]
                     attn_shift = torch.zeros_like(attn)
