@@ -122,10 +122,12 @@ if __name__ == '__main__':
 
     y=model(input_ids_encoder=input,encoder_attention_mask=attn_encoder,generate=True)
 
-    outputs = []
+    '''outputs = []
     for i, etype in enumerate(pianobart.e2w):
         output = np.argmax(y[i].cpu().detach().numpy(), axis=-1)
         outputs.append(output)
     outputs = np.stack(outputs, axis=-1)
-    outputs = torch.from_numpy(outputs)
+    outputs = torch.from_numpy(outputs)'''
+
+    outputs=y
     Octuple2Midi(outputs,args.output)
