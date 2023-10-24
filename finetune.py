@@ -48,7 +48,7 @@ def get_args_finetune():
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default=False
     parser.add_argument("--cuda_devices", type=int, nargs='+',
-                        default=[6, 7], help="CUDA device ids")
+                        default=[2,5,6], help="CUDA device ids")
 
     parser.add_argument("--weight", type=float, default=None,
                         help="weight of regularization")
@@ -188,20 +188,24 @@ class FinetuneTrainer:
                     input_ids_encoder=x, encoder_attention_mask=attn)
             else:
                 # class_num表示pad对应的token
-                '''y_shift = torch.zeros_like(y)+self.class_num
-                y_shift[:, 1:] = y[:, :-1]'''
+                if self.class_num>=5: #力度预测
+                    y_shift = torch.zeros_like(y)+self.class_num
+                    y_shift[:, 1:] = y[:, :-1]
+                    attn_shift = torch.zeros_like(attn)
+                    attn_shift[:, 1:] = attn[:, :-1]
+                    attn_shift[:, 0] = attn[:, 0]
+                else:
+                    # x[(x[:, :, 6] == self.pianobart.pad_word_np[6]).any(dim=1), 6] = self.pianobart.mask_word_np[6]
 
-                # x[(x[:, :, 6] == self.pianobart.pad_word_np[6]).any(dim=1), 6] = self.pianobart.mask_word_np[6]
+                    '''y_shift = torch.zeros_like(x)
+                    y_shift[:, 1:, :] = x[:, :-1, :]
+                    y_shift[:, 0, :] = torch.tensor(self.pianobart.sos_word_np)
+                    attn_shift = torch.zeros_like(attn)
+                    attn_shift[:, 1:] = attn[:, :-1]
+                    attn_shift[:, 0] = attn[:, 0]'''
 
-                '''y_shift = torch.zeros_like(x)
-                y_shift[:, 1:, :] = x[:, :-1, :]
-                y_shift[:, 0, :] = torch.tensor(self.pianobart.sos_word_np)
-                attn_shift = torch.zeros_like(attn)
-                attn_shift[:, 1:] = attn[:, :-1]
-                attn_shift[:, 0] = attn[:, 0]'''
-
-                y_shift = copy.deepcopy(x).to(self.device)
-                attn_shift = copy.deepcopy(attn).to(self.device)
+                    y_shift = copy.deepcopy(x).to(self.device)
+                    attn_shift = copy.deepcopy(attn).to(self.device)
 
                 y_hat = self.model.forward(input_ids_encoder=x, input_ids_decoder=y_shift,
                                            encoder_attention_mask=attn, decoder_attention_mask=attn_shift)

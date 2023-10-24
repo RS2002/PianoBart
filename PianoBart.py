@@ -72,7 +72,7 @@ class PianoBart(nn.Module):
         '''print('emb_lin', emb_linear_encoder.shape)
         print('emb_lin_dec', emb_linear_decoder.shape)'''
         # feed to bart
-        if input_ids_decoder is not None or generate:
+        if input_ids_decoder is not None:
             y = self.bart(inputs_embeds=emb_linear_encoder, decoder_inputs_embeds=emb_linear_decoder, attention_mask=encoder_attention_mask, decoder_attention_mask=decoder_attention_mask, output_hidden_states=output_hidden_states) #attention_mask用于屏蔽<PAD> (PAD作用是在结尾补齐长度)
         else:
             y=self.bart.encoder(inputs_embeds=emb_linear_encoder,attention_mask=encoder_attention_mask)
@@ -127,4 +127,5 @@ if __name__=='__main__':
     print(output.last_hidden_state.size())
     '''state={'state_dict': piano_bart.state_dict()}
     torch.save(state, "./test/parameters_change")'''
+    print(output.encoder_last_hidden_state.shape)
 

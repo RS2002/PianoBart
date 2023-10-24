@@ -1,3 +1,4 @@
+import copy
 import math
 import numpy as np
 import random
@@ -7,6 +8,7 @@ from transformers import BartModel,BartConfig
 from PianoBart import PianoBart,Embeddings
 import pickle
 import torch.nn.functional as F
+import tqdm
 
 
 class PianoBartLM(nn.Module):
@@ -20,8 +22,26 @@ class PianoBartLM(nn.Module):
         print(input_ids_decoder.shape)
         print(encoder_attention_mask.shape)
         print(decoder_attention_mask.shape)'''
-        x = self.pianobart(input_ids_encoder, input_ids_decoder, encoder_attention_mask, decoder_attention_mask,generate)
-        return self.mask_lm(x)
+        if not generate:
+            x = self.pianobart(input_ids_encoder, input_ids_decoder, encoder_attention_mask, decoder_attention_mask)
+            return self.mask_lm(x)
+        else:
+            pad=torch.from_numpy(self.pianobart.pad_word_np)
+            input_ids_decoder=pad.repeat(input_ids_encoder.shape[0],input_ids_encoder.shape[1],1)
+            decoder_attention_mask=torch.zeros_like(encoder_attention_mask)
+            pbar = tqdm.tqdm(range(input_ids_encoder.shape[1]), disable=False)
+            for i in pbar:
+                x = self.mask_lm(self.pianobart(input_ids_encoder, input_ids_decoder, encoder_attention_mask, decoder_attention_mask))
+                outputs = []
+                for j, etype in enumerate(self.pianobart.e2w):
+                    output = np.argmax(x[j].cpu().detach().numpy(), axis=-1)
+                    outputs.append(output)
+                outputs = np.stack(outputs, axis=-1)
+                outputs = torch.from_numpy(outputs)
+                input_ids_decoder[:,i,:]=outputs[:,i,:]
+                decoder_attention_mask[:,i]+=1
+            return input_ids_decoder
+
 
 
 class MLM(nn.Module):
@@ -118,6 +138,21 @@ class SequenceClassification(nn.Module):
         res = self.classifier(flatten)  # res: (batch, class_num)
         return res
 
+class Excitation(nn.Module):
+    def __init__(self,channel_dim,reduction=16):
+        super().__init__()
+        self.fc = nn.Sequential(
+            nn.Linear(channel_dim, channel_dim // reduction),
+            nn.ReLU(),
+            nn.Linear(channel_dim // reduction, channel_dim),
+            nn.Sigmoid()
+        )
+
+    def forward(self, x):
+        y = self.fc(x)
+        return x * y
+
+
 
 class TokenClassification(nn.Module):
     def __init__(self, pianobart, class_num, hs,d_model=64):
@@ -132,6 +167,7 @@ class TokenClassification(nn.Module):
 
         self.classifier = nn.Sequential(
             nn.Dropout(0.1),
+            # Excitation(hs),
             nn.Linear(hs, 256),
             nn.ReLU(),
             nn.Linear(256, class_num)
@@ -140,6 +176,9 @@ class TokenClassification(nn.Module):
     def forward(self, input_ids_encoder, input_ids_decoder, encoder_attention_mask=None, decoder_attention_mask=None):
         x = self.pianobart(input_ids_encoder, input_ids_decoder, encoder_attention_mask, decoder_attention_mask)
         x = x.last_hidden_state
+
+        #x=x.encoder_last_hidden_state
+
         res = self.classifier(x)
         return res
 
@@ -154,7 +193,7 @@ if __name__=='__main__':
     print("输入维度:",input_ids_encoder.size())
     input_ids_decoder = torch.randint(0, 10, (2, 32, 8)).to(device)
     # label = torch.randint(0, 10, (2, 32)).to(device)
-    label = torch.randint(0, 10, (2, 32, 8)).to(device)
+    label = torch.randint(0, 10, (2, 32)).to(device)
     encoder_attention_mask = torch.zeros((2, 32)).to(device)
     decoder_attention_mask = torch.zeros((2, 32)).to(device)
     for j in range(2):
@@ -164,22 +203,29 @@ if __name__=='__main__':
 
     test_PianoBart=False
     if test_PianoBart:
-        print("test PianoBart")
+        print("test PianoBART")
         piano_bart_lm=PianoBartLM(piano_bart).to(device)
-        #print(piano_bart_lm)
         output=piano_bart_lm(input_ids_encoder,input_ids_decoder,encoder_attention_mask,decoder_attention_mask)
         print("输出维度:")
         for temp in output:
             print(temp.size())
 
-    test_TokenClassifier=False
+    test_generate=False
+    if test_generate:
+        print("test generation")
+        piano_bart_lm=PianoBartLM(piano_bart).to(device)
+        output=piano_bart_lm(input_ids_encoder = input_ids_encoder, encoder_attention_mask = encoder_attention_mask, generate = True)
+        print("输出维度:")
+        print(output.shape)
+
+    test_TokenClassifier=True
     if test_TokenClassifier:
         print("test Token Classifier")
         piano_bart_token_classifier=TokenClassification(pianobart=piano_bart, class_num=10, hs=48)
         output=piano_bart_token_classifier(input_ids_encoder,label,encoder_attention_mask,decoder_attention_mask)
         print("输出维度:",output.size())
 
-    test_SequenceClassifier=True
+    test_SequenceClassifier=False
     if test_SequenceClassifier:
         print("test Sequence Classifier")
         piano_bart_sequence_classifier=SequenceClassification(pianobart=piano_bart, class_num=10, hs=48)
