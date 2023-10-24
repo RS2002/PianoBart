@@ -26,7 +26,7 @@ def get_args():
     parser.add_argument('--ffn_dims', type=int, default=2048)  # FFN dims
     parser.add_argument('--heads', type=int, default=8)  # attention heads
 
-    parser.add_argument('--nopretrain', action="store_true",default=False)  # default: false
+    parser.add_argument('--nopretrain', action="store_true",default=True)  # default: false
 
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default=False
@@ -42,11 +42,11 @@ def Midi2Octuple(Midi_path):
     encoding = MIDI_to_encoding(midi_obj, task='pretrain')
     encoding = padding(file_name=Midi_path, e_segment=encoding, window=1024, last=True)
     encoding = torch.Tensor([encoding]).to(torch.int)
-    print(encoding.shape)
-    print(encoding[0][-10:])
+    # print(encoding.shape)
+    # print(encoding[0][-10:])
     return encoding
 
-Midi2Octuple(r'Data\POP909\POP909\001\001.mid')
+#Midi2Octuple(r'Data\POP909\POP909\001\001.mid')
 
 def Octuple2Midi(octuple, Midi_path):
     octuple=torch.squeeze(octuple)
@@ -79,51 +79,51 @@ def Octuple2Midi(octuple, Midi_path):
 
 
 
-# if __name__ == '__main__':
-#     args = get_args()
+if __name__ == '__main__':
+    args = get_args()
 
-#     print("Loading Dictionary")
-#     with open(args.dict_file, 'rb') as f:
-#         e2w, w2e = pickle.load(f)
+    print("Loading Dictionary")
+    with open(args.dict_file, 'rb') as f:
+        e2w, w2e = pickle.load(f)
 
-#     print("\nBuilding BART model")
-#     configuration = BartConfig(max_position_embeddings=args.max_seq_len,
-#                                d_model=args.hs,
-#                                encoder_layers=args.layers,
-#                                encoder_ffn_dim=args.ffn_dims,
-#                                encoder_attention_heads=args.heads,
-#                                decoder_layers=args.layers,
-#                                decoder_ffn_dim=args.ffn_dims,
-#                                decoder_attention_heads=args.heads
-#                                )
-#     pianobart = PianoBart(bartConfig=configuration, e2w=e2w, w2e=w2e)
-#     model = PianoBartLM(pianobart)
-#     if not args.nopretrain:
-#         best_mdl = args.ckpt
-#         print("   Loading pre-trained model from", best_mdl.split('/')[-1])
-#         checkpoint = torch.load(best_mdl, map_location='cpu')
-#         model.load_state_dict(checkpoint['state_dict'])
-#     input=Midi2Octuple(args.input)
-#     device_name = "cuda"
-#     cpu = args.cpu
-#     cuda_devices = args.cuda_devices
-#     if cuda_devices is not None and len(cuda_devices) >= 1:
-#         device_name += ":" + str(cuda_devices[0])
-#     device = torch.device(device_name if torch.cuda.is_available() and not cpu else 'cpu')
-#     if len(cuda_devices) > 1 and not cpu:
-#         print("Use %d GPUS" % len(cuda_devices))
-#         model = nn.DataParallel(model, device_ids=cuda_devices)
-#     elif (len(cuda_devices) == 1 or torch.cuda.is_available()) and not cpu:
-#         print("Use GPU", end=" ")
-#         print(device)
-#         model=model.to(device)
-#     else:
-#         print("Use CPU")
-#     input=input.to(device)
-#     input = input.long()
-#     attn_encoder = (input[:, :, 0] != pianobart.bar_pad_word).float().to(device)
+    print("\nBuilding BART model")
+    configuration = BartConfig(max_position_embeddings=args.max_seq_len,
+                               d_model=args.hs,
+                               encoder_layers=args.layers,
+                               encoder_ffn_dim=args.ffn_dims,
+                               encoder_attention_heads=args.heads,
+                               decoder_layers=args.layers,
+                               decoder_ffn_dim=args.ffn_dims,
+                               decoder_attention_heads=args.heads
+                               )
+    pianobart = PianoBart(bartConfig=configuration, e2w=e2w, w2e=w2e)
+    model = PianoBartLM(pianobart)
+    if not args.nopretrain:
+        best_mdl = args.ckpt
+        print("   Loading pre-trained model from", best_mdl.split('/')[-1])
+        checkpoint = torch.load(best_mdl, map_location='cpu')
+        model.load_state_dict(checkpoint['state_dict'])
+    input=Midi2Octuple(args.input)
+    device_name = "cuda"
+    cpu = args.cpu
+    cuda_devices = args.cuda_devices
+    if cuda_devices is not None and len(cuda_devices) >= 1:
+        device_name += ":" + str(cuda_devices[0])
+    device = torch.device(device_name if torch.cuda.is_available() and not cpu else 'cpu')
+    if len(cuda_devices) > 1 and not cpu:
+        print("Use %d GPUS" % len(cuda_devices))
+        model = nn.DataParallel(model, device_ids=cuda_devices)
+    elif (len(cuda_devices) == 1 or torch.cuda.is_available()) and not cpu:
+        print("Use GPU", end=" ")
+        print(device)
+        model=model.to(device)
+    else:
+        print("Use CPU")
+    input=input.to(device)
+    input = input.long()
+    attn_encoder = (input[:, :, 0] != pianobart.bar_pad_word).float().to(device)
 
-#     y=model(input_ids_encoder=input,encoder_attention_mask=attn_encoder,generate=True)
+    y=model(input_ids_encoder=input,encoder_attention_mask=attn_encoder,generate=True)
 
     '''outputs = []
     for i, etype in enumerate(pianobart.e2w):
