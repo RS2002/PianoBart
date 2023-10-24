@@ -352,7 +352,14 @@ def finetune_generation():
     pianobart = PianoBart(bartConfig=configuration, e2w=e2w, w2e=w2e)
 
     best_mdl = ''
-    if not args.nopretrain:
+    model = None
+    if args.eval:
+        best_mdl = args.ckpt
+        print("   Loading pre-trained model from", best_mdl.split('/')[-1])
+        checkpoint = torch.load(best_mdl, map_location='cpu')
+        model = PianoBartLM(pianobart)
+        model.load_state_dict(checkpoint['state_dict'])
+    elif not args.nopretrain:
         best_mdl = args.ckpt
         print("   Loading pre-trained model from", best_mdl.split('/')[-1])
         checkpoint = torch.load(best_mdl, map_location='cpu')
@@ -360,7 +367,7 @@ def finetune_generation():
 
     print("\nCreating Finetune Trainer")
     trainer = GenerationTrainer(pianobart, train_loader, valid_loader, test_loader, args.lr,
-                                y_test.shape, args.cpu, args.cuda_devices, None)
+                                y_test.shape, args.cpu, args.cuda_devices, model)
 
     print("\nTraining Start")
     save_dir = os.path.join('result/finetune/generation_' + args.name)

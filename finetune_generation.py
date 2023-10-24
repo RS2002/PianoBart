@@ -48,6 +48,8 @@ def get_args_generation():
     parser.add_argument("--cuda_devices", type=int, nargs='+',
                         default=[5, 6, 7], help="CUDA device ids")
 
+    parser.add_argument("--eval", action="store_true")  # default = False
+
     args = parser.parse_args()
 
     return args
@@ -63,7 +65,7 @@ class GenerationTrainer:
             device_name if torch.cuda.is_available() and not cpu else 'cpu')
         print('   device:', self.device)
         self.pianobart = pianobart
-        if model != None:  # load model
+        if model is not None:  # load model
             print('load a fine-tuned model')
             self.model = model.to(self.device)
         else:
