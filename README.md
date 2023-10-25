@@ -105,6 +105,7 @@ Some parameters you may need to change:
  * `--datasets`: The name of the dataset you want to use.
  * `--dataroot`: The root path of the dataset you want to use.
  * `--cuda_devices`: The GPU you want to use.
+ * `--class_num`: The class amount of the task.
 
 for example, if you want to use the GiantMIDI1k dataset which we used, you can run it with
 
@@ -119,7 +120,7 @@ python main.py --datasets GiantMIDI1k --dataroot Data/output_generate/GiantMIDI1
 Uncomment the `finetune()` in main.py and run it.
 
 ```shell
-
+python main.py --datasets <dataset name> --dataroot <root path of dataset> --class_num <class number> --task composer
 ```
 
 
@@ -129,7 +130,7 @@ Uncomment the `finetune()` in main.py and run it.
 Uncomment the `finetune()` in main.py and run it.
 
 ```shell
-
+python main.py --datasets <dataset name> --dataroot <root path of dataset> --class_num <class number> --task emotion
 ```
 
 
@@ -139,7 +140,7 @@ Uncomment the `finetune()` in main.py and run it.
 Uncomment the `finetune()` in main.py and run it.
 
 ```shell
-
+python main.py --datasets <dataset name> --dataroot <root path of dataset> --class_num <class number> --task velocity
 ```
 
 
@@ -149,7 +150,7 @@ Uncomment the `finetune()` in main.py and run it.
 Uncomment the `finetune()` in main.py and run it.
 
 ```shell
-
+python main.py --datasets <dataset name> --dataroot <root path of dataset> --class_num <class number> --task melody
 ```
 
 
