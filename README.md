@@ -94,17 +94,29 @@ For example, if you use the conda-based environment we provide, you can run the 
 patch ~/anaconda3/envs/Bart/lib/python3.8/site-packages/shapesimilarity/shapesimilarity.py < patches/shapesimilarity.patch
 ```
 
-Uncomment the “finetune_generation()” in main.py and run it.
+Uncomment the `finetune_generation()` in main.py and run it.
 
 ```shell
 python main.py
+```
+
+Some parameters you may need to change:
+ * `--ckpt`: The path of the model you want to load.
+ * `--datasets`: The name of the dataset you want to use.
+ * `--dataroot`: The root path of the dataset you want to use.
+ * `--cuda_devices`: The GPU you want to use.
+
+for example, if you want to use the GiantMIDI1k dataset which we used, you can run it with
+
+```shell
+python main.py --datasets GiantMIDI1k --dataroot Data/output_generate/GiantMIDI1k/gen_method --ckpt <model path> --cuda_devices <GPU ids>
 ```
 
 
 
 #### 2.3.2 Composer Classification
 
-Uncomment the “finetune()” in main.py and run it.
+Uncomment the `finetune()` in main.py and run it.
 
 ```shell
 
@@ -114,7 +126,7 @@ Uncomment the “finetune()” in main.py and run it.
 
 #### 2.3.3 Emotion Classification
 
-Uncomment the “finetune()” in main.py and run it.
+Uncomment the `finetune()` in main.py and run it.
 
 ```shell
 
@@ -124,7 +136,7 @@ Uncomment the “finetune()” in main.py and run it.
 
 #### 2.3.4 Velocity Prediction
 
-Uncomment the “finetune()” in main.py and run it.
+Uncomment the `finetune()` in main.py and run it.
 
 ```shell
 
@@ -134,7 +146,7 @@ Uncomment the “finetune()” in main.py and run it.
 
 #### 2.3.5 Melody Prediction
 
-Uncomment the “finetune()” in main.py and run it.
+Uncomment the `finetune()` in main.py and run it.
 
 ```shell
 
