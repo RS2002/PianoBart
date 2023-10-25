@@ -148,7 +148,7 @@ class GenerationTrainer:
             #FAD_pos=0
 
             for i in range(8):
-                acc = torch.sum((y[:, :, i] == outputs[:, :, i]).float())
+                acc = torch.sum((y[:, :, i] == outputs[:, :, i]).float()*attn_decoder)
                 acc /= torch.sum(attn_decoder)
                 all_acc.append(acc)
                 # if i==3:
