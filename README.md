@@ -115,9 +115,9 @@ python main.py --datasets GiantMIDI1k --dataroot Data/output_generate/GiantMIDI1
 
 
 
-#### 2.3.2 Composer Classification
+In the following tasks, you can uncomment the `finetune()` in main.py and run it.
 
-Uncomment the `finetune()` in main.py and run it.
+#### 2.3.2 Composer Classification
 
 ```shell
 python main.py --datasets <dataset name> --dataroot <root path of dataset> --class_num <class number> --task composer
@@ -127,8 +127,6 @@ python main.py --datasets <dataset name> --dataroot <root path of dataset> --cla
 
 #### 2.3.3 Emotion Classification
 
-Uncomment the `finetune()` in main.py and run it.
-
 ```shell
 python main.py --datasets <dataset name> --dataroot <root path of dataset> --class_num <class number> --task emotion
 ```
@@ -137,8 +135,6 @@ python main.py --datasets <dataset name> --dataroot <root path of dataset> --cla
 
 #### 2.3.4 Velocity Prediction
 
-Uncomment the `finetune()` in main.py and run it.
-
 ```shell
 python main.py --datasets <dataset name> --dataroot <root path of dataset> --class_num <class number> --task velocity
 ```
@@ -146,8 +142,6 @@ python main.py --datasets <dataset name> --dataroot <root path of dataset> --cla
 
 
 #### 2.3.5 Melody Prediction
-
-Uncomment the `finetune()` in main.py and run it.
 
 ```shell
 python main.py --datasets <dataset name> --dataroot <root path of dataset> --class_num <class number> --task melody

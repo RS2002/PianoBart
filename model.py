@@ -173,11 +173,21 @@ class TokenClassification(nn.Module):
             nn.Linear(256, class_num)
         )
 
+        '''self.classifier = nn.Sequential(
+            nn.Dropout(0.1),
+            # Excitation(hs*2),
+            nn.Linear(hs*2, 256),
+            nn.ReLU(),
+            nn.Linear(256, class_num)
+        )'''
+
     def forward(self, input_ids_encoder, input_ids_decoder, encoder_attention_mask=None, decoder_attention_mask=None):
         x = self.pianobart(input_ids_encoder, input_ids_decoder, encoder_attention_mask, decoder_attention_mask)
         x = x.last_hidden_state
 
-        #x=x.encoder_last_hidden_state
+        # x=x.encoder_last_hidden_state
+
+        # x = torch.cat([x.last_hidden_state, x.encoder_last_hidden_state], dim=-1)
 
         res = self.classifier(x)
         return res
