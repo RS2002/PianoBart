@@ -311,7 +311,7 @@ def load_data_finetune(dataset, task, data_root=None):
 
         print('X_train: {}, X_valid: {}, X_test: {}'.format(
             X_train.shape, X_val.shape, X_test.shape))
-        if dataset == 'pop909':
+        '''if dataset == 'pop909':
             y_train = np.load(os.path.join(
                 data_root, f'{dataset}_train_{task[:3]}ans.npy'), allow_pickle=True)
             y_val = np.load(os.path.join(
@@ -324,7 +324,13 @@ def load_data_finetune(dataset, task, data_root=None):
             y_val = np.load(os.path.join(
                 data_root, f'{dataset}_valid_ans.npy'), allow_pickle=True)
             y_test = np.load(os.path.join(
-                data_root, f'{dataset}_test_ans.npy'), allow_pickle=True)
+                data_root, f'{dataset}_test_ans.npy'), allow_pickle=True)'''
+        y_train = np.load(os.path.join(
+            data_root, f'{dataset}_train_ans.npy'), allow_pickle=True)
+        y_val = np.load(os.path.join(
+            data_root, f'{dataset}_valid_ans.npy'), allow_pickle=True)
+        y_test = np.load(os.path.join(
+            data_root, f'{dataset}_test_ans.npy'), allow_pickle=True)
 
     print('y_train: {}, y_valid: {}, y_test: {}'.format(
         y_train.shape, y_val.shape, y_test.shape))

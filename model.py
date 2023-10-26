@@ -109,6 +109,7 @@ class SequenceClassification(nn.Module):
             # nn.BatchNorm1d(hs*r),
             nn.Dropout(0.1),
             # nn.ReLU(),
+            # Excitation(hs*r),
             nn.Linear(hs*r, 256),
             # nn.BatchNorm1d(256),
             nn.ReLU(),
@@ -120,6 +121,15 @@ class SequenceClassification(nn.Module):
             nn.Linear(256, class_num)
         )
 
+        '''self.attention = SelfAttention(hs*2, da, r)
+        self.classifier = nn.Sequential(
+            nn.Dropout(0.1),
+            # Excitation(hs*r*2),
+            nn.Linear(hs*r*2, 256),
+            nn.ReLU(),
+            nn.Linear(256, class_num)
+        )'''
+
     def forward(self, input_ids_encoder, encoder_attention_mask=None):
         # y_shift = torch.zeros_like(input_ids_encoder)
         # y_shift[:, 1:, :] = input_ids_encoder[:, :-1, :]
@@ -130,8 +140,15 @@ class SequenceClassification(nn.Module):
         # x = self.pianobart(input_ids_encoder=input_ids_encoder,input_ids_decoder=y_shift,encoder_attention_mask=encoder_attention_mask,decoder_attention_mask=attn_shift)
 
         x = self.pianobart(input_ids_encoder=input_ids_encoder,input_ids_decoder=input_ids_encoder,encoder_attention_mask=encoder_attention_mask,decoder_attention_mask=encoder_attention_mask)
+        # x=self.pianobart(input_ids_encoder=input_ids_encoder,encoder_attention_mask=encoder_attention_mask)
 
         x = x.last_hidden_state
+
+        # x=x.encoder_last_hidden_state
+
+        # x = torch.cat([x.last_hidden_state, x.encoder_last_hidden_state], dim=-1)
+
+
         attn_mat = self.attention(x)  # attn_mat: (batch, r, 512)
         m = torch.bmm(attn_mat, x)  # m: (batch, r, 768)
         flatten = m.view(m.size()[0], -1)  # flatten: (batch, r*768)
@@ -150,7 +167,7 @@ class Excitation(nn.Module):
 
     def forward(self, x):
         y = self.fc(x)
-        return x * y
+        return x * y # + x
 
 
 
