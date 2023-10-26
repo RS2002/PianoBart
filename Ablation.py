@@ -162,50 +162,50 @@ class AblationTrainer:
             #FAD_pos=0
 
             for i in range(8):
-                acc = torch.sum((shift_seq_batch[:, :, i] == label[:, :, i]).float()*loss_mask)
+                acc = torch.sum((outputs[:, :, i] == label[:, :, i]).float()*loss_mask)
                 acc /= torch.sum(loss_mask)
                 all_acc.append(acc)
-                if i==3:
-                    for j in range(shift_seq_batch.shape[0]):
-                        current_FAD=0
-                        current_FAD_BAR=0
-                        #current_FAD_pos=0
-                        index=0
-                        y1=shift_seq_batch[j, loss_mask[j] == 1, i]
-                        y2=label[j, loss_mask[j] == 1, i]
-                        bar=shift_seq_batch[j, loss_mask[j] == 1, 0]
-                        '''pos1=y[j, attn_decoder[j] == 1, 1]
-                        pos2=outputs[j, attn_decoder[j] == 1, 1]'''
-                        for k in range(bar[-2]):
-                            c1=y1[bar==k].tolist()
-                            c2=y2[bar==k].tolist()
-                            if len(c1)>1:
-                                index+=len(c1)
-                                x=range(len(c1))
-                                current_FAD_BAR+=shapesimilarity.shape_similarity(list(zip(x,c1)),list(zip(x,c2)))*len(c1)
-                                '''x1=pos1[bar==k].tolist()
-                                x2=pos2[bar==k].tolist()
-                                current_FAD_pos += shapesimilarity.shape_similarity(list(zip(x1, c1)), list(zip(x2, c2))) * len(c1)'''
-                        y1=y1.tolist()
-                        y2=y2.tolist()
-                        l=len(y1)
-                        gap=10
-                        for k in range(l//gap):
-                            c1=y1[k*gap:(k+1)*gap-1]
-                            c2=y2[k*gap:(k+1)*gap-1]
-                            x=range(gap)
-                            current_FAD+=shapesimilarity.shape_similarity(list(zip(x,c1)),list(zip(x,c2)))
-                        if index!=0:
-                            FAD_BAR+=current_FAD_BAR/index
-                            #FAD_pos+=current_FAD_pos/index
-                        if l//gap!=0:
-                            FAD+=current_FAD/(l//gap)
-                    FAD_BAR/=shift_seq_batch.shape[0]
-                    total_FAD_BAR+=FAD_BAR
-                    FAD/=shift_seq_batch.shape[0]
-                    total_FAD+=FAD
-                    #FAD_pos/=y.shape[0]
-                    #total_FAD_pos+=FAD_pos
+                # if i==3:
+                #     for j in range(shift_seq_batch.shape[0]):
+                #         current_FAD=0
+                #         current_FAD_BAR=0
+                #         #current_FAD_pos=0
+                #         index=0
+                #         y1=shift_seq_batch[j, loss_mask[j] == 1, i]
+                #         y2=label[j, loss_mask[j] == 1, i]
+                #         bar=shift_seq_batch[j, loss_mask[j] == 1, 0]
+                #         '''pos1=y[j, attn_decoder[j] == 1, 1]
+                #         pos2=outputs[j, attn_decoder[j] == 1, 1]'''
+                #         for k in range(bar[-2]):
+                #             c1=y1[bar==k].tolist()
+                #             c2=y2[bar==k].tolist()
+                #             if len(c1)>1:
+                #                 index+=len(c1)
+                #                 x=range(len(c1))
+                #                 current_FAD_BAR+=shapesimilarity.shape_similarity(list(zip(x,c1)),list(zip(x,c2)))*len(c1)
+                #                 '''x1=pos1[bar==k].tolist()
+                #                 x2=pos2[bar==k].tolist()
+                #                 current_FAD_pos += shapesimilarity.shape_similarity(list(zip(x1, c1)), list(zip(x2, c2))) * len(c1)'''
+                #         y1=y1.tolist()
+                #         y2=y2.tolist()
+                #         l=len(y1)
+                #         gap=10
+                #         for k in range(l//gap):
+                #             c1=y1[k*gap:(k+1)*gap-1]
+                #             c2=y2[k*gap:(k+1)*gap-1]
+                #             x=range(gap)
+                #             current_FAD+=shapesimilarity.shape_similarity(list(zip(x,c1)),list(zip(x,c2)))
+                #         if index!=0:
+                #             FAD_BAR+=current_FAD_BAR/index
+                #             #FAD_pos+=current_FAD_pos/index
+                #         if l//gap!=0:
+                #             FAD+=current_FAD/(l//gap)
+                #     FAD_BAR/=shift_seq_batch.shape[0]
+                #     total_FAD_BAR+=FAD_BAR
+                #     FAD/=shift_seq_batch.shape[0]
+                #     total_FAD+=FAD
+                #     #FAD_pos/=y.shape[0]
+                #     #total_FAD_pos+=FAD_pos
             total_acc = [sum(x) for x in zip(total_acc, all_acc)]
             total_cnt += torch.sum(attn_decoder).item()
 
@@ -218,7 +218,15 @@ class AblationTrainer:
             losses, n_tok = [], []
             for i, etype in enumerate(self.pianobart.e2w):
                 n_tok.append(len(self.pianobart.e2w[etype]))
-                losses.append(self.compute_loss(y_hat[i], label[..., i], loss_mask))
+                if i == 2 or i == 6 or i == 7:
+                    weight = 0.3
+                elif i == 3:
+                    weight = 1.5
+                else:
+                    weight = 1
+            for i, etype in enumerate(self.pianobart.e2w):
+                n_tok.append(len(self.pianobart.e2w[etype]))
+                losses.append(self.compute_loss(y_hat[i], label[..., i], loss_mask)*weight)
             total_loss_all = [x * y for x, y in zip(losses, n_tok)]
             loss = sum(total_loss_all) / sum(n_tok)  # weighted
             total_loss += loss.item()
