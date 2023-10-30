@@ -114,7 +114,6 @@ class Pretrainer:
         print(target.type)'''
         loss = self.loss_func(predict, target)
         loss = loss * loss_mask
-        #TODO: add weights for different attributes
         loss = torch.sum(loss) / torch.sum(loss_mask)
         return loss
 
@@ -152,19 +151,6 @@ class Pretrainer:
             encoder_attention_mask = (input_ids_encoder[:, :, 0] != self.pianobart.bar_pad_word).float().to(
                 self.device)  # (batch, seq_len)
             decoder_attention_mask = (input_ids_decoder[:, :, 0] != self.pianobart.bar_pad_word).float().to(self.device)
-
-            '''print(input_ids_encoder.shape)
-            print(input_ids_decoder.shape)
-            print(encoder_attention_mask.shape)
-            print(decoder_attention_mask.shape)
-            print(input_ids_encoder.device)
-            print(input_ids_decoder.device)
-            print(encoder_attention_mask.device)
-            print(encoder_attention_mask.device)'''
-            # tmp_tensor = torch.zeros_like(input_ids_encoder.shape).to(self.device)
-            # tmp_tensor1 = torch.zeros_like(input_ids_decoder.shape).to(self.device)
-            # tmp_tensor2 = torch.zeros_like(encoder_attention_mask.shape).to(self.device)
-            # tmp_tensor3 = torch.zeros_like(encoder_attention_mask.shape).to(self.device)
 
             # y = []
             # for ids in range(input_ids_encoder.shape[0]):

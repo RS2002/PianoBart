@@ -10,13 +10,9 @@ from pretrain import Pretrainer, get_args_pretrain, load_data_pretrain
 from finetune import FinetuneTrainer, get_args_finetune, load_data_finetune
 import torch
 from dataset import MidiDataset, FinetuneDataset
-from model import TokenClassification, SequenceClassification, PianoBartLM
-from eval import get_args_eval, load_data_eval, conf_mat
+from model import  PianoBartLM
 from finetune_generation import get_args_generation, GenerationTrainer
-from eval_generation import get_args_eval_generation
-# import json
-from Ablation import AblationTrainer, load_data_ablation, get_args_ablation
-
+from Ablation import AblationTrainer, load_data_ablation
 
 def pretrain():
     args = get_args_pretrain()
@@ -184,7 +180,6 @@ def finetune():
     best_acc, best_epoch = 0, 0
     bad_cnt = 0
 
-    #    train_accs, valid_accs = [], []
     with open(os.path.join(save_dir, 'log'), 'a') as outfile:
         outfile.write("Loading pre-trained model from " +
                       best_mdl.split('/')[-1] + '\n')
@@ -204,9 +199,6 @@ def finetune():
             print(
                 'epoch: {}/{} | Train Loss: {} | Train acc: {} | Valid Loss: {} | Valid acc: {} | Test loss: {} | Test acc: {}'.format(
                     epoch + 1, args.epochs, train_loss, train_acc, valid_loss, valid_acc, test_loss, test_acc))
-
-            #            train_accs.append(train_acc)
-            #            valid_accs.append(valid_acc)
             trainer.save_checkpoint(epoch, train_acc, valid_acc,
                                     valid_loss, train_loss, is_best, filename)
 
@@ -217,90 +209,6 @@ def finetune():
             if bad_cnt > 3:
                 print('valid acc not improving for 3 epochs')
                 break
-
-    # draw figure valid_acc & train_acc
-    '''plt.figure()
-    plt.plot(train_accs)
-    plt.plot(valid_accs)
-    plt.title(f'{args.task} task accuracy (w/o pre-training)')
-    plt.xlabel('epoch')
-    plt.ylabel('accuracy')
-    plt.legend(['train','valid'], loc='upper left')
-    plt.savefig(f'acc_{args.task}_scratch.jpg')'''
-
-
-def eval():
-    args = get_args_eval()
-
-    print("Loading Dictionary")
-    with open(args.dict_file, 'rb') as f:
-        e2w, w2e = pickle.load(f)
-
-    print("\nBuilding BART model")
-    configuration = BartConfig(max_position_embeddings=args.max_seq_len,
-                               d_model=args.hs,
-                               encoder_layers=args.layers,
-                               encoder_ffn_dim=args.ffn_dims,
-                               encoder_attention_heads=args.heads,
-                               decoder_layers=args.layers,
-                               decoder_ffn_dim=args.ffn_dims,
-                               decoder_attention_heads=args.heads
-                               )
-
-    pianobart = PianoBart(bartConfig=configuration, e2w=e2w, w2e=w2e)
-
-    print("\nLoading Dataset")
-    if args.task == 'melody' or args.task == 'velocity':
-        dataset = 'pop909'
-        model = TokenClassification(pianobart, args.class_num, args.hs)
-        seq_class = False
-    elif args.task == 'composer' or args.task == 'emotion':
-        dataset = args.task
-        model = SequenceClassification(pianobart, args.class_num, args.hs)
-        seq_class = True
-    else:
-        print("ERROR")
-        exit(-1)
-
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_eval(
-        dataset, args.task)
-
-    '''trainset = FinetuneDataset(X=X_train, y=y_train)
-    validset = FinetuneDataset(X=X_val, y=y_val)'''
-    testset = FinetuneDataset(X=X_test, y=y_test)
-
-    '''train_loader = DataLoader(trainset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
-    print("   len of train_loader", len(train_loader))
-    valid_loader = DataLoader(validset, batch_size=args.batch_size, num_workers=args.num_workers)
-    print("   len of valid_loader", len(valid_loader))'''
-    train_loader, valid_loader = None, None
-
-    test_loader = DataLoader(
-        testset, batch_size=args.batch_size, num_workers=args.num_workers)
-    print("   len of test_loader", len(test_loader))
-
-    print('\nLoad ckpt from', args.ckpt)
-    best_mdl = args.ckpt
-    checkpoint = torch.load(best_mdl, map_location='cpu')
-    model.load_state_dict(checkpoint['state_dict'])
-
-    # remove module
-    # from collections import OrderedDict
-    # new_state_dict = OrderedDict()
-    # for k, v in checkpoint['state_dict'].items():
-    #    name = k[7:]
-    #    new_state_dict[name] = v
-    # model.load_state_dict(new_state_dict)
-
-    print("\nCreating Finetune Trainer")
-    trainer = FinetuneTrainer(pianobart, train_loader, valid_loader, test_loader, args.lr, args.class_num,
-                              args.hs, y_test.shape, args.cpu, args.cuda_devices, model, seq_class)
-
-    test_loss, test_acc, all_output = trainer.test()
-    print('test loss: {}, test_acc: {}'.format(test_loss, test_acc))
-
-    outdir = os.path.dirname(args.ckpt)
-    conf_mat(y_test, all_output, args.task, outdir)
 
 
 def finetune_generation():
@@ -320,7 +228,6 @@ def finetune_generation():
         e2w, w2e = pickle.load(f)
 
     print("\nLoading Dataset")
-    #X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetuneload_data_finetune(args.dataset, args.task, args.dataroot)
     X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(
         dataset=args.datasets, task="gen", data_root=args.dataroot)
 
@@ -378,7 +285,6 @@ def finetune_generation():
     best_acc, best_epoch = 0, 0
     bad_cnt = 0
 
-    #    train_accs, valid_accs = [], []
     with open(os.path.join(save_dir, 'log'), 'a') as outfile:
         outfile.write("Loading pre-trained model from " +
                       best_mdl.split('/')[-1] + '\n')
@@ -403,8 +309,6 @@ def finetune_generation():
                 'epoch: {}/{} | Train Loss: {} | Train acc: {} | Train FAD: {} | Train FAD (BAR): {} | Valid Loss: {} | Valid acc: {} | Valid FAD: {} | Valid FAD(BAR): {} | Test loss: {} | Test acc: {} | Test FAD: {} | Test FAD(BAR): {}'.format(
                     epoch + 1, args.epochs, train_loss, train_acc, train_FAD, train_FAD_BAR, valid_loss, valid_acc, valid_FAD, valid_FAD_BAR, test_loss, test_acc, test_FAD, test_FAD_BAR))
 
-            #            train_accs.append(train_acc)
-            #            valid_accs.append(valid_acc)
             trainer.save_checkpoint(epoch, train_acc, valid_acc,
                                     valid_loss, train_loss, is_best, filename)
 
@@ -415,81 +319,6 @@ def finetune_generation():
             if bad_cnt > 30:
                 print('valid acc not improving for 3 epochs')
                 break
-
-    # draw figure valid_acc & train_acc
-    '''plt.figure()
-    plt.plot(train_accs)
-    plt.plot(valid_accs)
-    plt.title(f'{args.task} task accuracy (w/o pre-training)')
-    plt.xlabel('epoch')
-    plt.ylabel('accuracy')
-    plt.legend(['train','valid'], loc='upper left')
-    plt.savefig(f'acc_{args.task}_scratch.jpg')'''
-
-
-def eval_generation():
-    args = get_args_eval_generation()
-
-    print("Loading Dictionary")
-    with open(args.dict_file, 'rb') as f:
-        e2w, w2e = pickle.load(f)
-
-    print("\nBuilding BART model")
-    configuration = BartConfig(max_position_embeddings=args.max_seq_len,
-                               d_model=args.hs,
-                               encoder_layers=args.layers,
-                               encoder_ffn_dim=args.ffn_dims,
-                               encoder_attention_heads=args.heads,
-                               decoder_layers=args.layers,
-                               decoder_ffn_dim=args.ffn_dims,
-                               decoder_attention_heads=args.heads
-                               )
-
-    pianobart = PianoBart(bartConfig=configuration, e2w=e2w, w2e=w2e)
-    model = PianoBartLM(pianobart)
-
-    print("\nLoading Dataset")
-
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(
-        args.dataset, "gen")
-
-    '''trainset = FinetuneDataset(X=X_train, y=y_train)
-    validset = FinetuneDataset(X=X_val, y=y_val)'''
-    testset = FinetuneDataset(X=X_test, y=y_test)
-
-    '''train_loader = DataLoader(trainset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
-    print("   len of train_loader", len(train_loader))
-    valid_loader = DataLoader(validset, batch_size=args.batch_size, num_workers=args.num_workers)
-    print("   len of valid_loader", len(valid_loader))'''
-    train_loader, valid_loader = None, None
-
-    test_loader = DataLoader(
-        testset, batch_size=args.batch_size, num_workers=args.num_workers)
-    print("   len of test_loader", len(test_loader))
-
-    print('\nLoad ckpt from', args.ckpt)
-    best_mdl = args.ckpt
-    checkpoint = torch.load(best_mdl, map_location='cpu')
-    model.load_state_dict(checkpoint['state_dict'])
-
-    # remove module
-    # from collections import OrderedDict
-    # new_state_dict = OrderedDict()
-    # for k, v in checkpoint['state_dict'].items():
-    #    name = k[7:]
-    #    new_state_dict[name] = v
-    # model.load_state_dict(new_state_dict)
-
-    print("\nCreating Finetune Trainer")
-    trainer = GenerationTrainer(pianobart, train_loader, valid_loader, test_loader, args.lr,
-                                y_test.shape, args.cpu, args.cuda_devices, model)
-
-    test_loss, test_acc, FAD_BAR, FAD, all_output = trainer.test()
-    print('test loss: {}, test_acc: {}, test FAD: {}, test_FAD(BAR): {}'.format(
-        test_loss, test_acc, FAD, FAD_BAR))
-
-    outdir = os.path.dirname(args.ckpt)
-    conf_mat(y_test, all_output, args.task, outdir)
 
 
 def abalation():
@@ -559,7 +388,6 @@ def abalation():
     best_acc, best_epoch = 0, 0
     bad_cnt = 0
 
-    #    train_accs, valid_accs = [], []
     with open(os.path.join(save_dir, 'log'), 'a') as outfile:
         outfile.write("Loading pre-trained model from " +
                       best_mdl.split('/')[-1] + '\n')
@@ -580,8 +408,6 @@ def abalation():
                 'epoch: {}/{} | Train Loss: {} | Train acc: {} | Train FAD: {} | Train FAD (BAR): {} | Valid Loss: {} | Valid acc: {} | Valid FAD: {} | Valid FAD(BAR): {} | Test loss: {} | Test acc: {} | Test FAD: {} | Test FAD(BAR): {}'.format(
                     epoch + 1, args.epochs, train_loss, train_acc, train_FAD, train_FAD_BAR, valid_loss, valid_acc, valid_FAD, valid_FAD_BAR, test_loss, test_acc, test_FAD, test_FAD_BAR))
 
-            #            train_accs.append(train_acc)
-            #            valid_accs.append(valid_acc)
             trainer.save_checkpoint(epoch, train_acc, valid_acc,
                                     valid_loss, train_loss, is_best, filename)
 
@@ -594,80 +420,8 @@ def abalation():
                 break
 
 
-def ablation_eval():
-    args = get_args_eval_generation()
-
-    print("Loading Dictionary")
-    with open(args.dict_file, 'rb') as f:
-        e2w, w2e = pickle.load(f)
-
-    print("\nBuilding BART model")
-    configuration = BartConfig(max_position_embeddings=args.max_seq_len,
-                               d_model=args.hs,
-                               encoder_layers=args.layers,
-                               encoder_ffn_dim=args.ffn_dims,
-                               encoder_attention_heads=args.heads,
-                               decoder_layers=args.layers,
-                               decoder_ffn_dim=args.ffn_dims,
-                               decoder_attention_heads=args.heads
-                               )
-
-    pianobart = PianoBart(bartConfig=configuration, e2w=e2w, w2e=w2e)
-    model = PianoBartLM(pianobart)
-
-    print("\nLoading Dataset")
-
-    X_train, X_val, X_test, y_train, y_val, y_test = load_data_finetune(
-        args.dataset, "gen")
-
-    '''trainset = FinetuneDataset(X=X_train, y=y_train)
-    validset = FinetuneDataset(X=X_val, y=y_val)'''
-    testset = FinetuneDataset(X=X_test, y=y_test)
-
-    '''train_loader = DataLoader(trainset, batch_size=args.batch_size, num_workers=args.num_workers, shuffle=True)
-    print("   len of train_loader", len(train_loader))
-    valid_loader = DataLoader(validset, batch_size=args.batch_size, num_workers=args.num_workers)
-    print("   len of valid_loader", len(valid_loader))'''
-    train_loader, valid_loader = None, None
-
-    test_loader = DataLoader(
-        testset, batch_size=args.batch_size, num_workers=args.num_workers)
-    print("   len of test_loader", len(test_loader))
-
-    print('\nLoad ckpt from', args.ckpt)
-    best_mdl = args.ckpt
-    checkpoint = torch.load(best_mdl, map_location='cpu')
-    model.load_state_dict(checkpoint['state_dict'])
-
-    # remove module
-    # from collections import OrderedDict
-    # new_state_dict = OrderedDict()
-    # for k, v in checkpoint['state_dict'].items():
-    #    name = k[7:]
-    #    new_state_dict[name] = v
-    # model.load_state_dict(new_state_dict)
-
-    print("\nCreating Finetune Trainer")
-    trainer = AblationTrainer(pianobart, train_loader, valid_loader, test_loader, args.lr,
-                              y_test.shape, args.cpu, args.cuda_devices, model)
-
-    test_loss, test_acc, FAD_BAR, FAD, all_output = trainer.test()
-    print('test loss: {}, test_acc: {}, test FAD: {}, test_FAD(BAR): {}'.format(
-        test_loss, test_acc, FAD, FAD_BAR))
-
-    outdir = os.path.dirname(args.ckpt)
-    conf_mat(y_test, all_output, args.task, outdir)
-
-
-'''
-to run finetune, for example if use Piani8 dataset:
-python main.py --task composer --dataset Pianist8 --class_num --dataroot ./Data/output_composer/Pianist8 --cuda_devices 0
-'''
 if __name__ == '__main__':
-    # pretrain()
-    finetune()
-    # eval()
+    pretrain()
+    # finetune()
     # finetune_generation()
-    # finetune_eval()
     # abalation()
-    # ablation_eval

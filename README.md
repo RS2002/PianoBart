@@ -50,11 +50,8 @@ To run the model, please refer to the code at the bottom of "main.py", which is 
 if __name__ == '__main__':
     pretrain()
     #finetune()
-    #eval()
     #finetune_generation()
-    #finetune_eval()
     #abalation()
-    #ablation_eval
 ```
 
 You can uncomment the corresponding function to perform the desired task.
@@ -148,10 +145,6 @@ python main.py --datasets <dataset name> --dataroot <root path of dataset> --cla
 ```
 
 
-
-#### 2.3.6 Eval
-
-We apologize for the limited testing of the "eval" code due to time constraints. If you need to use this code, you may need to handle the decoding process yourself.
 
 
 
