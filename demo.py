@@ -26,7 +26,7 @@ def get_args():
     parser.add_argument('--ffn_dims', type=int, default=2048)  # FFN dims
     parser.add_argument('--heads', type=int, default=8)  # attention heads
 
-    parser.add_argument('--nopretrain', action="store_true",default=True)  # default: false
+    parser.add_argument('--nopretrain', action="store_true",default=False)  # default: false
 
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default=False
@@ -102,7 +102,7 @@ if __name__ == '__main__':
         best_mdl = args.ckpt
         print("   Loading pre-trained model from", best_mdl.split('/')[-1])
         checkpoint = torch.load(best_mdl, map_location='cpu')
-        model.load_state_dict(checkpoint['state_dict'])
+        model.load_state_dict(checkpoint['state_dict'],strict=False)
     input=Midi2Octuple(args.input)
     device_name = "cuda"
     cpu = args.cpu
