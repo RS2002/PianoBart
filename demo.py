@@ -119,11 +119,10 @@ if __name__ == '__main__':
         model=model.to(device)
     else:
         print("Use CPU")
-    input=input.to(device)
-    input = input.long()
+    input=input.long().to(device)
     attn_encoder = (input[:, :, 0] != pianobart.bar_pad_word).float().to(device)
 
-    y=model(input_ids_encoder=input,encoder_attention_mask=attn_encoder,generate=True)
+    y=model(input_ids_encoder=input,encoder_attention_mask=attn_encoder,generate=True,deivce=device)
 
     '''outputs = []
     for i, etype in enumerate(pianobart.e2w):
