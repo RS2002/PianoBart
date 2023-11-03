@@ -122,6 +122,9 @@ if __name__ == '__main__':
     input=input.long().to(device)
     attn_encoder = (input[:, :, 0] != pianobart.bar_pad_word).float().to(device)
 
+    model.eval()
+    torch.set_grad_enabled(False)
+
     y=model(input_ids_encoder=input,encoder_attention_mask=attn_encoder,generate=True,deivce=device)
 
     '''outputs = []
