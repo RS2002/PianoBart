@@ -1,6 +1,6 @@
 # PianoBart
 
-**Authors:** Zijian Zhao, Weichao Zeng, Fupeng He, Yutong He, Yiyi Wang
+**Authors:** Zijian Zhao, Weichao Zeng, Yutong He, Fupeng He, Yiyi Wang
 
 **Supervisors:** Chengying Gao, Xiao Liang
 
