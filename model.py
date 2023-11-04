@@ -17,7 +17,7 @@ class PianoBartLM(nn.Module):
         self.pianobart = pianobart
         self.mask_lm = MLM(self.pianobart.e2w, self.pianobart.n_tokens, self.pianobart.hidden_size)
 
-    def forward(self,input_ids_encoder, input_ids_decoder=None, encoder_attention_mask=None, decoder_attention_mask=None,generate=False,device=torch.device('cpu')):
+    def forward(self,input_ids_encoder, input_ids_decoder=None, encoder_attention_mask=None, decoder_attention_mask=None,generate=False):
         '''print(input_ids_encoder.shape)
         print(input_ids_decoder.shape)
         print(encoder_attention_mask.shape)
@@ -26,9 +26,9 @@ class PianoBartLM(nn.Module):
             x = self.pianobart(input_ids_encoder, input_ids_decoder, encoder_attention_mask, decoder_attention_mask)
             return self.mask_lm(x)
         else:
-            pad=torch.from_numpy(self.pianobart.pad_word_np).to(device)
-            input_ids_decoder=pad.repeat(input_ids_encoder.shape[0],input_ids_encoder.shape[1],1).to(device)
-            decoder_attention_mask=torch.zeros_like(encoder_attention_mask).to(device)
+            pad=torch.from_numpy(self.pianobart.pad_word_np)
+            input_ids_decoder=pad.repeat(input_ids_encoder.shape[0],input_ids_encoder.shape[1],1)
+            decoder_attention_mask=torch.zeros_like(encoder_attention_mask)
             pbar = tqdm.tqdm(range(input_ids_encoder.shape[1]), disable=False)
             for i in pbar:
                 x = self.mask_lm(self.pianobart(input_ids_encoder, input_ids_decoder, encoder_attention_mask, decoder_attention_mask))
@@ -37,7 +37,7 @@ class PianoBartLM(nn.Module):
                     output = np.argmax(x[j].cpu().detach().numpy(), axis=-1)
                     outputs.append(output)
                 outputs = np.stack(outputs, axis=-1)
-                outputs = torch.from_numpy(outputs).to(device)
+                outputs = torch.from_numpy(outputs)
                 input_ids_decoder[:,i,:]=outputs[:,i,:]
                 decoder_attention_mask[:,i]+=1
             return input_ids_decoder
