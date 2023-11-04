@@ -46,7 +46,7 @@ def get_args_generation():
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default=False
     parser.add_argument("--cuda_devices", type=int, nargs='+',
-                        default=[5, 6, 7], help="CUDA device ids")
+                        default=[0,1], help="CUDA device ids")
 
     parser.add_argument("--eval", action="store_true")  # default = False
 
@@ -147,9 +147,10 @@ class GenerationTrainer:
 
             attn_encoder = (
                 x[:, :, 0] != self.pianobart.bar_pad_word).float().to(self.device)
-            y_shift = torch.zeros_like(y)
+            '''y_shift = torch.zeros_like(y)
             y_shift[:, 1:, :] = y[:, :-1, :]
-            y_shift[:, 0, :] = torch.tensor(self.pianobart.sos_word_np)
+            y_shift[:, 0, :] = torch.tensor(self.pianobart.sos_word_np)'''
+            y_shift=x
             # y_shift=y
             attn_decoder = (
                 y_shift[:, :, 0] != self.pianobart.bar_pad_word).float().to(self.device)

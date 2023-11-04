@@ -156,3 +156,4 @@ In this section, you can input an intro (MIDI file) to PianoBart, and it will ge
 python --ckpt <model path> --input <input path> --output <output path> demo.py
 ```
 
+Please note that there is a bug in demo.py that restricts the usage to only one CUDA device or CPU.

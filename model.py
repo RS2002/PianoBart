@@ -26,6 +26,9 @@ class PianoBartLM(nn.Module):
             x = self.pianobart(input_ids_encoder, input_ids_decoder, encoder_attention_mask, decoder_attention_mask)
             return self.mask_lm(x)
         else:
+            if input_ids_encoder.shape[0] !=1:
+                print("ERROR")
+                exit(-1)
             if device_num==-1:
                 device=torch.device('cpu')
             else:
@@ -39,19 +42,65 @@ class PianoBartLM(nn.Module):
             pbar = tqdm.tqdm(range(input_ids_encoder.shape[1]), disable=False)
             for i in pbar:
                 x = self.mask_lm(self.pianobart(input_ids_encoder, input_ids_decoder, encoder_attention_mask, decoder_attention_mask))
-                outputs = []
-                for j, etype in enumerate(self.pianobart.e2w):
-                    output = np.argmax(x[j].cpu().detach().numpy(), axis=-1)
-                    outputs.append(output)
-                outputs = np.stack(outputs, axis=-1)
-                outputs = torch.from_numpy(outputs)
+                # outputs = []
+                # for j, etype in enumerate(self.pianobart.e2w):
+                #     output = np.argmax(x[j].cpu().detach().numpy(), axis=-1)
+                #     outputs.append(output)
+                # outputs = np.stack(outputs, axis=-1)
+                # outputs = torch.from_numpy(outputs)
+                # outputs=self.sample(x)
+                # if i!=input_ids_encoder.shape[1]-1:
+                #     input_ids_decoder[:,i+1,:]=outputs[:,i,:]
+                #     decoder_attention_mask[:,i+1]+=1
+                # result[:,i,:]=outputs[:,i,:]
+                current_output=self.sample(x,i)
+                #print(current_output)
                 if i!=input_ids_encoder.shape[1]-1:
-                    input_ids_decoder[:,i+1,:]=outputs[:,i,:]
+                    input_ids_decoder[:,i+1,:]=current_output
                     decoder_attention_mask[:,i+1]+=1
-                result[:,i,:]=outputs[:,i,:]
+                result[:,i,:]=current_output
             return result
 
+    def sample(self,x,index): #Adaptive Sampling Policy in CP Transformer
+        # token types: 0 Measure（第几个Bar（小节））, 1 Position（Bar中的位置）, 2 Program（乐器）, 3 Pitch（音高）, 4 Duration（持续时间）, 5 Velocity（力度）, 6 TimeSig（拍号）, 7 Tempo（速度）
+        t=[1.2,1.2,5,1,2,5,5,1.2]
+        p=[1,1,1,0.9,0.9,1,1,0.9]
+        result=[]
+        for j, etype in enumerate(self.pianobart.e2w):
+            y=x[j]
+            y=y[:,index,:]
+            y=sampling(y,p[j],t[j])
+            result.append(y)
+        return torch.tensor(result)
 
+
+
+
+# -- nucleus -- #
+def nucleus(probs, p):
+    probs /= (sum(probs) + 1e-5)
+    sorted_probs = np.sort(probs)[::-1]
+    sorted_index = np.argsort(probs)[::-1]
+    cusum_sorted_probs = np.cumsum(sorted_probs)
+    after_threshold = cusum_sorted_probs > p
+    if sum(after_threshold) > 0:
+        last_index = np.where(after_threshold)[0][0] + 1
+        candi_index = sorted_index[:last_index]
+    else:
+        candi_index = sorted_index[0:1]
+    candi_probs = [probs[i] for i in candi_index]
+    candi_probs /= sum(candi_probs)
+    word = np.random.choice(candi_index, size=1, p=candi_probs)[0]
+    return word
+
+
+def sampling(logit, p=None, t=1.0):
+    logit = logit.squeeze()
+    probs = torch.softmax(logit/t,dim=-1)
+    probs=probs.cpu().detach().numpy()
+    #print(probs.shape)
+    cur_word = nucleus(probs, p=p)
+    return cur_word
 
 class MLM(nn.Module):
     def __init__(self, e2w, n_tokens, hidden_size):
@@ -246,7 +295,7 @@ if __name__=='__main__':
         for temp in output:
             print(temp.size())
 
-    test_generate=False
+    test_generate=True
     if test_generate:
         print("test generation")
         piano_bart_lm=PianoBartLM(piano_bart).to(device)
@@ -254,7 +303,7 @@ if __name__=='__main__':
         print("输出维度:")
         print(output.shape)
 
-    test_TokenClassifier=True
+    test_TokenClassifier=False
     if test_TokenClassifier:
         print("test Token Classifier")
         piano_bart_token_classifier=TokenClassification(pianobart=piano_bart, class_num=10, hs=48)
