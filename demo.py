@@ -30,7 +30,7 @@ def get_args():
 
     ### cuda ###
     parser.add_argument("--cpu", action="store_true")  # default=False
-    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[5, 6, 7], help="CUDA device ids")
+    parser.add_argument("--cuda_devices", type=int, nargs='+', default=[0], help="CUDA device ids")
 
     args = parser.parse_args()
 
@@ -125,7 +125,12 @@ if __name__ == '__main__':
     model.eval()
     torch.set_grad_enabled(False)
 
-    y=model(input_ids_encoder=input,encoder_attention_mask=attn_encoder,generate=True)
+    if len(args.cuda_devices)==0:
+        device_num=-1
+    else:
+        device_num=args.cuda_devices[0]
+
+    y=model(input_ids_encoder=input,encoder_attention_mask=attn_encoder,generate=True,device_num=device_num)
 
     '''outputs = []
     for i, etype in enumerate(pianobart.e2w):
