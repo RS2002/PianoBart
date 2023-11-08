@@ -33,14 +33,15 @@ class PianoBartLM(nn.Module):
                 device=torch.device('cpu')
             else:
                 device=torch.device('cuda:'+str(device_num))
-            pad=torch.from_numpy(self.pianobart.pad_word_np).to(device)
+            pad=torch.from_numpy(self.pianobart.pad_word_np)
             input_ids_decoder=pad.repeat(input_ids_encoder.shape[0],input_ids_encoder.shape[1],1).to(device)
             result=pad.repeat(input_ids_encoder.shape[0],input_ids_encoder.shape[1],1).to(device)
             decoder_attention_mask=torch.zeros_like(encoder_attention_mask).to(device)
             input_ids_decoder[:,0,:] = torch.tensor(self.pianobart.sos_word_np)
             decoder_attention_mask[:,0] = 1
-            pbar = tqdm.tqdm(range(input_ids_encoder.shape[1]), disable=False)
-            for i in pbar:
+            for i in range(input_ids_encoder.shape[1]):
+            # pbar = tqdm.tqdm(range(input_ids_encoder.shape[1]), disable=False)
+            # for i in pbar:
                 x = self.mask_lm(self.pianobart(input_ids_encoder, input_ids_decoder, encoder_attention_mask, decoder_attention_mask))
                 # outputs = []
                 # for j, etype in enumerate(self.pianobart.e2w):
@@ -54,14 +55,17 @@ class PianoBartLM(nn.Module):
                 #     decoder_attention_mask[:,i+1]+=1
                 # result[:,i,:]=outputs[:,i,:]
                 current_output=self.sample(x,i)
-                #print(current_output)
+                # print(current_output)
                 if i!=input_ids_encoder.shape[1]-1:
                     input_ids_decoder[:,i+1,:]=current_output
                     decoder_attention_mask[:,i+1]+=1
+                # 为提升速度，提前终止生成
+                if (current_output>=pad).any():
+                    break
                 result[:,i,:]=current_output
             return result
 
-    def sample(self,x,index): #Adaptive Sampling Policy in CP Transformer
+    def sample(self,x,index): # Adaptive Sampling Policy in CP Transformer
         # token types: 0 Measure（第几个Bar（小节））, 1 Position（Bar中的位置）, 2 Program（乐器）, 3 Pitch（音高）, 4 Duration（持续时间）, 5 Velocity（力度）, 6 TimeSig（拍号）, 7 Tempo（速度）
         t=[1.2,1.2,5,1,2,5,5,1.2]
         p=[1,1,1,0.9,0.9,1,1,0.9]

@@ -157,3 +157,12 @@ python --ckpt <model path> --input <input path> --output <output path> demo.py
 ```
 
 Please note that there is a bug in demo.py that restricts the usage to only one CUDA device or CPU.
+
+
+
+You can also use eval_generation.py to generate music in one go, with the output format as numpy.array. However, you must set the batch size as 1 and use only one GPU or CPU.
+
+```shell
+python --ckpt <model path> --dataset_path <dataset_path> --dataset_name <dataset_name> --output <output path> eval_generation.py
+```
+
