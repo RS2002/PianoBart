@@ -1,13 +1,8 @@
 # PianoBart
 
-**Authors:** Zijian Zhao, Weichao Zeng, Yutong He, Fupeng He, Yiyi Wang
-
-**Supervisors:** Chengying Gao, Xiao Liang
-
-**Article:** Zijian Zhao, Weichao Zeng, Fupeng He, Yutong He, Yiyi Wang, Xiao Liang, Chengying Gao*: PianoBART: Symbolic Piano Music Understanding and Generating with Large-Scale Pre-Training (in progress)
+**Article:** PianoBART: Symbolic Piano Music Understanding and Generation through Large-Scale Pre-Training (under anonymous review)
 
 Some parts of our code borrows from [muzic/musicbert at main · microsoft/muzic (github.com) [1]](https://github.com/microsoft/muzic/tree/main/musicbert) and [wazenmai/MIDI-BERT: This is the official repository for the paper, MidiBERT-Piano: Large-scale Pre-training for Symbolic Music Understanding. (github.com) [2]](https://github.com/wazenmai/MIDI-BERT).
-
 
 
 ## 1. Dataset
