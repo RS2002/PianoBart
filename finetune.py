@@ -162,6 +162,8 @@ class FinetuneTrainer:
             torch.set_grad_enabled(False)
 
         if mode == 2:  # testing
+            self.model.eval()
+            torch.set_grad_enabled(False)
             all_output = torch.empty(self.testset_shape)
             cnt = 0
 
