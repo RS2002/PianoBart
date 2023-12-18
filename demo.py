@@ -72,6 +72,9 @@ def Octuple2Midi(octuple, Midi_path):
     for i, line in enumerate(octuple):
         if line[0] == 259:
             octuple = octuple[f:i]
+            if i==0:
+                print("Generate Fail! (empty)")
+                return
             break
 
     midi = encoding_to_MIDI(octuple)
