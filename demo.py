@@ -56,7 +56,7 @@ def Octuple2Midi(octuple, Midi_path):
 
     for i in range(1024):
         for j in range(8):
-            if octuple[i,j]>=pad[j] or (j==0 and octuple[i,j]>127): #暂时不生成鼓
+            if octuple[i,j]>=pad[j] or (j==3 and octuple[i,j]>127): #暂时不生成鼓
                 end_flag=True
                 octuple[i]=eos
                 octuple[i+1:]=pad
