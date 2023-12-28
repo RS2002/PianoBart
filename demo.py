@@ -9,6 +9,27 @@ import numpy as np
 import miditoolkit
 from Data.data_generation.convert import MIDI_to_encoding, encoding_to_MIDI, padding
 
+class Args:
+    def __init__(self, dict_file='./Data/Octuple.pkl', ckpt='./PianoBART_Giant.ckpt',
+                 input='./Data/POP909/POP909/001/001.mid', output='./output.mid', num_workers=5,
+                 max_seq_len=1024, hs=1024, layers=8, ffn_dims=2048, heads=8, nopretrain=False,
+                 cpu=False, cuda_devices=[0]):
+        self.dict_file = dict_file
+        self.ckpt = ckpt
+        self.input = input
+        self.output = output
+        self.num_workers = num_workers
+        self.max_seq_len = max_seq_len
+        self.hs = hs
+        self.layers = layers
+        self.ffn_dims = ffn_dims
+        self.heads = heads
+        self.nopretrain = nopretrain
+        self.cpu = cpu
+        self.cuda_devices = cuda_devices
+
+
+
 def get_args():
     parser = argparse.ArgumentParser(description='')
 
@@ -81,9 +102,9 @@ def Octuple2Midi(octuple, Midi_path):
     midi.dump(Midi_path)
 
 
-
-if __name__ == '__main__':
-    args = get_args()
+def demo(args=None):
+    if not args:
+        args = get_args()
 
     print("Loading Dictionary")
     with open(args.dict_file, 'rb') as f:
@@ -144,3 +165,9 @@ if __name__ == '__main__':
 
     outputs=y
     Octuple2Midi(outputs,args.output)
+    print(f"Saved to {args.output}")
+    print(input.shape, outputs.shape)
+    return input, outputs
+
+if __name__ == '__main__':
+    demo()
