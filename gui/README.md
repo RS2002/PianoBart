@@ -1,12 +1,18 @@
 # PianoBart Web Demo
 
-## Start
+## Usage
 
 ### Backend
 
 下载[fluidSynth](https://github.com/FluidSynth/fluidsynth)，将`fluidsynth.exe`所在的`bin`目录添加到环境变量中。
 
-下载带有钢琴音色的SF2文件（例如[MuseScore的古典钢琴音色](https://freepats.zenvoid.org/Piano/YDP-GrandPiano/YDP-GrandPiano-SF2-20160804.tar.bz2)）放入项目路径 `gui\backend\default.sf2`。
+下载带有钢琴音色的SF2文件（例如[MuseScore的古典钢琴音色](https://freepats.zenvoid.org/Piano/YDP-GrandPiano/YDP-GrandPiano-SF2-20160804.tar.bz2)）放入项目路径 `gui\backend\default.sf2`。或在 `gui/backend/app.py`中修改sf2路径：
+
+```python
+sf2 = os.path.join(current_file_path, 'default.sf2')
+```
+
+启动后端服务器：
 
 ```shell
 pip install -r gui/backend/requirements.txt
