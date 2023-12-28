@@ -72,10 +72,6 @@ def download_file(folder, filename):
 def generate(model, filename):
     input_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{filename}.mid")
     output_path = os.path.join(app.config['OUTPUT_FOLDER'], f"{filename}.mid")
-    
-    input_oct = Midi2Octuple(input_path)
-    
-    
     if model == 'pianobart':
         args = Args(ckpt='PianoBART_Giant.ckpt', input=input_path, output=output_path)
     elif model == 'pianobart-simple':
@@ -83,21 +79,11 @@ def generate(model, filename):
     else:
         return "ERROR: No Such Model", 400
     try:
-        input_oct, output_oct = demo(args)
+        demo(args)
     except Exception as e:
         print(e)
         return f"PianoBart Generating ERROR: {e}", 400
-    intro_midi = os.path.join(app.config['UPLOAD_FOLDER'], f"{filename}_intro.mid")
-    # output_midi = os.path.join(app.config['OUTPUT_FOLDER'], f"{filename}_output.mid")
-    intro_wav = os.path.join(app.config['UPLOAD_FOLDER'], f"{filename}_intro.wav")
-    # output_wav = os.path.join(app.config['OUTPUT_FOLDER'], f"{filename}_output.wav")
     try:
-        Octuple2Midi(input_oct, intro_midi)
-        FluidSynth(sound_font=sf2).midi_to_audio(intro_midi, intro_wav)
-        print(f"Transfered {intro_midi} to wav.")
-        # Octuple2Midi(output_oct, output_midi)
-        # FluidSynth(sound_font=sf2).midi_to_audio(output_midi, output_wav)
-        # print(f"Transfered {output_midi} to wav.")
         wav_filename = args.output.rsplit('.', 1)[0] + '.wav'
         FluidSynth(sound_font=sf2).midi_to_audio(args.output, wav_filename)
         print(f"Transfered {args.output} to wav.")

@@ -10,7 +10,7 @@
 
       <!-- 上传按钮 -->
       <base-button 
-        :style="{ marginTop: '-2%', fontSize: '1.7em', lineHeight: '1.5em' }"
+        :style="{ marginTop: '-2%', fontSize: '1.7em', lineHeight: '1.5em', marginBottom: '20px' }"
         slot="footer"
         type="primary"
         fill
@@ -22,8 +22,8 @@
 
   </div>
     <div style="text-align: center;">
-
       <div class="intro" style="margin-bottom: 20px;">
+          <h4 style="margin-bottom: 10px; font-size: 1.5em; font-weight: bold; color: #4A4A4A;" controls v-if="output">Intro:</h4>
           <av-waveform :style="{ marginTop: '2%' }" :audio-src="`http://localhost:5000/api/upload/${midiFile}.wav`" controls v-if="midiFile" ></av-waveform>
           <h4 :style="{ marginTop: '2%' }">{{ upload_message }}</h4>
       </div>
@@ -33,10 +33,8 @@
       </div>
 
       <div class="generated" style="margin-bottom: 20px;">
-          <h4 style="margin-bottom: 10px; font-size: 1.5em; font-weight: bold; color: #4A4A4A;" controls v-if="output">Intro:</h4>
-          <av-waveform  :audio-src="`http://localhost:5000/api/upload/${output}_intro.wav`" controls v-if="output" ></av-waveform>
           <h4 style="margin-bottom: 10px; font-size: 1.5em; font-weight: bold; color: #4A4A4A;" controls v-if="output">Generated:</h4>
-          <av-waveform  :audio-src="`http://localhost:5000/api/output/${output}.wav`" controls v-if="output" ></av-waveform>
+          <av-waveform :style="{ marginTop: '2%' }" :audio-src="`http://localhost:5000/api/output/${output}.wav`" controls v-if="output" ></av-waveform>
           <br>
           <h4 :style="{ marginTop: '2%' }">{{ generate_message }}</h4>
       </div>
