@@ -1,0 +1,3 @@
+Flask==3.0.0
+Flask_Cors==4.0.0
+midi2audio==0.1.1
