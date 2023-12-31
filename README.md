@@ -2,6 +2,8 @@
 
 **Article:** PianoBART: Symbolic Piano Music Understanding and Generation through Large-Scale Pre-Training (under anonymous review)
 
+![](https://github.com/RS2002/PianoBart/blob/main/img/PianoBART.jpg?raw=true)
+
 Some parts of our code borrows from [muzic/musicbert at main · microsoft/muzic (github.com) [1]](https://github.com/microsoft/muzic/tree/main/musicbert) and [wazenmai/MIDI-BERT: This is the official repository for the paper, MidiBERT-Piano: Large-scale Pre-training for Symbolic Music Understanding. (github.com) [2]](https://github.com/wazenmai/MIDI-BERT).
 
 
