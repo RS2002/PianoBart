@@ -1,6 +1,6 @@
 # PianoBart
 
-**Article:** PianoBART: Symbolic Piano Music Understanding and Generation through Large-Scale Pre-Training (under anonymous review)
+**Article:** Xiao Liang, Zijian Zhao, Weichao Zeng, Yutong He, Fupeng He, Yiyi Wang, Chengying Gao*, PianoBART: Symbolic Piano Music Understanding and Generation through Large-Scale Pre-Training (accepted by ICME 2024)
 
 ![](https://github.com/RS2002/PianoBart/blob/main/img/PianoBART.jpg?raw=true)
 
