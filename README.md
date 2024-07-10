@@ -1,6 +1,8 @@
-# PianoBart
+# PianoBART
 
-**Article:** Xiao Liang, Zijian Zhao, Weichao Zeng, Yutong He, Fupeng He, Yiyi Wang, Chengying Gao*, PianoBART: Symbolic Piano Music Understanding and Generation through Large-Scale Pre-Training (accepted by ICME 2024)
+A new version of PianoBART will be published at [PianoBART2](https://github.com/RS2002/PianoBART2).
+
+**Article:** Xiao Liang, Zijian Zhao, Weichao Zeng, Yutong He, Fupeng He, Yiyi Wang, Chengying Gao*, ”PianoBART: Symbolic Piano Music Understanding and Generation through Large-Scale Pre-Training”, ICME 2024
 
 ![](https://github.com/RS2002/PianoBart/blob/main/img/PianoBART.jpg?raw=true)
 
@@ -161,5 +163,18 @@ You can also use eval_generation.py to generate music in one go, with the output
 
 ```shell
 python --ckpt <model path> --dataset_path <dataset_path> --dataset_name <dataset_name> --output <output path> eval_generation.py
+```
+
+
+
+## 4. Citation
+
+```
+@article{liang2024pianobart,
+  title={PianoBART: Symbolic Piano Music Generation and Understanding with Large-Scale Pre-Training},
+  author={Liang, Xiao and Zhao, Zijian and Zeng, Weichao and He, Yutong and He, Fupeng and Wang, Yiyi and Gao, Chengying},
+  journal={arXiv preprint arXiv:2407.03361},
+  year={2024}
+}
 ```
 
