@@ -170,11 +170,16 @@ python --ckpt <model path> --dataset_path <dataset_path> --dataset_name <dataset
 ## 4. Citation
 
 ```
-@article{liang2024pianobart,
-  title={PianoBART: Symbolic Piano Music Generation and Understanding with Large-Scale Pre-Training},
+@INPROCEEDINGS{10688332,
   author={Liang, Xiao and Zhao, Zijian and Zeng, Weichao and He, Yutong and He, Fupeng and Wang, Yiyi and Gao, Chengying},
-  journal={arXiv preprint arXiv:2407.03361},
-  year={2024}
-}
+  booktitle={2024 IEEE International Conference on Multimedia and Expo (ICME)}, 
+  title={PianoBART: Symbolic Piano Music Generation and Understanding with Large-Scale Pre-Training}, 
+  year={2024},
+  volume={},
+  number={},
+  pages={1-6},
+  keywords={Codes;Semantics;Music;Transformers;Information leakage;Automatic Music Generation;Music Understanding;Symbolic Piano Music;Bidirectional and Auto-Regressive Transformers (BART)},
+  doi={10.1109/ICME57554.2024.10688332}}
+
 ```
 
