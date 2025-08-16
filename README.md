@@ -1,7 +1,5 @@
 # PianoBART
 
-A new version of PianoBART will be published at [PianoBART2](https://github.com/RS2002/PianoBART2).
-
 **Article:** Xiao Liang, Zijian Zhao, Weichao Zeng, Yutong He, Fupeng He, Yiyi Wang, Chengying Gao*, ” [PianoBART: Symbolic Piano Music Generation and Understanding with Large-Scale Pre-Training](https://ieeexplore.ieee.org/document/10688332)”, ICME 2024
 
 ![](https://github.com/RS2002/PianoBart/blob/main/img/PianoBART.jpg?raw=true)
@@ -182,4 +180,5 @@ python --ckpt <model path> --dataset_path <dataset_path> --dataset_name <dataset
   doi={10.1109/ICME57554.2024.10688332}}
 
 ```
+
 
