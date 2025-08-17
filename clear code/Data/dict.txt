@@ -1,0 +1,1280 @@
+Bar 0:  0
+Bar 1:  1
+Bar 2:  2
+Bar 3:  3
+Bar 4:  4
+Bar 5:  5
+Bar 6:  6
+Bar 7:  7
+Bar 8:  8
+Bar 9:  9
+Bar 10:  10
+Bar 11:  11
+Bar 12:  12
+Bar 13:  13
+Bar 14:  14
+Bar 15:  15
+Bar 16:  16
+Bar 17:  17
+Bar 18:  18
+Bar 19:  19
+Bar 20:  20
+Bar 21:  21
+Bar 22:  22
+Bar 23:  23
+Bar 24:  24
+Bar 25:  25
+Bar 26:  26
+Bar 27:  27
+Bar 28:  28
+Bar 29:  29
+Bar 30:  30
+Bar 31:  31
+Bar 32:  32
+Bar 33:  33
+Bar 34:  34
+Bar 35:  35
+Bar 36:  36
+Bar 37:  37
+Bar 38:  38
+Bar 39:  39
+Bar 40:  40
+Bar 41:  41
+Bar 42:  42
+Bar 43:  43
+Bar 44:  44
+Bar 45:  45
+Bar 46:  46
+Bar 47:  47
+Bar 48:  48
+Bar 49:  49
+Bar 50:  50
+Bar 51:  51
+Bar 52:  52
+Bar 53:  53
+Bar 54:  54
+Bar 55:  55
+Bar 56:  56
+Bar 57:  57
+Bar 58:  58
+Bar 59:  59
+Bar 60:  60
+Bar 61:  61
+Bar 62:  62
+Bar 63:  63
+Bar 64:  64
+Bar 65:  65
+Bar 66:  66
+Bar 67:  67
+Bar 68:  68
+Bar 69:  69
+Bar 70:  70
+Bar 71:  71
+Bar 72:  72
+Bar 73:  73
+Bar 74:  74
+Bar 75:  75
+Bar 76:  76
+Bar 77:  77
+Bar 78:  78
+Bar 79:  79
+Bar 80:  80
+Bar 81:  81
+Bar 82:  82
+Bar 83:  83
+Bar 84:  84
+Bar 85:  85
+Bar 86:  86
+Bar 87:  87
+Bar 88:  88
+Bar 89:  89
+Bar 90:  90
+Bar 91:  91
+Bar 92:  92
+Bar 93:  93
+Bar 94:  94
+Bar 95:  95
+Bar 96:  96
+Bar 97:  97
+Bar 98:  98
+Bar 99:  99
+Bar 100:  100
+Bar 101:  101
+Bar 102:  102
+Bar 103:  103
+Bar 104:  104
+Bar 105:  105
+Bar 106:  106
+Bar 107:  107
+Bar 108:  108
+Bar 109:  109
+Bar 110:  110
+Bar 111:  111
+Bar 112:  112
+Bar 113:  113
+Bar 114:  114
+Bar 115:  115
+Bar 116:  116
+Bar 117:  117
+Bar 118:  118
+Bar 119:  119
+Bar 120:  120
+Bar 121:  121
+Bar 122:  122
+Bar 123:  123
+Bar 124:  124
+Bar 125:  125
+Bar 126:  126
+Bar 127:  127
+Bar 128:  128
+Bar 129:  129
+Bar 130:  130
+Bar 131:  131
+Bar 132:  132
+Bar 133:  133
+Bar 134:  134
+Bar 135:  135
+Bar 136:  136
+Bar 137:  137
+Bar 138:  138
+Bar 139:  139
+Bar 140:  140
+Bar 141:  141
+Bar 142:  142
+Bar 143:  143
+Bar 144:  144
+Bar 145:  145
+Bar 146:  146
+Bar 147:  147
+Bar 148:  148
+Bar 149:  149
+Bar 150:  150
+Bar 151:  151
+Bar 152:  152
+Bar 153:  153
+Bar 154:  154
+Bar 155:  155
+Bar 156:  156
+Bar 157:  157
+Bar 158:  158
+Bar 159:  159
+Bar 160:  160
+Bar 161:  161
+Bar 162:  162
+Bar 163:  163
+Bar 164:  164
+Bar 165:  165
+Bar 166:  166
+Bar 167:  167
+Bar 168:  168
+Bar 169:  169
+Bar 170:  170
+Bar 171:  171
+Bar 172:  172
+Bar 173:  173
+Bar 174:  174
+Bar 175:  175
+Bar 176:  176
+Bar 177:  177
+Bar 178:  178
+Bar 179:  179
+Bar 180:  180
+Bar 181:  181
+Bar 182:  182
+Bar 183:  183
+Bar 184:  184
+Bar 185:  185
+Bar 186:  186
+Bar 187:  187
+Bar 188:  188
+Bar 189:  189
+Bar 190:  190
+Bar 191:  191
+Bar 192:  192
+Bar 193:  193
+Bar 194:  194
+Bar 195:  195
+Bar 196:  196
+Bar 197:  197
+Bar 198:  198
+Bar 199:  199
+Bar 200:  200
+Bar 201:  201
+Bar 202:  202
+Bar 203:  203
+Bar 204:  204
+Bar 205:  205
+Bar 206:  206
+Bar 207:  207
+Bar 208:  208
+Bar 209:  209
+Bar 210:  210
+Bar 211:  211
+Bar 212:  212
+Bar 213:  213
+Bar 214:  214
+Bar 215:  215
+Bar 216:  216
+Bar 217:  217
+Bar 218:  218
+Bar 219:  219
+Bar 220:  220
+Bar 221:  221
+Bar 222:  222
+Bar 223:  223
+Bar 224:  224
+Bar 225:  225
+Bar 226:  226
+Bar 227:  227
+Bar 228:  228
+Bar 229:  229
+Bar 230:  230
+Bar 231:  231
+Bar 232:  232
+Bar 233:  233
+Bar 234:  234
+Bar 235:  235
+Bar 236:  236
+Bar 237:  237
+Bar 238:  238
+Bar 239:  239
+Bar 240:  240
+Bar 241:  241
+Bar 242:  242
+Bar 243:  243
+Bar 244:  244
+Bar 245:  245
+Bar 246:  246
+Bar 247:  247
+Bar 248:  248
+Bar 249:  249
+Bar 250:  250
+Bar 251:  251
+Bar 252:  252
+Bar 253:  253
+Bar 254:  254
+Bar 255:  255
+Bar <PAD>:  256
+Bar <MASK>:  257
+Bar <SOS>:  258
+Bar <EOS>:  259
+Bar <CLS>:  260
+Bar <SEP>:  261
+Position 0/64:  0
+Position 1/64:  1
+Position 2/64:  2
+Position 3/64:  3
+Position 4/64:  4
+Position 5/64:  5
+Position 6/64:  6
+Position 7/64:  7
+Position 8/64:  8
+Position 9/64:  9
+Position 10/64:  10
+Position 11/64:  11
+Position 12/64:  12
+Position 13/64:  13
+Position 14/64:  14
+Position 15/64:  15
+Position 16/64:  16
+Position 17/64:  17
+Position 18/64:  18
+Position 19/64:  19
+Position 20/64:  20
+Position 21/64:  21
+Position 22/64:  22
+Position 23/64:  23
+Position 24/64:  24
+Position 25/64:  25
+Position 26/64:  26
+Position 27/64:  27
+Position 28/64:  28
+Position 29/64:  29
+Position 30/64:  30
+Position 31/64:  31
+Position 32/64:  32
+Position 33/64:  33
+Position 34/64:  34
+Position 35/64:  35
+Position 36/64:  36
+Position 37/64:  37
+Position 38/64:  38
+Position 39/64:  39
+Position 40/64:  40
+Position 41/64:  41
+Position 42/64:  42
+Position 43/64:  43
+Position 44/64:  44
+Position 45/64:  45
+Position 46/64:  46
+Position 47/64:  47
+Position 48/64:  48
+Position 49/64:  49
+Position 50/64:  50
+Position 51/64:  51
+Position 52/64:  52
+Position 53/64:  53
+Position 54/64:  54
+Position 55/64:  55
+Position 56/64:  56
+Position 57/64:  57
+Position 58/64:  58
+Position 59/64:  59
+Position 60/64:  60
+Position 61/64:  61
+Position 62/64:  62
+Position 63/64:  63
+Position 64/64:  64
+Position 65/64:  65
+Position 66/64:  66
+Position 67/64:  67
+Position 68/64:  68
+Position 69/64:  69
+Position 70/64:  70
+Position 71/64:  71
+Position 72/64:  72
+Position 73/64:  73
+Position 74/64:  74
+Position 75/64:  75
+Position 76/64:  76
+Position 77/64:  77
+Position 78/64:  78
+Position 79/64:  79
+Position 80/64:  80
+Position 81/64:  81
+Position 82/64:  82
+Position 83/64:  83
+Position 84/64:  84
+Position 85/64:  85
+Position 86/64:  86
+Position 87/64:  87
+Position 88/64:  88
+Position 89/64:  89
+Position 90/64:  90
+Position 91/64:  91
+Position 92/64:  92
+Position 93/64:  93
+Position 94/64:  94
+Position 95/64:  95
+Position 96/64:  96
+Position 97/64:  97
+Position 98/64:  98
+Position 99/64:  99
+Position 100/64:  100
+Position 101/64:  101
+Position 102/64:  102
+Position 103/64:  103
+Position 104/64:  104
+Position 105/64:  105
+Position 106/64:  106
+Position 107/64:  107
+Position 108/64:  108
+Position 109/64:  109
+Position 110/64:  110
+Position 111/64:  111
+Position 112/64:  112
+Position 113/64:  113
+Position 114/64:  114
+Position 115/64:  115
+Position 116/64:  116
+Position 117/64:  117
+Position 118/64:  118
+Position 119/64:  119
+Position 120/64:  120
+Position 121/64:  121
+Position 122/64:  122
+Position 123/64:  123
+Position 124/64:  124
+Position 125/64:  125
+Position 126/64:  126
+Position 127/64:  127
+Position <PAD>:  128
+Position <MASK>:  129
+Position <SOS>:  130
+Position <EOS>:  131
+Position <CLS>:  132
+Position <SEP>:  133
+Instrument 0:  0
+Instrument 1:  1
+Instrument 2:  2
+Instrument 3:  3
+Instrument 4:  4
+Instrument 5:  5
+Instrument 6:  6
+Instrument 7:  7
+Instrument 8:  8
+Instrument 9:  9
+Instrument 10:  10
+Instrument 11:  11
+Instrument 12:  12
+Instrument 13:  13
+Instrument 14:  14
+Instrument 15:  15
+Instrument 16:  16
+Instrument 17:  17
+Instrument 18:  18
+Instrument 19:  19
+Instrument 20:  20
+Instrument 21:  21
+Instrument 22:  22
+Instrument 23:  23
+Instrument 24:  24
+Instrument 25:  25
+Instrument 26:  26
+Instrument 27:  27
+Instrument 28:  28
+Instrument 29:  29
+Instrument 30:  30
+Instrument 31:  31
+Instrument 32:  32
+Instrument 33:  33
+Instrument 34:  34
+Instrument 35:  35
+Instrument 36:  36
+Instrument 37:  37
+Instrument 38:  38
+Instrument 39:  39
+Instrument 40:  40
+Instrument 41:  41
+Instrument 42:  42
+Instrument 43:  43
+Instrument 44:  44
+Instrument 45:  45
+Instrument 46:  46
+Instrument 47:  47
+Instrument 48:  48
+Instrument 49:  49
+Instrument 50:  50
+Instrument 51:  51
+Instrument 52:  52
+Instrument 53:  53
+Instrument 54:  54
+Instrument 55:  55
+Instrument 56:  56
+Instrument 57:  57
+Instrument 58:  58
+Instrument 59:  59
+Instrument 60:  60
+Instrument 61:  61
+Instrument 62:  62
+Instrument 63:  63
+Instrument 64:  64
+Instrument 65:  65
+Instrument 66:  66
+Instrument 67:  67
+Instrument 68:  68
+Instrument 69:  69
+Instrument 70:  70
+Instrument 71:  71
+Instrument 72:  72
+Instrument 73:  73
+Instrument 74:  74
+Instrument 75:  75
+Instrument 76:  76
+Instrument 77:  77
+Instrument 78:  78
+Instrument 79:  79
+Instrument 80:  80
+Instrument 81:  81
+Instrument 82:  82
+Instrument 83:  83
+Instrument 84:  84
+Instrument 85:  85
+Instrument 86:  86
+Instrument 87:  87
+Instrument 88:  88
+Instrument 89:  89
+Instrument 90:  90
+Instrument 91:  91
+Instrument 92:  92
+Instrument 93:  93
+Instrument 94:  94
+Instrument 95:  95
+Instrument 96:  96
+Instrument 97:  97
+Instrument 98:  98
+Instrument 99:  99
+Instrument 100:  100
+Instrument 101:  101
+Instrument 102:  102
+Instrument 103:  103
+Instrument 104:  104
+Instrument 105:  105
+Instrument 106:  106
+Instrument 107:  107
+Instrument 108:  108
+Instrument 109:  109
+Instrument 110:  110
+Instrument 111:  111
+Instrument 112:  112
+Instrument 113:  113
+Instrument 114:  114
+Instrument 115:  115
+Instrument 116:  116
+Instrument 117:  117
+Instrument 118:  118
+Instrument 119:  119
+Instrument 120:  120
+Instrument 121:  121
+Instrument 122:  122
+Instrument 123:  123
+Instrument 124:  124
+Instrument 125:  125
+Instrument 126:  126
+Instrument 127:  127
+Instrument percussion:  128
+Instrument <PAD>:  129
+Instrument <MASK>:  130
+Instrument <SOS>:  131
+Instrument <EOS>:  132
+Instrument <CLS>:  133
+Instrument <SEP>:  134
+Pitch 0:  0
+Pitch 1:  1
+Pitch 2:  2
+Pitch 3:  3
+Pitch 4:  4
+Pitch 5:  5
+Pitch 6:  6
+Pitch 7:  7
+Pitch 8:  8
+Pitch 9:  9
+Pitch 10:  10
+Pitch 11:  11
+Pitch 12:  12
+Pitch 13:  13
+Pitch 14:  14
+Pitch 15:  15
+Pitch 16:  16
+Pitch 17:  17
+Pitch 18:  18
+Pitch 19:  19
+Pitch 20:  20
+Pitch 21:  21
+Pitch 22:  22
+Pitch 23:  23
+Pitch 24:  24
+Pitch 25:  25
+Pitch 26:  26
+Pitch 27:  27
+Pitch 28:  28
+Pitch 29:  29
+Pitch 30:  30
+Pitch 31:  31
+Pitch 32:  32
+Pitch 33:  33
+Pitch 34:  34
+Pitch 35:  35
+Pitch 36:  36
+Pitch 37:  37
+Pitch 38:  38
+Pitch 39:  39
+Pitch 40:  40
+Pitch 41:  41
+Pitch 42:  42
+Pitch 43:  43
+Pitch 44:  44
+Pitch 45:  45
+Pitch 46:  46
+Pitch 47:  47
+Pitch 48:  48
+Pitch 49:  49
+Pitch 50:  50
+Pitch 51:  51
+Pitch 52:  52
+Pitch 53:  53
+Pitch 54:  54
+Pitch 55:  55
+Pitch 56:  56
+Pitch 57:  57
+Pitch 58:  58
+Pitch 59:  59
+Pitch 60:  60
+Pitch 61:  61
+Pitch 62:  62
+Pitch 63:  63
+Pitch 64:  64
+Pitch 65:  65
+Pitch 66:  66
+Pitch 67:  67
+Pitch 68:  68
+Pitch 69:  69
+Pitch 70:  70
+Pitch 71:  71
+Pitch 72:  72
+Pitch 73:  73
+Pitch 74:  74
+Pitch 75:  75
+Pitch 76:  76
+Pitch 77:  77
+Pitch 78:  78
+Pitch 79:  79
+Pitch 80:  80
+Pitch 81:  81
+Pitch 82:  82
+Pitch 83:  83
+Pitch 84:  84
+Pitch 85:  85
+Pitch 86:  86
+Pitch 87:  87
+Pitch 88:  88
+Pitch 89:  89
+Pitch 90:  90
+Pitch 91:  91
+Pitch 92:  92
+Pitch 93:  93
+Pitch 94:  94
+Pitch 95:  95
+Pitch 96:  96
+Pitch 97:  97
+Pitch 98:  98
+Pitch 99:  99
+Pitch 100:  100
+Pitch 101:  101
+Pitch 102:  102
+Pitch 103:  103
+Pitch 104:  104
+Pitch 105:  105
+Pitch 106:  106
+Pitch 107:  107
+Pitch 108:  108
+Pitch 109:  109
+Pitch 110:  110
+Pitch 111:  111
+Pitch 112:  112
+Pitch 113:  113
+Pitch 114:  114
+Pitch 115:  115
+Pitch 116:  116
+Pitch 117:  117
+Pitch 118:  118
+Pitch 119:  119
+Pitch 120:  120
+Pitch 121:  121
+Pitch 122:  122
+Pitch 123:  123
+Pitch 124:  124
+Pitch 125:  125
+Pitch 126:  126
+Pitch 127:  127
+Pitch percussion 0:  128
+Pitch percussion 1:  129
+Pitch percussion 2:  130
+Pitch percussion 3:  131
+Pitch percussion 4:  132
+Pitch percussion 5:  133
+Pitch percussion 6:  134
+Pitch percussion 7:  135
+Pitch percussion 8:  136
+Pitch percussion 9:  137
+Pitch percussion 10:  138
+Pitch percussion 11:  139
+Pitch percussion 12:  140
+Pitch percussion 13:  141
+Pitch percussion 14:  142
+Pitch percussion 15:  143
+Pitch percussion 16:  144
+Pitch percussion 17:  145
+Pitch percussion 18:  146
+Pitch percussion 19:  147
+Pitch percussion 20:  148
+Pitch percussion 21:  149
+Pitch percussion 22:  150
+Pitch percussion 23:  151
+Pitch percussion 24:  152
+Pitch percussion 25:  153
+Pitch percussion 26:  154
+Pitch percussion 27:  155
+Pitch percussion 28:  156
+Pitch percussion 29:  157
+Pitch percussion 30:  158
+Pitch percussion 31:  159
+Pitch percussion 32:  160
+Pitch percussion 33:  161
+Pitch percussion 34:  162
+Pitch percussion 35:  163
+Pitch percussion 36:  164
+Pitch percussion 37:  165
+Pitch percussion 38:  166
+Pitch percussion 39:  167
+Pitch percussion 40:  168
+Pitch percussion 41:  169
+Pitch percussion 42:  170
+Pitch percussion 43:  171
+Pitch percussion 44:  172
+Pitch percussion 45:  173
+Pitch percussion 46:  174
+Pitch percussion 47:  175
+Pitch percussion 48:  176
+Pitch percussion 49:  177
+Pitch percussion 50:  178
+Pitch percussion 51:  179
+Pitch percussion 52:  180
+Pitch percussion 53:  181
+Pitch percussion 54:  182
+Pitch percussion 55:  183
+Pitch percussion 56:  184
+Pitch percussion 57:  185
+Pitch percussion 58:  186
+Pitch percussion 59:  187
+Pitch percussion 60:  188
+Pitch percussion 61:  189
+Pitch percussion 62:  190
+Pitch percussion 63:  191
+Pitch percussion 64:  192
+Pitch percussion 65:  193
+Pitch percussion 66:  194
+Pitch percussion 67:  195
+Pitch percussion 68:  196
+Pitch percussion 69:  197
+Pitch percussion 70:  198
+Pitch percussion 71:  199
+Pitch percussion 72:  200
+Pitch percussion 73:  201
+Pitch percussion 74:  202
+Pitch percussion 75:  203
+Pitch percussion 76:  204
+Pitch percussion 77:  205
+Pitch percussion 78:  206
+Pitch percussion 79:  207
+Pitch percussion 80:  208
+Pitch percussion 81:  209
+Pitch percussion 82:  210
+Pitch percussion 83:  211
+Pitch percussion 84:  212
+Pitch percussion 85:  213
+Pitch percussion 86:  214
+Pitch percussion 87:  215
+Pitch percussion 88:  216
+Pitch percussion 89:  217
+Pitch percussion 90:  218
+Pitch percussion 91:  219
+Pitch percussion 92:  220
+Pitch percussion 93:  221
+Pitch percussion 94:  222
+Pitch percussion 95:  223
+Pitch percussion 96:  224
+Pitch percussion 97:  225
+Pitch percussion 98:  226
+Pitch percussion 99:  227
+Pitch percussion 100:  228
+Pitch percussion 101:  229
+Pitch percussion 102:  230
+Pitch percussion 103:  231
+Pitch percussion 104:  232
+Pitch percussion 105:  233
+Pitch percussion 106:  234
+Pitch percussion 107:  235
+Pitch percussion 108:  236
+Pitch percussion 109:  237
+Pitch percussion 110:  238
+Pitch percussion 111:  239
+Pitch percussion 112:  240
+Pitch percussion 113:  241
+Pitch percussion 114:  242
+Pitch percussion 115:  243
+Pitch percussion 116:  244
+Pitch percussion 117:  245
+Pitch percussion 118:  246
+Pitch percussion 119:  247
+Pitch percussion 120:  248
+Pitch percussion 121:  249
+Pitch percussion 122:  250
+Pitch percussion 123:  251
+Pitch percussion 124:  252
+Pitch percussion 125:  253
+Pitch percussion 126:  254
+Pitch percussion 127:  255
+Pitch <PAD>:  256
+Pitch <MASK>:  257
+Pitch <SOS>:  258
+Pitch <EOS>:  259
+Pitch <CLS>:  260
+Pitch <SEP>:  261
+Duration 0:  0
+Duration 1:  1
+Duration 2:  2
+Duration 3:  3
+Duration 4:  4
+Duration 5:  5
+Duration 6:  6
+Duration 7:  7
+Duration 8:  8
+Duration 9:  9
+Duration 10:  10
+Duration 11:  11
+Duration 12:  12
+Duration 13:  13
+Duration 14:  14
+Duration 15:  15
+Duration 16:  16
+Duration 17:  17
+Duration 18:  18
+Duration 19:  19
+Duration 20:  20
+Duration 21:  21
+Duration 22:  22
+Duration 23:  23
+Duration 24:  24
+Duration 25:  25
+Duration 26:  26
+Duration 27:  27
+Duration 28:  28
+Duration 29:  29
+Duration 30:  30
+Duration 31:  31
+Duration 32:  32
+Duration 33:  33
+Duration 34:  34
+Duration 35:  35
+Duration 36:  36
+Duration 37:  37
+Duration 38:  38
+Duration 39:  39
+Duration 40:  40
+Duration 41:  41
+Duration 42:  42
+Duration 43:  43
+Duration 44:  44
+Duration 45:  45
+Duration 46:  46
+Duration 47:  47
+Duration 48:  48
+Duration 49:  49
+Duration 50:  50
+Duration 51:  51
+Duration 52:  52
+Duration 53:  53
+Duration 54:  54
+Duration 55:  55
+Duration 56:  56
+Duration 57:  57
+Duration 58:  58
+Duration 59:  59
+Duration 60:  60
+Duration 61:  61
+Duration 62:  62
+Duration 63:  63
+Duration 64:  64
+Duration 65:  65
+Duration 66:  66
+Duration 67:  67
+Duration 68:  68
+Duration 69:  69
+Duration 70:  70
+Duration 71:  71
+Duration 72:  72
+Duration 73:  73
+Duration 74:  74
+Duration 75:  75
+Duration 76:  76
+Duration 77:  77
+Duration 78:  78
+Duration 79:  79
+Duration 80:  80
+Duration 81:  81
+Duration 82:  82
+Duration 83:  83
+Duration 84:  84
+Duration 85:  85
+Duration 86:  86
+Duration 87:  87
+Duration 88:  88
+Duration 89:  89
+Duration 90:  90
+Duration 91:  91
+Duration 92:  92
+Duration 93:  93
+Duration 94:  94
+Duration 95:  95
+Duration 96:  96
+Duration 97:  97
+Duration 98:  98
+Duration 99:  99
+Duration 100:  100
+Duration 101:  101
+Duration 102:  102
+Duration 103:  103
+Duration 104:  104
+Duration 105:  105
+Duration 106:  106
+Duration 107:  107
+Duration 108:  108
+Duration 109:  109
+Duration 110:  110
+Duration 111:  111
+Duration 112:  112
+Duration 113:  113
+Duration 114:  114
+Duration 115:  115
+Duration 116:  116
+Duration 117:  117
+Duration 118:  118
+Duration 119:  119
+Duration 120:  120
+Duration 121:  121
+Duration 122:  122
+Duration 123:  123
+Duration 124:  124
+Duration 125:  125
+Duration 126:  126
+Duration 127:  127
+Duration <PAD>:  128
+Duration <MASK>:  129
+Duration <SOS>:  130
+Duration <EOS>:  131
+Duration <CLS>:  132
+Duration <SEP>:  133
+Velocity 2:  0
+Velocity 6:  1
+Velocity 10:  2
+Velocity 14:  3
+Velocity 18:  4
+Velocity 22:  5
+Velocity 26:  6
+Velocity 30:  7
+Velocity 34:  8
+Velocity 38:  9
+Velocity 42:  10
+Velocity 46:  11
+Velocity 50:  12
+Velocity 54:  13
+Velocity 58:  14
+Velocity 62:  15
+Velocity 66:  16
+Velocity 70:  17
+Velocity 74:  18
+Velocity 78:  19
+Velocity 82:  20
+Velocity 86:  21
+Velocity 90:  22
+Velocity 94:  23
+Velocity 98:  24
+Velocity 102:  25
+Velocity 106:  26
+Velocity 110:  27
+Velocity 114:  28
+Velocity 118:  29
+Velocity 122:  30
+Velocity 126:  31
+Velocity <PAD>:  32
+Velocity <MASK>:  33
+Velocity <SOS>:  34
+Velocity <EOS>:  35
+Velocity <CLS>:  36
+Velocity <SEP>:  37
+TimeSig 1/1:  0
+TimeSig 2/1:  1
+TimeSig 1/2:  2
+TimeSig 2/2:  3
+TimeSig 3/2:  4
+TimeSig 4/2:  5
+TimeSig 1/4:  6
+TimeSig 2/4:  7
+TimeSig 3/4:  8
+TimeSig 4/4:  9
+TimeSig 5/4:  10
+TimeSig 6/4:  11
+TimeSig 7/4:  12
+TimeSig 8/4:  13
+TimeSig 1/8:  14
+TimeSig 2/8:  15
+TimeSig 3/8:  16
+TimeSig 4/8:  17
+TimeSig 5/8:  18
+TimeSig 6/8:  19
+TimeSig 7/8:  20
+TimeSig 8/8:  21
+TimeSig 9/8:  22
+TimeSig 10/8:  23
+TimeSig 11/8:  24
+TimeSig 12/8:  25
+TimeSig 13/8:  26
+TimeSig 14/8:  27
+TimeSig 15/8:  28
+TimeSig 16/8:  29
+TimeSig 1/16:  30
+TimeSig 2/16:  31
+TimeSig 3/16:  32
+TimeSig 4/16:  33
+TimeSig 5/16:  34
+TimeSig 6/16:  35
+TimeSig 7/16:  36
+TimeSig 8/16:  37
+TimeSig 9/16:  38
+TimeSig 10/16:  39
+TimeSig 11/16:  40
+TimeSig 12/16:  41
+TimeSig 13/16:  42
+TimeSig 14/16:  43
+TimeSig 15/16:  44
+TimeSig 16/16:  45
+TimeSig 17/16:  46
+TimeSig 18/16:  47
+TimeSig 19/16:  48
+TimeSig 20/16:  49
+TimeSig 21/16:  50
+TimeSig 22/16:  51
+TimeSig 23/16:  52
+TimeSig 24/16:  53
+TimeSig 25/16:  54
+TimeSig 26/16:  55
+TimeSig 27/16:  56
+TimeSig 28/16:  57
+TimeSig 29/16:  58
+TimeSig 30/16:  59
+TimeSig 31/16:  60
+TimeSig 32/16:  61
+TimeSig 1/32:  62
+TimeSig 2/32:  63
+TimeSig 3/32:  64
+TimeSig 4/32:  65
+TimeSig 5/32:  66
+TimeSig 6/32:  67
+TimeSig 7/32:  68
+TimeSig 8/32:  69
+TimeSig 9/32:  70
+TimeSig 10/32:  71
+TimeSig 11/32:  72
+TimeSig 12/32:  73
+TimeSig 13/32:  74
+TimeSig 14/32:  75
+TimeSig 15/32:  76
+TimeSig 16/32:  77
+TimeSig 17/32:  78
+TimeSig 18/32:  79
+TimeSig 19/32:  80
+TimeSig 20/32:  81
+TimeSig 21/32:  82
+TimeSig 22/32:  83
+TimeSig 23/32:  84
+TimeSig 24/32:  85
+TimeSig 25/32:  86
+TimeSig 26/32:  87
+TimeSig 27/32:  88
+TimeSig 28/32:  89
+TimeSig 29/32:  90
+TimeSig 30/32:  91
+TimeSig 31/32:  92
+TimeSig 32/32:  93
+TimeSig 33/32:  94
+TimeSig 34/32:  95
+TimeSig 35/32:  96
+TimeSig 36/32:  97
+TimeSig 37/32:  98
+TimeSig 38/32:  99
+TimeSig 39/32:  100
+TimeSig 40/32:  101
+TimeSig 41/32:  102
+TimeSig 42/32:  103
+TimeSig 43/32:  104
+TimeSig 44/32:  105
+TimeSig 45/32:  106
+TimeSig 46/32:  107
+TimeSig 47/32:  108
+TimeSig 48/32:  109
+TimeSig 49/32:  110
+TimeSig 50/32:  111
+TimeSig 51/32:  112
+TimeSig 52/32:  113
+TimeSig 53/32:  114
+TimeSig 54/32:  115
+TimeSig 55/32:  116
+TimeSig 56/32:  117
+TimeSig 57/32:  118
+TimeSig 58/32:  119
+TimeSig 59/32:  120
+TimeSig 60/32:  121
+TimeSig 61/32:  122
+TimeSig 62/32:  123
+TimeSig 63/32:  124
+TimeSig 64/32:  125
+TimeSig 1/64:  126
+TimeSig 2/64:  127
+TimeSig 3/64:  128
+TimeSig 4/64:  129
+TimeSig 5/64:  130
+TimeSig 6/64:  131
+TimeSig 7/64:  132
+TimeSig 8/64:  133
+TimeSig 9/64:  134
+TimeSig 10/64:  135
+TimeSig 11/64:  136
+TimeSig 12/64:  137
+TimeSig 13/64:  138
+TimeSig 14/64:  139
+TimeSig 15/64:  140
+TimeSig 16/64:  141
+TimeSig 17/64:  142
+TimeSig 18/64:  143
+TimeSig 19/64:  144
+TimeSig 20/64:  145
+TimeSig 21/64:  146
+TimeSig 22/64:  147
+TimeSig 23/64:  148
+TimeSig 24/64:  149
+TimeSig 25/64:  150
+TimeSig 26/64:  151
+TimeSig 27/64:  152
+TimeSig 28/64:  153
+TimeSig 29/64:  154
+TimeSig 30/64:  155
+TimeSig 31/64:  156
+TimeSig 32/64:  157
+TimeSig 33/64:  158
+TimeSig 34/64:  159
+TimeSig 35/64:  160
+TimeSig 36/64:  161
+TimeSig 37/64:  162
+TimeSig 38/64:  163
+TimeSig 39/64:  164
+TimeSig 40/64:  165
+TimeSig 41/64:  166
+TimeSig 42/64:  167
+TimeSig 43/64:  168
+TimeSig 44/64:  169
+TimeSig 45/64:  170
+TimeSig 46/64:  171
+TimeSig 47/64:  172
+TimeSig 48/64:  173
+TimeSig 49/64:  174
+TimeSig 50/64:  175
+TimeSig 51/64:  176
+TimeSig 52/64:  177
+TimeSig 53/64:  178
+TimeSig 54/64:  179
+TimeSig 55/64:  180
+TimeSig 56/64:  181
+TimeSig 57/64:  182
+TimeSig 58/64:  183
+TimeSig 59/64:  184
+TimeSig 60/64:  185
+TimeSig 61/64:  186
+TimeSig 62/64:  187
+TimeSig 63/64:  188
+TimeSig 64/64:  189
+TimeSig 65/64:  190
+TimeSig 66/64:  191
+TimeSig 67/64:  192
+TimeSig 68/64:  193
+TimeSig 69/64:  194
+TimeSig 70/64:  195
+TimeSig 71/64:  196
+TimeSig 72/64:  197
+TimeSig 73/64:  198
+TimeSig 74/64:  199
+TimeSig 75/64:  200
+TimeSig 76/64:  201
+TimeSig 77/64:  202
+TimeSig 78/64:  203
+TimeSig 79/64:  204
+TimeSig 80/64:  205
+TimeSig 81/64:  206
+TimeSig 82/64:  207
+TimeSig 83/64:  208
+TimeSig 84/64:  209
+TimeSig 85/64:  210
+TimeSig 86/64:  211
+TimeSig 87/64:  212
+TimeSig 88/64:  213
+TimeSig 89/64:  214
+TimeSig 90/64:  215
+TimeSig 91/64:  216
+TimeSig 92/64:  217
+TimeSig 93/64:  218
+TimeSig 94/64:  219
+TimeSig 95/64:  220
+TimeSig 96/64:  221
+TimeSig 97/64:  222
+TimeSig 98/64:  223
+TimeSig 99/64:  224
+TimeSig 100/64:  225
+TimeSig 101/64:  226
+TimeSig 102/64:  227
+TimeSig 103/64:  228
+TimeSig 104/64:  229
+TimeSig 105/64:  230
+TimeSig 106/64:  231
+TimeSig 107/64:  232
+TimeSig 108/64:  233
+TimeSig 109/64:  234
+TimeSig 110/64:  235
+TimeSig 111/64:  236
+TimeSig 112/64:  237
+TimeSig 113/64:  238
+TimeSig 114/64:  239
+TimeSig 115/64:  240
+TimeSig 116/64:  241
+TimeSig 117/64:  242
+TimeSig 118/64:  243
+TimeSig 119/64:  244
+TimeSig 120/64:  245
+TimeSig 121/64:  246
+TimeSig 122/64:  247
+TimeSig 123/64:  248
+TimeSig 124/64:  249
+TimeSig 125/64:  250
+TimeSig 126/64:  251
+TimeSig 127/64:  252
+TimeSig 128/64:  253
+TimeSig <PAD>:  254
+TimeSig <MASK>:  255
+TimeSig <SOS>:  256
+TimeSig <EOS>:  257
+TimeSig <CLS>:  258
+TimeSig <SEP>:  259
+Tempo 16.0:  0
+Tempo 16.951409509748725:  1
+Tempo 17.95939277294997:  2
+Tempo 19.027313840043536:  3
+Tempo 20.15873679831797:  4
+Tempo 21.35743766672055:  5
+Tempo 22.627416997969522:  6
+Tempo 23.972913230026904:  7
+Tempo 25.39841683149119:  8
+Tempo 26.908685288118864:  9
+Tempo 28.508758980490857:  10
+Tempo 30.203978005814193:  11
+Tempo 32.0:  12
+Tempo 33.90281901949745:  13
+Tempo 35.91878554589994:  14
+Tempo 38.05462768008707:  15
+Tempo 40.31747359663594:  16
+Tempo 42.7148753334411:  17
+Tempo 45.254833995939045:  18
+Tempo 47.94582646005381:  19
+Tempo 50.79683366298239:  20
+Tempo 53.81737057623773:  21
+Tempo 57.01751796098171:  22
+Tempo 60.407956011628386:  23
+Tempo 64.0:  24
+Tempo 67.8056380389949:  25
+Tempo 71.83757109179986:  26
+Tempo 76.10925536017415:  27
+Tempo 80.63494719327188:  28
+Tempo 85.42975066688219:  29
+Tempo 90.50966799187809:  30
+Tempo 95.89165292010763:  31
+Tempo 101.59366732596476:  32
+Tempo 107.63474115247546:  33
+Tempo 114.03503592196344:  34
+Tempo 120.81591202325676:  35
+Tempo 128.0:  36
+Tempo 135.6112760779898:  37
+Tempo 143.67514218359972:  38
+Tempo 152.2185107203483:  39
+Tempo 161.26989438654377:  40
+Tempo 170.85950133376437:  41
+Tempo 181.01933598375618:  42
+Tempo 191.78330584021526:  43
+Tempo 203.18733465192952:  44
+Tempo 215.2694823049509:  45
+Tempo 228.07007184392688:  46
+Tempo 241.63182404651351:  47
+Tempo 256.0:  48
+Tempo <PAD>:  49
+Tempo <MASK>:  50
+Tempo <SOS>:  51
+Tempo <EOS>:  52
+Tempo <CLS>:  53
+Tempo <SEP>:  54

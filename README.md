@@ -2,7 +2,7 @@
 
 **Article:** Xiao Liang, Zijian Zhao, Weichao Zeng, Yutong He, Fupeng He, Yiyi Wang, Chengying Gao*, ” [PianoBART: Symbolic Piano Music Generation and Understanding with Large-Scale Pre-Training](https://ieeexplore.ieee.org/document/10688332)”, ICME 2024
 
-![](https://github.com/RS2002/PianoBart/blob/main/img/PianoBART.jpg?raw=true)
+**Notice:** We have uploaded our model and full parameters to [Hugging Face](https://huggingface.co/RS2002/PianoBART). The parameters for downstream tasks can be found in the file [parameters.zip](https://huggingface.co/RS2002/PianoBART/blob/main/parameters.zip). Additionally, a clearer version is available in the `clear code` folder.
 
 Some parts of our code borrows from [muzic/musicbert at main · microsoft/muzic (github.com) [1]](https://github.com/microsoft/muzic/tree/main/musicbert) and [wazenmai/MIDI-BERT: This is the official repository for the paper, MidiBERT-Piano: Large-scale Pre-training for Symbolic Music Understanding. (github.com) [2]](https://github.com/wazenmai/MIDI-BERT).
 
@@ -23,13 +23,11 @@ The datasets utilized in our paper are as follows:
 
 **Melody Prediction:** POP909
 
-
-
 You can generate data using the repositories mentioned in [[1]](https://github.com/microsoft/muzic/tree/main/musicbert) and [[2]](https://github.com/wazenmai/MIDI-BERT). The process of organizing the data is the same as described in [[2]](https://github.com/wazenmai/MIDI-BERT). Additionally, you can use the `--datasets` and `--dataroot` options to specify the name and root path of your dataset.
 
 
 
-## 2. How to run the model
+## 2. How to run
 
 ### 2.1 About the environment
 
@@ -180,5 +178,4 @@ python --ckpt <model path> --dataset_path <dataset_path> --dataset_name <dataset
   doi={10.1109/ICME57554.2024.10688332}}
 
 ```
-
 
